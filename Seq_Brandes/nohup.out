@@ -1,0 +1,38 @@
+exeName = ./a
+datasetPath = ../dataset/dblp.txt
+Success : Build AdjList
+==============================
+dataset = ../dataset/dblp.txt
+nodeNum = 317080
+edgeNum = 1049866
+degreeOneNum = 43181
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 317081
+csr->csrESize = 2099732
+csr->degreeOneNum = 43181
+csr->startAtZero = 1
+[Success] CreateCSR finish
+==============================
+[Execution Time] 8179.780335 (s)
+exeName = ./a
+datasetPath = ../dataset/dblp.txt
+Success : Build AdjList
+==============================
+dataset = ../dataset/dblp.txt
+nodeNum = 317080
+edgeNum = 1049866
+degreeOneNum = 43181
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 317081
+csr->csrESize = 2099732
+csr->degreeOneNum = 43181
+csr->startAtZero = 1
+[Success] CreateCSR finish
+==============================
+[Execution Time] 12264.885794 (s)
