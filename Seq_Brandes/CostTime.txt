@@ -9,3 +9,13 @@
 ../dataset/karate.txt, 0.000161
 ../dataset/karate.txt, 0.000153
 ../dataset/karate.txt, 0.000156
+../dataset/karate.txt, 0.000167
+../dataset/karate.txt, 0.000180
+../dataset/karate.txt, method1, 0.000044, ori, 0.000035
+../dataset/karate.txt, method1, 0.000017, ori, 0.000012
+../dataset/karate.txt, method1, 0.000020, ori, 0.000011
+../dataset/LiveJournal.txt, method1, 27858.216652, ori, 32891.532043
+../dataset/karate.txt, method1, 0.000041, ori, 0.000030
+../dataset/karate.txt, method1, 0.000042, ori, 0.000029
+../dataset/karate.txt, method1, 0.000042, ori, 0.000029
+../dataset/dblp.txt, method1, 10800.651385, ori, 8556.538427

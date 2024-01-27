@@ -14,6 +14,7 @@
 #include <stdarg.h>
 // #define DEBUG
 #define Timing
+// #define LiveJournal_Test
 int offset = 0;
 int nextBFS = 0;
 
@@ -250,7 +251,12 @@ void computeBC(struct CSR* _csr, float* _BCs){
     printf("startNodeID = %d, endNodeID = %d\n", _csr->startNodeID, _csr->endNodeID);
     #endif
     
+    #ifdef LiveJournal_Test
     double time1 = seconds();
+    #else
+    nextBFS = _csr->startNodeID;
+    #endif
+
     for(int sourceID = nextBFS; sourceID <= _csr->endNodeID ; sourceID ++){
         // if(_csr->csrNodesDegree[sourceID] == 1){
         //     break;
@@ -330,11 +336,16 @@ void computeBC(struct CSR* _csr, float* _BCs){
         // for(int nodeIDIter = _csr->startNodeID ; nodeIDIter <= _csr->endNodeID ; nodeIDIter ++){
         //     printf("BC[%2d] = %2f\n", nodeIDIter, _BCs[nodeIDIter]);
         // }
+        #ifdef LiveJournal_Test
         break;
+        #endif
     }
+
+    #ifdef LiveJournal_Test
     double time2 = seconds();
     printf("[Execution Time] Ori_BC(%d) = %f(s)\n", nextBFS, time2 - time1);
     ori_BC_time += time2 - time1;
+    #endif
 
     #ifdef DEBUG
     for(int nodeIDIter = _csr->startNodeID ; nodeIDIter <= _csr->endNodeID ; nodeIDIter ++){
@@ -356,6 +367,7 @@ void computeBC(struct CSR* _csr, float* _BCs){
     }
     free(S->nodeIDs);
     free(S->predecessors);
+    free(S);
     // S_ori = S;
 }
 
@@ -395,12 +407,19 @@ void computeBC_shareBased(struct CSR* _csr, float* _BCs){
     double time1;
     double time2;
 
-    for(int sourceID = _csr->startNodeID ; sourceID <= _csr->endNodeID ; sourceID ++){
+    register int testEndNodeID;
+    #ifdef LiveJournal_Test
+    testEndNodeID = _csr->startNodeID + 10000;
+    #else
+    testEndNodeID = _csr->endNodeID;
+    #endif
+
+    for(int sourceID = _csr->startNodeID ; sourceID <= testEndNodeID ; sourceID ++){
         if(nodesDone[sourceID] == 1){
             // printf("sourceID = %d done.\n", sourceID);
             continue;
         }
-        #ifdef Timing
+        #ifdef LiveJournal_Test
         time1 = seconds();
         #endif
         // printf("sourceID = %d start\t", sourceID);
@@ -748,7 +767,7 @@ void computeBC_shareBased(struct CSR* _csr, float* _BCs){
             }
             memset(relations_next, 0, sizeof(int) * _csr->csrVSize);
         }
-        #ifdef Timing
+        #ifdef LiveJournal_Test
         time2 = seconds();
         printf("[Execution Time]method1_BC(%d, %d) = %f\n", sourceID, minDegreeNeighborID, time2 - time1);
         method1_BC_time += time2 - time1;
@@ -758,6 +777,7 @@ void computeBC_shareBased(struct CSR* _csr, float* _BCs){
 
 #pragma region check_Value_Correctness
         // nextBFS = sourceID;
+        #ifdef LiveJournal_Test
         nextBFS = sourceID;
         computeBC(_csr, BCs_ori);
         // printf("sourceID = %d, checking Ans...\n", sourceID);
@@ -771,12 +791,16 @@ void computeBC_shareBased(struct CSR* _csr, float* _BCs){
         //     check_SPandDist_Ans2(_csr, numberOfSP_arr_next, dist_arr_next);
         //     checkStackans2(S_ori, S_next, _csr);
         }
+        #endif
 #pragma endregion
         // break;
     }
+
+    #ifdef LiveJournal_Test
     printf("[Execution Time] method1 : %f\n", method1_BC_time);
     printf("[Execution Time] Ori     : %f\n", ori_BC_time);
-
+    #endif
+    
     free(tempVecs[0]->dataArr);
     free(tempVecs[1]->dataArr);
     free(tempVecs[2]->dataArr);
@@ -984,8 +1008,9 @@ int main(int argc, char* argv[]){
     double BrandesTime  = 0;
     time1               = seconds();
     // offset              = 1;
-
     computeBC_shareBased(csr, BCs);
+
+#pragma region trash
     // computeBC(csr, BCs);
 
     // struct stack* S_method1 = computeBC_shareBased(csr, BCs);;
@@ -1014,9 +1039,17 @@ int main(int argc, char* argv[]){
     //     free(S_method1);
     // }
     // printf("\nCorrect Stack Ans = %d\n", correctStackAnsCount);
+#pragma endregion
 
     time2               = seconds();
-    BrandesTime         = time2 - time1;
+    method1_BC_time     = time2 - time1;
+    
+    time1               = seconds();
+    computeBC(csr, BCs2);
+    time2               = seconds();
+    ori_BC_time         = time2 - time1;
+
+    BrandesTime         = method1_BC_time + ori_BC_time;
     printf("[Execution Time] %2f (s)\n", BrandesTime);
     //紀錄時間
     FILE *fptr = fopen("CostTime.txt", "a");
@@ -1024,7 +1057,9 @@ int main(int argc, char* argv[]){
         printf("[Error] OpenFile : Output.txt\n");
         exit(1);
     }
-    fprintf(fptr, "%s, %f\n", datasetPath, BrandesTime);
+    
+    fprintf(fptr, "%s, method1, %f, ori, %f\n", datasetPath, method1_BC_time, ori_BC_time);
+    // fprintf(fptr, "%s, %f\n", datasetPath, BrandesTime);
     fclose(fptr);
     //紀錄BC分數
     fptr = fopen("BC_Score.txt", "a");
