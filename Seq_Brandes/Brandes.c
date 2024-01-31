@@ -13,8 +13,12 @@
 #include "headers.h"
 #include <stdarg.h>
 // #define DEBUG
+// #define DEBUG_method2
 #define Timing
+#define CheckAns
+// #define Timing_Method1_And_Origin
 // #define LiveJournal_Test
+#pragma region globalVar
 int offset = 0;
 int nextBFS = 0;
 
@@ -39,6 +43,7 @@ double method1_backward_traverseTime            = 0;
 double method1_memory_reset                     = 0;
 
 double ori_BC_time                              = 0;
+#pragma endregion
 
 struct stack{
     int top;
@@ -127,33 +132,6 @@ inline void stackPushNode_shared(struct stack* _S, int _nodeID, int _prevTopDist
 inline void stackPushNeighbor(struct stack* _S, int _nodeID, int _predecessor){
     vAppend(_S->predecessors[_nodeID], _predecessor);
 }
-
-// struct vVector** InitLevelRecords(int _elementSize){
-//     struct vVector** LevelRecords = (struct vVector**)malloc(sizeof(struct vVector*) * _elementSize);
-//     for(int i = 0 ; i < _elementSize ; i ++){
-//         LevelRecords[i] = InitvVector();
-//     }
-//     return LevelRecords;
-// }
-
-// inline void pushLevelNode(struct stack* _S, int _nodeID, int _dist){
-//     if(_S->maxLevel < _dist)
-//         _S->maxLevel = _dist;
-//     vAppend(_S->levelRecords[_dist], _nodeID);
-
-//     #ifndef Timing
-//     #ifdef DEBUG
-//     printf("push %d to nextBFS level %d\n", _nodeID, _dist);
-//     #endif
-//     #endif
-// }
-
-// void resetLevelRecords(struct stack* _S){
-//     for(int i = 0 ; i <= _S->maxLevel ; i ++){
-//         _S->levelRecords[i]->tail = -1;
-//     }
-//     _S->maxLevel = 0;
-// }
 
 /**
  * @brief 返回Stack Top node的vector of predecessors
@@ -254,7 +232,9 @@ void computeBC(struct CSR* _csr, float* _BCs){
     #ifdef LiveJournal_Test
     double time1 = seconds();
     #else
-    nextBFS = _csr->startNodeID;
+        #ifndef CheckAns
+        nextBFS = _csr->startNodeID;
+        #endif
     #endif
 
     for(int sourceID = nextBFS; sourceID <= _csr->endNodeID ; sourceID ++){
@@ -339,6 +319,10 @@ void computeBC(struct CSR* _csr, float* _BCs){
         #ifdef LiveJournal_Test
         break;
         #endif
+        
+        #ifdef CheckAns
+        break;
+        #endif
     }
 
     #ifdef LiveJournal_Test
@@ -353,22 +337,26 @@ void computeBC(struct CSR* _csr, float* _BCs){
     }
     #endif
 
-    free(numberOfSP_arr);
-    // numberOfSP_arr_next_ori = numberOfSP_arr;
-    free(dependencies_arr);
-    free(dist_arr);
-    // dist_arr_next_ori = dist_arr;
 
+    free(dependencies_arr);
     free(Q->dataArr);
     free(Q);
-    for(int i = 0 ; i < _csr->csrVSize ; i ++){
-        free(S->predecessors[i]->dataArr);
-        free(S->predecessors[i]);
-    }
-    free(S->nodeIDs);
-    free(S->predecessors);
-    free(S);
-    // S_ori = S;
+
+    #ifndef CheckAns
+    free(numberOfSP_arr);
+    free(dist_arr);
+    // for(int i = 0 ; i < _csr->csrVSize ; i ++){
+    //     free(S->predecessors[i]->dataArr);
+    //     free(S->predecessors[i]);
+    // }
+    // free(S->nodeIDs);
+    // free(S->predecessors);
+    // free(S);
+    #else
+    numberOfSP_arr_next_ori = numberOfSP_arr;
+    dist_arr_next_ori       = dist_arr;
+    S_ori                   = S;
+    #endif
 }
 
 void computeBC_shareBased(struct CSR* _csr, float* _BCs){
@@ -840,15 +828,806 @@ void computeBC_shareBased(struct CSR* _csr, float* _BCs){
     free(S_next->predecessors);
     free(S_next);
 }
+
+void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
+    #ifdef DEBUG_method2
+    showCSR(_csr);
+    #endif
+    //malloc arrays for sourceID
+    float* numberOfSP_arr   = (float*)calloc(sizeof(float), _csr->csrVSize);
+    float* dependencies_arr = (float*)calloc(sizeof(float), _csr->csrVSize);
+    int* dist_arr           = (int*)calloc(sizeof(int), _csr->csrVSize);
+    struct stack* S         = initStack(_csr->csrVSize);
+    //malloc arrays for nextBFS
+    float* numberOfSP_arr_next      = (float*)calloc(sizeof(float), _csr->csrVSize);
+    float* dependencies_arr_next    = (float*)calloc(sizeof(float), _csr->csrVSize);
+    int* dist_arr_next              = (int*)calloc(sizeof(int), _csr->csrVSize);
+    struct stack* S_next            = initStack(_csr->csrVSize);
+    //for BFS traverse
+    struct qQueue* Q        = InitqQueue();
+    struct qQueue* Q_next   = InitqQueue();
+    qInitResize(Q, _csr->csrVSize);
+    qInitResize(Q_next, _csr->csrVSize);
+
+    //When a nodes x forward and backward traverse are done, the nodesDone[x] = 1, else nodesDone[x] = 0
+    int* nodesDone                  = (int*)calloc(sizeof(int), _csr->csrVSize);
+    int* relations                  = (int*)calloc(sizeof(int), _csr->csrVSize);
+
+    int minDegreeNeighborID = -1;
+    int neighborID          = -1;
+    for(int sourceID = 3 ; sourceID <= _csr->endNodeID ; sourceID ++){
+        if(nodesDone[sourceID] == 1){continue;}
+        nodesDone[sourceID] = 1;
+
+        //reset arrays for sourceID
+        memset(numberOfSP_arr, 0, sizeof(float) * _csr->csrVSize);
+        memset(dependencies_arr, 0, sizeof(float) * _csr->csrVSize);
+        memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
+        memset(relations, 0, sizeof(int) * _csr->csrVSize);
+        resetStack(S);
+        resetQueue(Q);
+
+        numberOfSP_arr[sourceID]    = 1;
+        dist_arr[sourceID]          = 0;
+
+        minDegreeNeighborID = -1;
+        //Find nextBfsID
+        for(int neighborIndex = _csr->csrV[sourceID] ; neighborIndex < _csr->csrV[sourceID + 1] ; neighborIndex ++){
+            neighborID = _csr->csrE[neighborIndex];
+        
+            if(minDegreeNeighborID == -1 && _csr->csrNodesDegree[neighborID] != 1 && nodesDone[neighborID] == 0){
+                minDegreeNeighborID = neighborID;
+                //for test
+                nextBFS = minDegreeNeighborID;
+
+                #ifdef DEBUG_method2
+                printf("nextBFS = %d\n", minDegreeNeighborID);
+                #endif
+
+                nodesDone[minDegreeNeighborID]              = 1;
+
+                //reset arrays for nextBfsID
+                memset(numberOfSP_arr_next, 0, sizeof(float) * _csr->csrVSize);
+                memset(dependencies_arr_next, 0, sizeof(float) * _csr->csrVSize);
+                memset(dist_arr_next, -1, sizeof(int) * _csr->csrVSize);
+                resetStack(S_next);
+                
+                //init shared node info in nextBFS
+                dist_arr_next[minDegreeNeighborID]          = 0;
+                numberOfSP_arr_next[minDegreeNeighborID]    = 1;
+                relations[minDegreeNeighborID]              = 1;
+                //init sourceID info in nextBFS
+                dist_arr_next[sourceID]                     = 1;
+                // numberOfSP_arr_next[sourceID]               = 1;
+                relations[sourceID]                         = 0;
+                // stackPushNode(S_next, sourceID);
+                // stackPushNeighbor(S_next, sourceID, minDegreeNeighborID);
+
+                //push minDegreeNeighborID into Q_next
+                // qPushBack(Q, minDegreeNeighborID);
+                qPushBack(Q_next, minDegreeNeighborID);
+
+                //Let minDegreeNeighbor be the first node of Q
+                // swap(&(Q->dataArr[0]), &(Q->dataArr[Q->rear]));
+                //update info of minDegreeNeighborID in originBFS
+                dist_arr[minDegreeNeighborID]       = 1;
+                numberOfSP_arr[minDegreeNeighborID] = 1;
+                stackPushNode(S, minDegreeNeighborID);
+                stackPushNeighbor(S, minDegreeNeighborID, sourceID);
+
+            }
+            else{
+                //push other neighbors into Q too
+                // qPushBack(Q, neighborID);
+                //update other neighbors info in originBFS
+                dist_arr[neighborID]        = 1;
+                #ifdef DEBUG_method2
+                printf("dist[%d] = %d\n", neighborID, dist_arr[neighborID]);
+                #endif
+                numberOfSP_arr[neighborID]  = 1;
+                stackPushNeighbor(S, neighborID, sourceID);
+            }
+        }
+        for(int neighborIndex = _csr->csrV[minDegreeNeighborID] ; neighborIndex < _csr->csrV[minDegreeNeighborID + 1] ; neighborIndex ++){
+            neighborID = _csr->csrE[neighborIndex];
+            if(neighborID == sourceID){continue;}
+            if(dist_arr[neighborID] == 1){
+                qPushBack(Q_next, neighborID);
+                relations[neighborID]       = 1;
+                dist_arr_next[neighborID]   = 1;
+            }
+        }
+        for(int neighborIndex = _csr->csrV[sourceID] ; neighborIndex < _csr->csrV[sourceID + 1] ; neighborIndex ++){
+            neighborID = _csr->csrE[neighborIndex];
+            if(dist_arr_next[neighborID] == -1){
+                qPushBack(Q, neighborID);
+            }
+        }
+        
+
+        #ifdef DEBUG_method2
+        printf("Q :\n");
+        for(int i = 0 ; i <= Q->rear ; i ++){
+            printf("Q[%d] = %d\n", i, Q->dataArr[i]);
+        }
+        printf("\n");
+        printf("Q_next :\n");
+        for(int i = 0 ; i <= Q_next->rear ; i ++){
+            printf("Q_next[%d] = %d\n", i, Q_next->dataArr[i]);
+        }
+        printf("\n");
+        #endif
+        
+        
+        //If Q is empty, it means the nextBFS(source) is not found.
+        //Thus, the sourceID should be push into Q to perform ordinary BFS.
+        // if(qIsEmpty(Q)){
+        //     printf("Q is empty at beginning!!\n");
+        //     qPushBack(Q, sourceID);
+        // }
+        
+        //Forward Traverse
+        register int currentNodeID  = -1;
+        register int neighborNodeID = -1;
+        register int tempRear       = -1;
+        register int tempQ_RearID   = -1;
+
+        int checkSource = 9541;
+        int test1       = 150;
+        int test2       = 29135;
+        int test3       = 39123;
+        
+        while(!qIsEmpty(Q_next) || !qIsEmpty(Q)){
+
+            tempQ_RearID = Q->dataArr[Q->rear];
+            while(!qIsEmpty(Q_next)){
+                currentNodeID = qPopFront(Q_next);
+                if(dist_arr[currentNodeID] > dist_arr[tempQ_RearID] && !qIsEmpty(Q)){
+                    //recovery Q_next->front
+                    Q_next->front --;
+
+                    #ifdef DEBUG_method2
+                    printf("dist[%2d] = %2d > dist[%2d] = %2d\n", currentNodeID, dist_arr[currentNodeID], tempQ_RearID, dist_arr[tempQ_RearID]);
+                    #endif
+
+                    break;
+                }
+                stackPushNode(S, currentNodeID);
+
+                #ifdef DEBUG_method2
+                printf("currentID = %2d, ", currentNodeID);
+                printf("relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                #endif
+
+                for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    #ifdef DEBUG_method2
+                    printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID]);
+                    #endif
+                    
+                    if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                        printf("=======\n");
+                        printf("[Q_N]currentID  = %d, relation = %d, dist = %d, dist_next = %d, SP = %f, SP_next %f\n", currentNodeID, relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                        printf("neighborID = %d, relation = %d, dist = %d, dist_next = %d, SP = %f, SP_next %f\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID]);
+                    }
+
+                    if(dist_arr[neighborNodeID] == -1){
+                        qPushBack(Q_next, neighborNodeID);
+                        relations[neighborNodeID]       = 1;
+                        dist_arr[neighborNodeID]        = dist_arr[currentNodeID] + 1;
+                        dist_arr_next[neighborNodeID]   = dist_arr_next[currentNodeID] + 1;
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Push] %2d to Q_next, ", neighborNodeID);
+                        printf("relation = %2d, dist = %2d, dist_next = %2d\n", relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Push to Q_next]\n");
+                        }
+                    }
+                    
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] && (dist_arr_next[neighborNodeID] == -1 || dist_arr_next[currentNodeID] + 1 < dist_arr_next[neighborNodeID])){
+                        
+                        dist_arr_next[neighborNodeID]               = dist_arr_next[currentNodeID] + 1;
+
+                        numberOfSP_arr_next[neighborNodeID]         = 0;
+
+                        S_next->predecessors[neighborNodeID]->tail  = -1;
+
+                        #ifdef DEBUG_method2
+                        printf("\t\tFind same level black node %2d\n", neighborNodeID);
+                        printf("\t\t[Reset_next] %2d reset next info, and dist_next = %2d\n", neighborNodeID, dist_arr_next[neighborNodeID]);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Find same level black node] Reset %2d next info\n");
+                        }
+
+                        if(dist_arr[neighborNodeID] == dist_arr_next[neighborNodeID]){
+                            relations[neighborNodeID] = 2;
+                            
+                            #ifdef DEBUG_method2
+                            printf("\t\t[relation] neighborNodeID %2d, relation = %2d\n", neighborNodeID, relations[neighborNodeID]);
+                            #endif
+                            if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                                printf("\t[relation]\n");
+                            }
+                        }
+                    }
+
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                        numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                        stackPushNeighbor(S, neighborNodeID, currentNodeID);
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update 0] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                        printf("SP = %2f, add Pred %2d\n", numberOfSP_arr[neighborNodeID], currentNodeID);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Update 0]\n");
+                        }
+                    }
+
+                    if(dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1){
+                        numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                        stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update 1] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                        printf("SP_next = %2f, add Pred_next %2d\n", numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Update 1]\n");
+                        }
+                    }
+                }
+            }
+
+            
+            #ifdef DEBUG_method2
+            printf("Q_next break!!\n");
+            #endif
+
+            tempRear = Q->rear + 1;
+            while(Q->front < tempRear){
+                currentNodeID = qPopFront(Q);
+                stackPushNode(S, currentNodeID);
+
+                #ifdef DEBUG_method2
+                printf("currentID = %2d, ", currentNodeID);
+                printf("relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                #endif
+
+                for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    #ifdef DEBUG_method2
+                    printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID]);
+                    #endif
+                    
+                    if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3) ){
+                        printf("======\n");
+                        printf("[Q_S]currentID  = %d, relation = %d, dist = %d, dist_next = %d, SP = %f, SP_next %f\n", currentNodeID, relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                        printf("neighborID = %d, relation = %d, dist = %d, dist_next = %d, SP = %f, SP_next %f\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID]);
+                    }
+
+                    if(dist_arr_next[neighborNodeID] != -1 && (dist_arr_next[currentNodeID] == -1 || dist_arr_next[currentNodeID] > dist_arr_next[neighborNodeID] + 1)){
+                        //set relations
+                        // relations[currentNodeID]                   = 2;
+                        //set dist_next[currentNodeID]
+                        dist_arr_next[currentNodeID]                = dist_arr_next[neighborNodeID] + 1;
+                        //reset SP_next[currentNodeID]
+                        numberOfSP_arr_next[currentNodeID]          = 0;
+                        //reset predecessors vector of currentNodeID
+                        S_next->predecessors[currentNodeID]->tail   = -1;
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Reset_next] %2d reset next info, and dist_next = %2d\n", currentNodeID, dist_arr_next[currentNodeID]);
+                        #endif
+
+                        // if(dist_arr[currentNodeID] == dist_arr_next[currentNodeID]){
+                        //     relations[currentNodeID] = 2;
+
+                        //     #ifdef DEBUG_method2
+                        //     printf("\t\t[relation] node %2d, relation = %2d\n", currentNodeID, relations[currentNodeID]);
+                        //     #endif
+                        // }
+
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Reset_next]\n");
+                        }
+                    }
+                    
+                    if(relations[neighborNodeID] == 0 && (dist_arr_next[currentNodeID] == dist_arr_next[neighborNodeID] + 1)){ //pull_update black : when dist_next[current] == dist_next[neighbor]
+                        numberOfSP_arr_next[currentNodeID] += numberOfSP_arr_next[neighborNodeID];
+                        stackPushNeighbor(S_next, currentNodeID, neighborNodeID);
+                        
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update 2] node %2d, SP_next = %2f, add Pred_next %2d\n", currentNodeID, numberOfSP_arr_next[currentNodeID], neighborNodeID);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Update 2]\n");
+                        }
+                    }
+                    else if(relations[neighborNodeID] == 1 && (dist_arr_next[currentNodeID] + 1 == dist_arr_next[neighborNodeID])){ //push_update red
+                        numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                        stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+                        
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update 4] node %2d, SP_next = %2f, add Pred_next %2d\n", neighborNodeID, numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Update 4]\n");
+                        }
+                    }
+
+                    if(dist_arr[neighborNodeID] == -1){
+                        qPushBack(Q, neighborNodeID);
+                        dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Push] %2d to Q, ", neighborNodeID);
+                        printf("relation = %2d, dist = %2d, dist_next = %2d\n", relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                        #endif
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Push to Q]\n");
+                        }
+                    }
+
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                        numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                        stackPushNeighbor(S, neighborNodeID, currentNodeID);
+                        
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update 3] node %2d, SP = %2f, add Pred %2d\n", neighborNodeID, numberOfSP_arr[neighborNodeID], currentNodeID);
+                        #endif
+
+                        if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                            printf("\t[Update 3]\n");
+                        }
+                    }
+
+                    #pragma region newCode
+                    if(relations[currentNodeID] == 2){
+
+                        if(dist_arr_next[neighborNodeID] == -1){
+                            dist_arr_next[neighborNodeID] = dist_arr_next[currentNodeID] + 1;
+                            
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Update 5] node %2d, relation = %2d, dist_next = %2d\n", neighborNodeID, relations[neighborNodeID], dist_arr_next[neighborNodeID]);
+                            #endif
+                            if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                                printf("\t[Update 5]\n");
+                            }
+                        }
+
+                        if(relations[neighborNodeID] == 0 && (dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1)){
+                            numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                            stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Update 6] node %2d, SP_next = %2f, add Pred %2d\n", neighborNodeID, numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                            #endif
+                            if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                                printf("\t[Update 6]\n");
+                            }
+                        }
+                    }
+                    #pragma endregion
+                }
+            }
+            #ifdef DEBUG_method2
+            printf("Q break!!\n");
+            #endif
+        }//outer while loop
+        
+/*
+        while(!qIsEmpty(Q_next) || !qIsEmpty(Q)){
+            tempQ_RearID = Q->dataArr[Q->rear];
+            while(!qIsEmpty(Q_next)){
+                currentNodeID = qPopFront(Q_next);
+
+                if(dist_arr[currentNodeID] > dist_arr[tempQ_RearID]){
+                    #ifdef DEBUG_method2
+                    printf("dist[%2d] = %2d > dist[%2d] = %2d\n", currentNodeID, dist_arr[currentNodeID], tempQ_RearID, dist_arr[tempQ_RearID]);
+                    #endif
+                    
+                    Q_next->front --;
+                    break;
+                }
+
+                stackPushNode(S, currentNodeID);
+
+                
+                
+                
+                if(relations[currentNodeID] == 1){
+                    for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                        neighborNodeID = _csr->csrE[neighborIndex];
+                        
+                        #ifdef DEBUG_method2
+                        printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                        #endif
+
+                        if(dist_arr[neighborNodeID] == -1){
+                            qPushBack(Q_next, neighborNodeID);
+                            dist_arr[neighborNodeID]        = dist_arr[currentNodeID] + 1;
+                            dist_arr_next[neighborNodeID]   = dist_arr_next[currentNodeID] + 1;
+                            relations[neighborNodeID]       = 1;
+                            
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Push] %2d to Q_next, ", neighborNodeID);
+                            printf("relation = %2d, dist = %2d, dist_next = %2d\n", relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                            #endif
+                        }
+                        else if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] && dist_arr_next[neighborNodeID] == -1){
+                            qPushBack(Q_next, neighborNodeID);
+                            dist_arr_next[neighborNodeID]   = dist_arr_next[currentNodeID] + 1;
+                            relations[neighborNodeID]       = 2;
+                            
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Push] %2d to Q_next, ", neighborNodeID);
+                            printf("relation = %2d, dist = %2d, dist_next = %2d\n", relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                            #endif
+                        }
+
+                        // #ifdef DEBUG_method2
+                        // printf("\t\t[Update] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                        // #endif
+                        if(relations[neighborNodeID] > 0 && dist_arr[neighborNodeID] >= dist_arr[currentNodeID]){
+                            if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                                numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                                stackPushNeighbor(S, neighborNodeID, currentNodeID);
+                                printf("\t\t[Update 2] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                                printf("SP = %2f, add Pred %2d\n", numberOfSP_arr[neighborNodeID], currentNodeID);
+                            }
+
+                            if(dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1){
+                                numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                                stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+                                printf("\t\t[Update 3] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                                printf("SP_next = %2f, add Pred_next %2d\n", numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                            }
+                        }
+                    }
+                }
+
+                else if(relations[currentNodeID] == 2){
+                    for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                        neighborNodeID = _csr->csrE[neighborIndex];
+
+                        #ifdef DEBUG_method2
+                        printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                        #endif
+
+                        if(dist_arr[neighborNodeID] == -1){
+                            qPushBack(Q_next, neighborNodeID);
+                            dist_arr[neighborNodeID]        = dist_arr[currentNodeID] + 1;
+                            dist_arr_next[neighborNodeID]   = dist_arr_next[currentNodeID] + 1;
+                            relations[neighborNodeID]       = 1;
+
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Push] %2d to Q_next, ", neighborNodeID);
+                            printf("relation = %2d, dist = %2d, dist_next = %2d\n", relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                            #endif
+                        }
+
+                        if(dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1){
+                            numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                            stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+                            printf("\t\t[Update 5] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                            printf("SP_next = %2f, add Pred_next = %2d\n", numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                        }
+
+                        if(relations[neighborNodeID] == 2){
+                            
+                        }
+
+                        if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                            numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                            stackPushNeighbor(S, neighborNodeID, currentNodeID);
+                            printf("\t\t[Update 4] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                            printf("SP = %2f, add Pred %2d\n", numberOfSP_arr[neighborNodeID], currentNodeID);
+                        }
+                    }
+                }
+            }
+            
+            printf("Q_next break!\n");
+            
+            tempRear = Q->rear + 1;
+            while(Q->front < tempRear){
+                currentNodeID = qPopFront(Q);
+
+                if(relations[currentNodeID] > 0){continue;}
+
+                #ifdef DEBUG_method2
+                printf("currentID = %2d, ", currentNodeID);
+                printf("relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                #endif
+                
+                stackPushNode(S, currentNodeID);
+                
+                for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    #ifdef DEBUG_method2
+                    printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID]);
+                    #endif
+
+                    if(relations[neighborNodeID] > 0){ //pull nextBFS info
+                        if(dist_arr_next[currentNodeID] == -1 || dist_arr_next[currentNodeID] > dist_arr_next[neighborNodeID] + 1){
+                            //set relations
+                            relations[currentNodeID]                   = 2;
+                            //set dist_next[currentNodeID]
+                            dist_arr_next[currentNodeID]                = dist_arr_next[neighborNodeID] + 1;
+                            //reset SP_next[currentNodeID]
+                            numberOfSP_arr_next[currentNodeID]          = 0;
+                            //reset predecessors vector of currentNodeID
+                            S_next->predecessors[currentNodeID]->tail   = -1;
+
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Reset_next] %2d reset next info, and dist_next = %2d\n", currentNodeID, dist_arr_next[currentNodeID]);
+                            #endif
+                        }
+                        
+                        if(dist_arr_next[currentNodeID] == dist_arr_next[neighborNodeID] + 1){
+                            numberOfSP_arr_next[currentNodeID] += numberOfSP_arr_next[neighborNodeID];
+                            stackPushNeighbor(S_next, currentNodeID, neighborNodeID);
+                            
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Update 1] node %2d, SP_next = %2f, add Pred_next %2d\n", currentNodeID, numberOfSP_arr_next[currentNodeID], neighborNodeID);
+                            #endif
+                        }
+                        
+                    }
+
+                    else{ //push oriBFS info
+                        if(dist_arr[neighborNodeID] == -1){
+                            qPushBack(Q, neighborNodeID);
+                            dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+                            
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Push] %2d to Q, ", neighborNodeID);
+                            printf("relation = %2d, dist = %2d, dist_next = %2d\n", relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                            #endif
+                        }
+                    }
+                    
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                        numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                        stackPushNeighbor(S, neighborNodeID, currentNodeID);
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update 0] node %2d, SP = %2f, add Pred %2d\n", neighborNodeID, numberOfSP_arr[neighborNodeID], currentNodeID);
+                        #endif
+                    }
+                }
+                
+            }
+            printf("Q break!\n");
+
+        }
+*/
+        /*
+        while(!qIsEmpty(Q)){
+            currentNodeID = qPopFront(Q);
+            #ifdef DEBUG_method2
+            printf("currentID = %2d, ", currentNodeID);
+            #endif
+            stackPushNode(S, currentNodeID);
+
+            if(relations[currentNodeID] == 1){ //red
+                #ifdef DEBUG_method2
+                printf("relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                #endif
+                for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID              = _csr->csrE[neighborIndex];
+                    
+                    #ifdef DEBUG_method2
+                    printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                    #endif
+                    
+                    if(dist_arr[neighborNodeID] == -1){
+                        qPushBack(Q, neighborNodeID);
+                         
+                        relations[neighborNodeID]           = 1;
+                        dist_arr[neighborNodeID]            = dist_arr[currentNodeID] + 1;
+                        dist_arr_next[neighborNodeID]       = dist_arr_next[currentNodeID] + 1;
+                        
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Push] %2d to Q, relation= %2d, dist = %2d, dist_next = %2d\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                        #endif
+                    }
+                    
+                    if((dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1) && dist_arr[neighborNodeID] >= dist_arr[currentNodeID]){
+                        numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                        stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update_1]relation node %2d, update SP_next => %2f, add pred_next %2d\n", neighborNodeID, numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                        #endif
+                    }
+                    // else if(dist_arr_next[neighborNodeID] == -1){//for purple node
+                    //     //dist_arr[neighborNodeID] == dist_arr[currentNodeID] &&     
+                    //     relations[neighborNodeID]           = 3;
+
+                    //     dist_arr_next[neighborNodeID]       = dist_arr_next[currentNodeID] + 1;
+                    //     numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                    //     stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+                        
+                    //     #ifdef DEBUG_method2
+                    //     printf("\t\t[Update_3] same_level node %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f, add pred_next %2d\n", neighborNodeID, dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                    //     #endif
+
+                    // }
+
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                        
+                        numberOfSP_arr[neighborNodeID]      += numberOfSP_arr[currentNodeID];
+                        stackPushNeighbor(S, neighborNodeID, currentNodeID);
+                        
+                    
+                        #ifdef DEBUG_method2
+                        printf("\t\t[Update_0]relation node %2d, update SP => %2f, add pred %2d\n", neighborNodeID, numberOfSP_arr[neighborNodeID], currentNodeID);
+                        #endif
+                    }
+
+
+                }
+            }
+            else{ //black
+                #ifdef DEBUG_method2
+                printf("relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", relations[currentNodeID], dist_arr[currentNodeID], dist_arr_next[currentNodeID], numberOfSP_arr[currentNodeID], numberOfSP_arr_next[currentNodeID]);
+                #endif
+
+                for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+                    
+                    #ifdef DEBUG_method2
+                    printf("\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %2d, SP = %2f, SP_next = %2f\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID], numberOfSP_arr[neighborNodeID], numberOfSP_arr_next[neighborNodeID]);
+                    #endif
+
+                    if(relations[neighborNodeID] == 0){
+                        //visit node which relation == 0
+                        if(dist_arr[neighborNodeID] == -1){
+                            qPushBack(Q, neighborNodeID);
+
+                            dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Push] %2d to Q, relation = %2d, dist = %2d, dist_next = %2d\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                            #endif
+                        }
+                        if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+
+                            numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                            stackPushNeighbor(S, neighborNodeID, currentNodeID);
+
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Update_0]normal node %2d, update SP => %2f, add pred %2d\n", neighborNodeID, numberOfSP_arr[neighborNodeID], currentNodeID);
+                            #endif
+                        }
+                    }
+                    else{
+                        
+                        //Check if any dist_arr_next[neighborNodeID] == -1
+                        // if(dist_arr_next[neighborNodeID] == -1){
+                        //     printf("[Dist problem] neighbor %2d, dist_next = %2d\n", neighborNodeID, dist_arr_next[neighborNodeID]);
+                        //     exit(1);
+                        // }          
+
+                        //visit node which relation is not 0 
+                        #ifdef DEBUG_method2
+                        printf("\t\tneighbor %2d, relation = %2d, dist = %2d, dist_next = %d\n", neighborNodeID, relations[neighborNodeID], dist_arr[neighborNodeID], dist_arr_next[neighborNodeID]);
+                        #endif
+                        //black(current) update rea(neighbor) SP, pred
+                        if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+
+                            numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                            stackPushNeighbor(S, neighborNodeID, currentNodeID);
+
+                            #ifdef DEBUG_method2
+                            printf("\t\t[Update_normal_2]normal node %2d, update SP => %2f, add pred %2d\n", neighborNodeID, numberOfSP_arr[neighborNodeID], currentNodeID);
+                            #endif
+                        }
+                        //red(neighbor) update black(current) dist, and reset pred_next and SP_next of black(cuurent)
+                        if(relations[currentNodeID] != 3){
+                            if(dist_arr_next[currentNodeID] == -1 || dist_arr_next[currentNodeID] > dist_arr_next[neighborNodeID] + 1){
+                                //update dist_arr_next[currentNodeID]
+                                dist_arr_next[currentNodeID]                = dist_arr_next[neighborNodeID] + 1;
+                                //reset predecessors vector of currentNodeID
+                                S_next->predecessors[currentNodeID]->tail   = -1;
+                                //reset numberOfSP_next of currentNodeID
+                                numberOfSP_arr_next[currentNodeID]          = 0;
+                                //update relation of currentNodeID
+                                relations[currentNodeID]                    = 2;
+                                
+                                #ifdef DEBUG_method2
+                                printf("\t\t[Reset_Next]Find %2d with shorter dist_next %2d, reset %2d's SP and pred\n", neighborNodeID, dist_arr_next[neighborNodeID], currentNodeID);
+                                #endif
+                            }
+                            //red(neighbor) update black(current) SP_next, pred_next
+                            if(dist_arr_next[currentNodeID] == dist_arr_next[neighborNodeID] + 1){
+                                //update SP_next and pred_next of currentNodeID
+                                numberOfSP_arr_next[currentNodeID] += numberOfSP_arr_next[neighborNodeID];
+                                stackPushNeighbor(S_next, currentNodeID, neighborNodeID);
+
+                                #ifdef DEBUG_method2
+                                printf("\t\t[Update_2] currentNodeID %2d's SP_next => %2f, add pred %2d\n", currentNodeID, numberOfSP_arr_next[currentNodeID], neighborNodeID);
+                                #endif
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        */
+        
+        
+        #ifdef CheckAns
+        nextBFS = sourceID;
+        computeBC(_csr, BCs_ori);
+        checkStackans2(S_ori, S, _csr);
+        check_SPandDist_Ans2(_csr, numberOfSP_arr, dist_arr);
+
+        nextBFS = minDegreeNeighborID;
+        computeBC(_csr, BCs_ori);
+        checkStackans2(S_ori, S_next, _csr);
+        check_SPandDist_Ans2(_csr, numberOfSP_arr_next, dist_arr_next);
+        break; 
+        #endif
+        
+        // break;
+
+    }//The most outer for loop
+
+    
+    free(numberOfSP_arr);
+    free(dependencies_arr);
+    free(dist_arr);
+    free(numberOfSP_arr_next);
+    free(dependencies_arr_next);
+    free(dist_arr_next);
+    free(Q->dataArr);
+    free(Q);
+    free(Q_next->dataArr);
+    free(Q_next);
+    
+    for(int i = 0 ; i < _csr->csrVSize ; i ++){
+        free(S->predecessors[i]->dataArr);
+        free(S->predecessors[i]);
+        free(S_next->predecessors[i]->dataArr);
+        free(S_next->predecessors[i]);
+    }
+    free(S->nodeIDs);
+    free(S_next->nodeIDs);
+    free(S);
+    free(S_next);
+}
+
 int checkStackans2(struct stack* S_origin, struct stack* S_method1, struct CSR* _csr){
     // printf("\n\n");
-    printf("Check Ans...\n");
+    printf("Check Ans...%2d\n", nextBFS);
     int* existArr = calloc(_csr->csrVSize, sizeof(int));
     for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
         memset(existArr, 0, sizeof(int) * _csr->startNodeID);
         // printf("nodeID = %d : \n", nodeID);
         if(S_origin->predecessors[nodeID]->tail != S_method1->predecessors[nodeID]->tail){
             printf("predecessor[%d] : Ori.tail = %d, method1.tail = %d => len diff\n", nodeID, S_origin->predecessors[nodeID]->tail, S_method1->predecessors[nodeID]->tail);
+            printf("ori[%d].pred     = {", nodeID);
+            for(int predIndex = 0 ; predIndex <= S_origin->predecessors[nodeID]->tail ; predIndex ++){
+                int predID = S_origin->predecessors[nodeID]->dataArr[predIndex];
+                printf("%d, ", predID);
+            }
+            printf("}\n");
+            printf("method1[%d].pred = {", nodeID);
+            for(int predIndex = 0 ; predIndex <= S_method1->predecessors[nodeID]->tail ; predIndex ++){
+                int predID = S_method1->predecessors[nodeID]->dataArr[predIndex];
+                printf("%d, ", predID);
+            }
+            printf("}\n");
             exit(1);
         }
         
@@ -1006,6 +1785,9 @@ int main(int argc, char* argv[]){
     double time1        = 0;
     double time2        = 0;
     double BrandesTime  = 0;
+
+
+    #ifdef Timing_Method1_And_Origin
     time1               = seconds();
     // offset              = 1;
     computeBC_shareBased(csr, BCs);
@@ -1048,7 +1830,16 @@ int main(int argc, char* argv[]){
     computeBC(csr, BCs2);
     time2               = seconds();
     ori_BC_time         = time2 - time1;
+    #endif
 
+    #ifdef LiveJournal_Test
+    computeBC_shareBased(csr, BCs);
+    #endif
+    for(offset = csr->startNodeID ; offset <= csr->endNodeID ; offset ++){
+        printf("SourceID = %2d!!!!!\n", offset);
+        computeBC_shareBased2(csr, BCs);
+    }
+    // computeBC_shareBased2(csr, BCs);
     BrandesTime         = method1_BC_time + ori_BC_time;
     printf("[Execution Time] %2f (s)\n", BrandesTime);
     //紀錄時間
@@ -1062,14 +1853,15 @@ int main(int argc, char* argv[]){
     // fprintf(fptr, "%s, %f\n", datasetPath, BrandesTime);
     fclose(fptr);
     //紀錄BC分數
-    fptr = fopen("BC_Score.txt", "a");
-    if(fptr == NULL){
-        printf("[Error] OpenFile : Output.txt\n");
-        exit(1);
-    }
-    fprintf(fptr, "%d %d\n", csr->startNodeID, csr->endNodeID);
-    for(int node = csr->startNodeID ; node <= csr->endNodeID ; node ++){
-        fprintf(fptr, "%f\n", BCs[node]);
-    }
-    fclose(fptr);
+
+    // fptr = fopen("BC_Score.txt", "a");
+    // if(fptr == NULL){
+    //     printf("[Error] OpenFile : Output.txt\n");
+    //     exit(1);
+    // }
+    // fprintf(fptr, "%d %d\n", csr->startNodeID, csr->endNodeID);
+    // for(int node = csr->startNodeID ; node <= csr->endNodeID ; node ++){
+    //     fprintf(fptr, "%f\n", BCs[node]);
+    // }
+    // fclose(fptr);
 }
