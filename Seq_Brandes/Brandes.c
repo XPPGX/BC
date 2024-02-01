@@ -1400,7 +1400,7 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
 
         #ifdef LiveJournal_Test
         time2 = seconds();
-        printf("[Execution Time] method2_BC(%d, %d) = %f(s)\n", sourceID, minDegreeNeighborID);
+        printf("[Execution Time] method2_BC(%d, %d) = %f(s)\n", sourceID, minDegreeNeighborID, time2 - time1);
         method2_BC_time += time2 - time1;
         #endif
         // break;
@@ -1700,7 +1700,7 @@ int main(int argc, char* argv[]){
     #endif
 
     #ifdef LiveJournal_Test
-    computeBC_shareBased(csr, BCs);
+    // computeBC_shareBased(csr, BCs);
     #endif
     // for(offset = csr->startNodeID ; offset <= csr->endNodeID ; offset ++){
     //     printf("SourceID = %2d!!!!!\n", offset);
