@@ -96,6 +96,7 @@ struct CSR* createCSR(struct Graph* _adjlist){
     printf("csr->csrESize = %d\n", csr->csrESize);
     printf("csr->degreeOneNum = %d\n", csr->degreeOneNodesQ->rear + 1);
     printf("csr->startAtZero = %d\n", csr->startAtZero);
+    printf("csr->maxDegree = %d\n", csr->maxDegree);
     printf("[Success] CreateCSR finish\n");
     printf("==============================\n");
     return csr;
