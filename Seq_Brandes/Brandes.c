@@ -15,9 +15,9 @@
 // #define DEBUG
 // #define DEBUG_method2
 #define Timing
-// #define CheckAns
+#define CheckAns
 // #define Timing_Method1_And_Origin
-#define LiveJournal_Test
+// #define LiveJournal_Test
 #pragma region globalVar
 int offset = 0;
 int nextBFS = 0;
@@ -234,7 +234,7 @@ void computeBC(struct CSR* _csr, float* _BCs){
     
     
     #ifndef CheckAns
-    nextBFS = _csr->startNodeID;
+    // nextBFS = _csr->startNodeID;
     #endif
 
     #ifdef LiveJournal_Test
@@ -1019,7 +1019,9 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
         // int test1       = -1;
         // int test2       = -1;
         // int test3       = -1;
+        #ifdef CheckAns
         printf("source = %2d, nextBFS = %2d\n", sourceID, minDegreeNeighborID);
+        #endif
 
 #pragma region forwardTraverse
         if(minDegreeNeighborID != -1){ //When nextBFS is not empty
@@ -1077,35 +1079,7 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
                             printf("\t\t[Push(Sn)] neighbor %2d dist_next = %2d\n", neighborNodeID, dist_arr_next[neighborNodeID]);
 
                             #endif
-                            // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
-                            //     printf("\t[Push to Q_next]\n");
-                            // }
-                        }
-                        
-                        if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] && (dist_arr_next[neighborNodeID] == -1 || dist_arr_next[currentNodeID] + 1 < dist_arr_next[neighborNodeID])){
-                            
-                            dist_arr_next[neighborNodeID]               = dist_arr_next[currentNodeID] + 1;
 
-                            numberOfSP_arr_next[neighborNodeID]         = 0;
-
-                            S_next->predecessors[neighborNodeID]->tail  = -1;
-                            
-                            if(dist_arr_next[neighborNodeID] == dist_arr[neighborNodeID]){
-                                stackPushNode(S_next, neighborNodeID);
-                            }
-
-                            #ifdef DEBUG_method2
-                            printf("\t\tFind same level black node %2d\n", neighborNodeID);
-                            printf("\t\t[Reset_next] %2d reset next info, and dist_next = %2d\n", neighborNodeID, dist_arr_next[neighborNodeID]);
-                            printf("\t\t[Push(Sn)] neighbor %2d dist_next = %2d\n", neighborNodeID,  dist_arr_next[neighborNodeID]);
-                            #endif
-
-                            // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
-                            //     printf("\t[Find same level black node] Reset %2d next info\n", neighborNodeID);
-                            // }
-                        }
-
-                        if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
                             numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
                             stackPushNeighbor(S, neighborNodeID, currentNodeID);
 
@@ -1114,12 +1088,6 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
                             printf("SP = %2f, add Pred %2d\n", numberOfSP_arr[neighborNodeID], currentNodeID);
                             #endif
 
-                            // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
-                            //     printf("\t[Update 0]\n");
-                            // }
-                        }
-
-                        if(dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1){
                             numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
                             stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
 
@@ -1127,11 +1095,70 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
                             printf("\t\t[Update 1] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
                             printf("SP_next = %2f, add Pred_next %2d\n", numberOfSP_arr_next[neighborNodeID], currentNodeID);
                             #endif
-
                             // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
-                            //     printf("\t[Update 1]\n");
+                            //     printf("\t[Push to Q_next]\n");
                             // }
                         }
+                        else{
+                            if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] && (dist_arr_next[neighborNodeID] == -1 || dist_arr_next[currentNodeID] + 1 < dist_arr_next[neighborNodeID])){
+                                
+                                dist_arr_next[neighborNodeID]               = dist_arr_next[currentNodeID] + 1;
+
+                                numberOfSP_arr_next[neighborNodeID]         = 0;
+
+                                S_next->predecessors[neighborNodeID]->tail  = -1;
+                                
+                                if(dist_arr_next[neighborNodeID] == dist_arr[neighborNodeID]){
+                                    stackPushNode(S_next, neighborNodeID);
+                                }
+
+                                #ifdef DEBUG_method2
+                                printf("\t\tFind same level black node %2d\n", neighborNodeID);
+                                printf("\t\t[Reset_next] %2d reset next info, and dist_next = %2d\n", neighborNodeID, dist_arr_next[neighborNodeID]);
+                                printf("\t\t[Push(Sn)] neighbor %2d dist_next = %2d\n", neighborNodeID,  dist_arr_next[neighborNodeID]);
+                                #endif
+
+                                numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                                stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+
+                                #ifdef DEBUG_method2
+                                printf("\t\t[Update 1] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                                printf("SP_next = %2f, add Pred_next %2d\n", numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                                #endif
+                                // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                                //     printf("\t[Find same level black node] Reset %2d next info\n", neighborNodeID);
+                                // }
+                            }
+                            else{
+                                if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                                    numberOfSP_arr[neighborNodeID] += numberOfSP_arr[currentNodeID];
+                                    stackPushNeighbor(S, neighborNodeID, currentNodeID);
+
+                                    #ifdef DEBUG_method2
+                                    printf("\t\t[Update 0] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                                    printf("SP = %2f, add Pred %2d\n", numberOfSP_arr[neighborNodeID], currentNodeID);
+                                    #endif
+
+                                    // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                                    //     printf("\t[Update 0]\n");
+                                    // }
+                                }
+
+                                if(dist_arr_next[neighborNodeID] == dist_arr_next[currentNodeID] + 1){
+                                    numberOfSP_arr_next[neighborNodeID] += numberOfSP_arr_next[currentNodeID];
+                                    stackPushNeighbor(S_next, neighborNodeID, currentNodeID);
+
+                                    #ifdef DEBUG_method2
+                                    printf("\t\t[Update 1] node %2d, relation = %2d, ", neighborNodeID, relations[neighborNodeID]);
+                                    printf("SP_next = %2f, add Pred_next %2d\n", numberOfSP_arr_next[neighborNodeID], currentNodeID);
+                                    #endif
+
+                                    // if(minDegreeNeighborID == checkSource && (neighborNodeID == test1 || neighborNodeID == test2 || neighborNodeID == test3 || currentNodeID == test1 || currentNodeID == test2 || currentNodeID == test3)){
+                                    //     printf("\t[Update 1]\n");
+                                    // }
+                                }
+                            }
+                        } 
                     }
                 }
                 
@@ -1402,6 +1429,14 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
         time2 = seconds();
         printf("[Execution Time] method2_BC(%d, %d) = %f(s)\n", sourceID, minDegreeNeighborID, time2 - time1);
         method2_BC_time += time2 - time1;
+
+        //origin computeBC
+        nextBFS = sourceID;
+        computeBC(_csr, BCs_ori);
+        if(minDegreeNeighborID != -1){
+            nextBFS = minDegreeNeighborID;
+            computeBC(_csr, BCs_ori);
+        }
         #endif
         // break;
 
@@ -1700,7 +1735,7 @@ int main(int argc, char* argv[]){
     #endif
 
     #ifdef LiveJournal_Test
-    // computeBC_shareBased(csr, BCs);
+    computeBC_shareBased(csr, BCs);
     #endif
     // for(offset = csr->startNodeID ; offset <= csr->endNodeID ; offset ++){
     //     printf("SourceID = %2d!!!!!\n", offset);

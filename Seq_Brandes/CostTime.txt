@@ -142,3 +142,14 @@
 ../dataset/karate.txt, method1, 0.000000, ori, 0.000000
 ../dataset/karate.txt, method1, 0.000000, ori, 0.000000
 ../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000025
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
