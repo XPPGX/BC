@@ -1,6 +1,7 @@
 /**
  * @todo 可以用普通的arr當queue，且size = csr->csrVSize
  * @todo d1Folding完成，接下來要寫個新function執行BC computation with d1Folding
+ * @author XPPGX
 */
 
 #ifndef COMMON
@@ -42,11 +43,14 @@ double method1_additional_predecessor_handler   = 0;
 double method1_backward_traverseTime            = 0;
 double method1_memory_reset                     = 0;
 
-
 double method2_BC_time                          = 0;
-
 double ori_BC_time                              = 0;
+
+
+int tempSourceID                                = -1;
 #pragma endregion
+
+
 
 struct stack{
     int top;
@@ -109,15 +113,15 @@ inline void stackPushNode_shared(struct stack* _S, int _nodeID, int _prevTopDist
     // }
     if(_curNodeDist == _prevTopDist){
         #ifdef DEBUG
-        printf("S_next[%d] = %d, dist[%d] = %d\n", _S->top, _S->nodeIDs[_S->top], _S->nodeIDs[_S->top], _dist_arr_next[_S->nodeIDs[_S->top]]);
+        // printf("S_next[%d] = %d, dist[%d] = %d\n", _S->top, _S->nodeIDs[_S->top], _S->nodeIDs[_S->top], _dist_arr_next[_S->nodeIDs[_S->top]]);
         #endif
         return;
     } 
     
     if(_curNodeDist < _prevTopDist){
         #ifdef DEBUG
-        printf("\tS_next[%d] = %d(%d), S_next[%d] = %d(%d), curDistIndex = %d, SWAP", _S->top, _S->nodeIDs[_S->top], _dist_arr_next[_S->nodeIDs[_S->top]], _S->top - 1, _S->nodeIDs[_S->top - 1], _dist_arr_next[_S->nodeIDs[_S->top - 1]], _S->S_curDistStartIndex);
-        printf("(%d)<->(%d)\n", _S->nodeIDs[_S->top], _S->nodeIDs[_S->S_curDistStartIndex]);
+        // printf("\tS_next[%d] = %d(%d), S_next[%d] = %d(%d), curDistIndex = %d, SWAP", _S->top, _S->nodeIDs[_S->top], _dist_arr_next[_S->nodeIDs[_S->top]], _S->top - 1, _S->nodeIDs[_S->top - 1], _dist_arr_next[_S->nodeIDs[_S->top - 1]], _S->S_curDistStartIndex);
+        // printf("(%d)<->(%d)\n", _S->nodeIDs[_S->top], _S->nodeIDs[_S->S_curDistStartIndex]);
         #endif
         swap(&(_S->nodeIDs[_S->top]), &(_S->nodeIDs[_S->S_curDistStartIndex]));
         _S->S_curDistStartIndex ++;
@@ -127,7 +131,7 @@ inline void stackPushNode_shared(struct stack* _S, int _nodeID, int _prevTopDist
         // _S->S_prevDistStartIndex = _S->S_curDistStartIndex;
         _S->S_curDistStartIndex = _S->top;
         #ifdef DEBUG
-        printf("\tS_next.curIndex = %d\n", _S->S_curDistStartIndex);
+        // printf("\tS_next.curIndex = %d\n", _S->S_curDistStartIndex);
         #endif
     }
 }
@@ -209,11 +213,11 @@ inline void swapVec(struct vVector** _tempVecs, int _distChange){
 }
 
 void bit32(void *v){
-    unsigned mask=0x80000000U;
+    unsigned mask = 0x80000000U;
     unsigned value = *(unsigned*)v;
     while(mask){
         printf("%d", (mask&value)!=0U);
-        mask>>=1;
+        mask >>= 1;
     }
 }
 
@@ -838,6 +842,7 @@ void computeBC_shareBased(struct CSR* _csr, float* _BCs){
 }
 
 void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
+    showCSR(_csr);
     #ifdef DEBUG_method2
     showCSR(_csr);
     #endif
@@ -1666,6 +1671,371 @@ void computeBC_shareBased2(struct CSR* _csr, float* _BCs){
     free(S_next);
 }
 
+int* computeCC(struct CSR* _csr, float* _CCs){
+    // showCSR(_csr);
+    int* dist_arr = (int*)calloc(sizeof(int), _csr->csrVSize);
+
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, _csr->csrVSize);
+
+    double time1;
+    double time2;
+
+    int sourceID;
+    time1 = seconds();
+
+    #ifdef CheckAns
+    sourceID = tempSourceID;
+    #else
+    sourceID = _csr->startNodeID;
+    #endif
+
+    for(; sourceID <= _csr->endNodeID ; sourceID ++){
+        memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
+        resetQueue(Q);
+
+        qPushBack(Q, sourceID);
+        dist_arr[sourceID]  = 0;
+        printf("\nSourceID = %2d ...\n", sourceID);       
+        int currentNodeID   = -1;
+        int neighborNodeID  = -1;
+
+
+        while(!qIsEmpty(Q)){
+            currentNodeID = qPopFront(Q);
+            
+            // printf("%2d ===\n", currentNodeID);
+
+            for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                neighborNodeID = _csr->csrE[neighborIndex];
+                // printf("\t%2d meet %2d, dist_arr[%2d] = %2d\n", currentNodeID, neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
+                if(dist_arr[neighborNodeID] == -1){
+                    qPushBack(Q, neighborNodeID);
+                    dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+
+                    // printf("\tpush %2d to Q, dist_arr[%2d] = %2d\n", neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
+                }
+            }
+        }
+
+        for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+            _CCs[nodeID] = _CCs[nodeID] + (float)dist_arr[nodeID];
+            // printf("CC[%2d] = %2f\n", nodeID, _CCs[nodeID]);
+        }
+        #ifdef CheckAns
+        break;
+        #endif
+    }
+    time2 = seconds();
+    printf("[ExecutionTime] %2f\n", time2 - time1);
+    
+    
+    free(Q->dataArr);
+    free(Q);
+
+    // free(dist_arr);
+    return dist_arr;
+}
+
+
+/**
+ * @todo 2. handle the situation when number of neighbors of source over 32
+*/
+void computeCC_shareBased(struct CSR* _csr, float* _CCs){
+    // showCSR(_csr);
+    
+    int* dist_arr = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    int* neighbor_dist_ans = (int*)malloc(sizeof(int) * _csr->csrVSize);
+
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, _csr->csrVSize);
+
+    //record that nodes which haven't been source yet
+    int* nodeDone = (int*)calloc(sizeof(int), _csr->csrVSize);
+
+    //record nodes belongs to which neighbor of source
+    int* mapping_SI                 = (int*)malloc(sizeof(int) * 32);
+    unsigned int* sharedBitIndex    = (unsigned int*)calloc(sizeof(unsigned int), _csr->csrVSize); //for recording blue edge bitIndex
+    unsigned int* relation          = (unsigned int*)calloc(sizeof(unsigned int), _csr->csrVSize); //for recording red edge bitIndex
+    
+    for(int sourceID = _csr->startNodeID ; sourceID <= _csr->endNodeID ; sourceID ++){
+        if(nodeDone[sourceID] == 1){
+            continue;
+        }
+        nodeDone[sourceID] = 1;
+
+        printf("SourceID = %2d\n", sourceID);
+
+        memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
+        
+        resetQueue(Q);
+        
+        dist_arr[sourceID] = 0;
+        qPushBack(Q, sourceID);
+
+        register int currentNodeID  = -1;
+        register int neighborNodeID = -1;
+        register int neighborIndex  = -1;
+
+        //each neighbor mapping to bit_SI, if it haven't been source yet
+        int mappingCount = 0;
+        for(neighborIndex = _csr->csrV[sourceID] ; neighborIndex < _csr->csrV[sourceID + 1] ; neighborIndex ++){
+            neighborNodeID = _csr->csrE[neighborIndex];
+
+            if(nodeDone[neighborNodeID] == 0){
+
+                sharedBitIndex[neighborNodeID] = 1 << mappingCount;
+                mapping_SI[mappingCount] = neighborNodeID;
+
+                // printf("sharedBitIndex[%6d] = %8x,\tmapping_SI[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], mappingCount, mapping_SI[mappingCount]);
+                #ifdef DEBUG
+                printf("sharedBitIndex[%2d] = %8x,\tmapping_SI[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], mappingCount, mapping_SI[mappingCount]);
+                #endif
+                
+                mappingCount ++;
+
+                //Record to 32 bit only
+                if(mappingCount == 32){
+                    break;
+                }
+
+            }
+        }
+        
+        if(mappingCount < 3){
+            //把sharedBitIndex重設。
+            for(int mappingIndex = 0 ; mappingIndex < mappingCount ; mappingIndex ++){
+                int nodeID = mapping_SI[mappingIndex];
+                sharedBitIndex[nodeID] = 0;
+            }
+            memset(mapping_SI, 0, sizeof(int) * 32);
+
+            #pragma region Ordinary_BFS_Forward_Traverse
+
+            #ifdef DEBUG
+            printf("\n####      Source %2d Ordinary BFS Traverse      ####\n\n", sourceID);
+            #endif
+
+            while(!qIsEmpty(Q)){
+                currentNodeID = qPopFront(Q);
+
+                #ifdef DEBUG
+                printf("\tcurrentNodeID = %2d ... dist = %2d\n", currentNodeID, dist_arr[currentNodeID]);
+                #endif
+
+                for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    if(dist_arr[neighborNodeID] == -1){
+                        qPushBack(Q, neighborNodeID);
+                        dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+
+                        #ifdef DEBUG
+                        printf("\t\t[1]dist[%2d] = %2d\n", neighborNodeID, dist_arr[neighborNodeID]);
+                        #endif
+                    }
+                }
+            }
+            #pragma endregion //Ordinary_BFS_Forward_Traverse
+
+
+
+            #pragma region distAccumulation_pushBased
+            //Update CC in the way of pushing is better for parallelism because of the it will not need to wait atomic operation on single address,
+            //it can update all value in each CC address in O(1) time.
+            for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+                _CCs[nodeID] += dist_arr[nodeID];
+            }
+            #pragma endregion //distAccumulation_pushBased
+
+
+
+            #pragma region checkingDistAns
+            #ifdef CheckAns
+            CC_CheckDistAns(_csr, _CCs, sourceID, dist_arr);
+            #endif
+            #pragma endregion //checkingDistAns
+
+
+
+        }
+        else{
+
+            // if(sourceID == 5){
+            //     printf("sourceID = 5\n");
+            // }
+
+            #pragma region SourceTraverse
+            //main source traversal : for getting the dist of each node from source
+            #ifdef DEBUG
+            printf("\n####      Source %2d First traverse...      ####\n\n", sourceID);
+            #endif
+
+            while(!qIsEmpty(Q)){
+                currentNodeID = qPopFront(Q);
+
+                #ifdef DEBUG
+                printf("currentNodeID = %2d ... dist = %2d\n", currentNodeID, dist_arr[currentNodeID]);
+                #endif
+
+                
+
+                for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    if(dist_arr[neighborNodeID] == -1){//traverse new succesor and record its SI
+                        qPushBack(Q, neighborNodeID);
+                        dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+                        sharedBitIndex[neighborNodeID] |= sharedBitIndex[currentNodeID];
+
+                        #ifdef DEBUG
+                        printf("\t[1]unvisited_SI[%2d] => %2x, dist[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], neighborNodeID, dist_arr[neighborNodeID]);
+                        #endif
+                        
+                        // if(sourceID == 5 && (neighborNodeID == 4 || neighborNodeID == 6)){
+                        //     printf("\t[1]currentNodeID = %2d(dist %2d, SI %2x), neighborNodeID = %d(dist %2d, SI %2x)\n", currentNodeID, dist_arr[currentNodeID], sharedBitIndex[currentNodeID], neighborNodeID, dist_arr[neighborNodeID], sharedBitIndex[neighborNodeID]);
+                        // }
+                    }
+                    else if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){ //traverse to discovered succesor and record its SI
+                        sharedBitIndex[neighborNodeID] |= sharedBitIndex[currentNodeID];    
+                        
+                        #ifdef DEBUG
+                        printf("\t[2]visited_SI[%2d] => %2x, dist[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], neighborNodeID, dist_arr[neighborNodeID]);
+                        #endif
+
+                        // if(sourceID == 5 && (neighborNodeID == 4 || neighborNodeID == 6)){
+                        //     printf("\t[2]currentNodeID = %2d(dist %2d, SI %2x), neighborNodeID = %d(dist %2d, SI %2x)\n", currentNodeID, dist_arr[currentNodeID], sharedBitIndex[currentNodeID], neighborNodeID, dist_arr[neighborNodeID], sharedBitIndex[neighborNodeID]);
+                        // }
+                    }
+                    else if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] && currentNodeID < neighborNodeID){ //traverse to discovered neighbor which is at same level as currentNodeID
+                        relation[currentNodeID]     |= sharedBitIndex[neighborNodeID] & (~sharedBitIndex[currentNodeID]);
+                        relation[neighborNodeID]    |= sharedBitIndex[currentNodeID] & (~sharedBitIndex[neighborNodeID]);
+
+                        #ifdef DEBUG
+                        printf("\t[3]Red edge found(%2d, %2d), ", currentNodeID, neighborNodeID);
+                        printf("relation[%2d] = %2x, relation[%2d] = %2x\n", currentNodeID, relation[currentNodeID], neighborNodeID, relation[neighborNodeID]);
+                        #endif
+
+                        // if(sourceID == 5 && (neighborNodeID == 4 || neighborNodeID == 6)){
+                        //     printf("\t[3]currentNodeID = %2d(dist %2d, re %2x), neighborNodeID = %d(dist %2d, re %2x)\n", currentNodeID, dist_arr[currentNodeID], relation[currentNodeID], neighborNodeID, dist_arr[neighborNodeID], relation[neighborNodeID]);
+                        // }
+                    }
+                }
+            }
+
+            //second source traversal : for handle the red edge
+            #ifdef DEBUG
+            printf("\n####      Source %2d Second traverse...      ####\n\n", sourceID);
+            #endif
+
+            Q->front = 0;
+            while(!qIsEmpty(Q)){
+                currentNodeID = qPopFront(Q);
+
+                #ifdef DEBUG
+                printf("currentNodeID = %2d ... dist = %2d ... relation = %x\n", currentNodeID, dist_arr[currentNodeID], relation[currentNodeID]);
+                #endif
+
+                for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                        relation[neighborNodeID] |= relation[currentNodeID];
+                        
+                        #ifdef DEBUG
+                        printf("\t[4]relation[%2d] = %2x\n", neighborNodeID, relation[neighborNodeID]);
+                        #endif
+
+                        // if(sourceID == 5 && (neighborNodeID == 4 || neighborNodeID == 6)){
+                        //     printf("\t[4]currentNodeID = %2d(dist %2d, re %2x), neighborNodeID = %d(dist %2d, re %2x)\n", currentNodeID, dist_arr[currentNodeID], relation[currentNodeID], neighborNodeID, dist_arr[neighborNodeID], relation[neighborNodeID]);
+                        // }
+                    }
+                }
+            }
+            #pragma endregion //SourceTraverse
+
+            
+            #pragma region sourceDistAccumulation_pushBased
+            for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+                _CCs[nodeID] += dist_arr[nodeID];
+            }
+            #pragma endregion //distAccumulation_pushBased
+
+
+
+            #pragma region neighborOfSource_GetDist
+            //recover the data from source to neighbor of source
+            for(int sourceNeighborIndex = 0 ; sourceNeighborIndex < mappingCount ; sourceNeighborIndex ++){
+                memset(neighbor_dist_ans, 0, sizeof(int));
+
+                int sourceNeighborID = mapping_SI[sourceNeighborIndex];
+                unsigned int bit_SI = 1 << sourceNeighborIndex;
+
+                nodeDone[sourceNeighborID] = 1;
+
+                #ifdef DEBUG
+                printf("\nnextBFS = %2d, bit_SI = %x\n", sourceNeighborID, bit_SI);
+                #endif
+
+                for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+                    if((sharedBitIndex[nodeID] & bit_SI) > 0){ //要括號，因為"比大小優先於邏輯運算"
+                        neighbor_dist_ans[nodeID] = dist_arr[nodeID] - 1;
+                        // printf("\t[5]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", nodeID, neighbor_dist_ans[nodeID], nodeID, sharedBitIndex[nodeID]);
+                    }
+                    else{
+                        neighbor_dist_ans[nodeID] = dist_arr[nodeID] + 1;
+                        // printf("\t[6]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", nodeID, neighbor_dist_ans[nodeID], nodeID, sharedBitIndex[nodeID]);
+                        if((relation[nodeID] & bit_SI) > 0){
+                            neighbor_dist_ans[nodeID] --;
+                            // printf("\t[7]neighbor_dist_ans[%2d] = %2d, relation[%2d] = %x\n", nodeID, neighbor_dist_ans[nodeID], nodeID, relation[nodeID]);
+                        }
+                    }
+                    
+                }
+
+
+
+                #pragma region neighborDistAccumulation_pushBased
+                for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+                    _CCs[nodeID] += neighbor_dist_ans[nodeID];
+                }
+                #pragma endregion //neighborDistAccumulation_pushBased
+
+
+
+                #pragma region checkingDistAns
+                #ifdef CheckAns
+                CC_CheckDistAns(_csr, _CCs, sourceNeighborID, neighbor_dist_ans);
+                #endif
+                #pragma endregion //checkingDistAns
+            }
+            #pragma endregion //neighborOfSource_GetDist
+
+            //reset the SI & relation arrays
+            memset(relation, 0, sizeof(unsigned int) * _csr->csrVSize);
+            memset(sharedBitIndex, 0, sizeof(unsigned int) * _csr->csrVSize);
+        }
+    }
+    printf("\n\n[CC_sharedBased] Done!\n");
+}
+
+int CC_CheckDistAns(struct CSR* _csr, float* _CCs, int _tempSourceID, int* dist){
+    tempSourceID = _tempSourceID;
+    int* ans = computeCC(_csr, _CCs);
+
+    printf("[Ans Checking] SourceID = %2d ... ", _tempSourceID);
+
+    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+        if(dist[nodeID] != ans[nodeID]){
+            printf("[ERROR] dist[%2d] = %2d, ans[%2d] = %2d\n", nodeID, dist[nodeID], nodeID, ans[nodeID]);
+            exit(1);
+        }
+    }
+    
+    printf("Correct !!!!\n");
+    free(ans);
+}
+
 void checkStackSequence(struct CSR* _csr, struct stack* _S_check, int* _dist_check, int _sourceID){
     // printf("Check stack sequence...\n");
     
@@ -1938,9 +2308,18 @@ int main(int argc, char* argv[]){
     //     printf("SourceID = %2d!!!!!\n", offset);
     //     computeBC_shareBased2(csr, BCs);
     // }
-    computeBC_shareBased2(csr, BCs);
-    BrandesTime         = method1_BC_time + ori_BC_time;
-    printf("[Execution Time] %2f (s)\n", BrandesTime);
+
+
+
+    float* CCs          = (float*)calloc(sizeof(float), csr->csrVSize);
+    // computeCC(csr, CCs);
+    computeCC_shareBased(csr, CCs);
+    //CC 還沒記時間
+
+
+
+    // BrandesTime         = method1_BC_time + ori_BC_time;
+    // printf("[Execution Time] %2f (s)\n", BrandesTime);
     //紀錄時間
     FILE *fptr = fopen("CostTime.txt", "a");
     if(fptr == NULL){
