@@ -1,38 +1,12 @@
-exeName = ./a
-datasetPath = ../dataset/dblp.txt
-Success : Build AdjList
-==============================
-dataset = ../dataset/dblp.txt
-nodeNum = 317080
-edgeNum = 1049866
-degreeOneNum = 43181
-graph start with 0
-==============================
-==============================
-CreateCSR...
-csr->csrVSize = 317081
-csr->csrESize = 2099732
-csr->degreeOneNum = 43181
-csr->startAtZero = 1
-[Success] CreateCSR finish
-==============================
-[Execution Time] 8179.780335 (s)
-exeName = ./a
-datasetPath = ../dataset/dblp.txt
-Success : Build AdjList
-==============================
-dataset = ../dataset/dblp.txt
-nodeNum = 317080
-edgeNum = 1049866
-degreeOneNum = 43181
-graph start with 0
-==============================
-==============================
-CreateCSR...
-csr->csrVSize = 317081
-csr->csrESize = 2099732
-csr->degreeOneNum = 43181
-csr->startAtZero = 1
-[Success] CreateCSR finish
-==============================
-[Execution Time] 12264.885794 (s)
+./run_experiment.sh: 1: Syntax error: "(" unexpected
+Running experiment with karate.txt
+Experiment with karate.txt completed.
+Running experiment with dblp.txt
+Experiment with dblp.txt completed.
+Running experiment with amazon.txt
+Experiment with amazon.txt completed.
+Running experiment with youtube.txt
+Experiment with youtube.txt completed.
+Running experiment with LiveJournal.txt
+Experiment with LiveJournal.txt completed.
+All experiments completed.

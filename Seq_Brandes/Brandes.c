@@ -16,7 +16,7 @@
 // #define DEBUG
 // #define DEBUG_method2
 #define Timing
-#define CheckAns
+// #define CheckAns
 // #define Timing_Method1_And_Origin
 // #define LiveJournal_Test
 #pragma region globalVar
@@ -1696,7 +1696,7 @@ int* computeCC(struct CSR* _csr, float* _CCs){
 
         qPushBack(Q, sourceID);
         dist_arr[sourceID]  = 0;
-        printf("\nSourceID = %2d ...\n", sourceID);       
+        // printf("\nSourceID = %2d ...\n", sourceID);       
         int currentNodeID   = -1;
         int neighborNodeID  = -1;
 
@@ -1764,7 +1764,7 @@ void computeCC_shareBased(struct CSR* _csr, float* _CCs){
         }
         nodeDone[sourceID] = 1;
 
-        printf("SourceID = %2d\n", sourceID);
+        // printf("SourceID = %2d\n", sourceID);
 
         memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
         
@@ -1856,14 +1856,10 @@ void computeCC_shareBased(struct CSR* _csr, float* _CCs){
             #endif
             #pragma endregion //checkingDistAns
 
-
+            
 
         }
         else{
-
-            // if(sourceID == 5){
-            //     printf("sourceID = 5\n");
-            // }
 
             #pragma region SourceTraverse
             //main source traversal : for getting the dist of each node from source
@@ -2016,7 +2012,7 @@ void computeCC_shareBased(struct CSR* _csr, float* _CCs){
             memset(sharedBitIndex, 0, sizeof(unsigned int) * _csr->csrVSize);
         }
     }
-    printf("\n\n[CC_sharedBased] Done!\n");
+    // printf("\n\n[CC_sharedBased] Done!\n");
 }
 
 int CC_CheckDistAns(struct CSR* _csr, float* _CCs, int _tempSourceID, int* dist){
@@ -2254,6 +2250,8 @@ int main(int argc, char* argv[]){
     double time1        = 0;
     double time2        = 0;
     double BrandesTime  = 0;
+    double CC_shareBasedTime = 0;
+    double CC_ori       = 0;
 
 
     #ifdef Timing_Method1_And_Origin
@@ -2312,8 +2310,18 @@ int main(int argc, char* argv[]){
 
 
     float* CCs          = (float*)calloc(sizeof(float), csr->csrVSize);
+    
     // computeCC(csr, CCs);
+    time1 = seconds();
     computeCC_shareBased(csr, CCs);
+    time2 = seconds();
+    CC_shareBasedTime = time2 - time1;
+
+    
+    time1 = seconds();
+    computeCC(csr, CCs);
+    time2 = seconds();
+    CC_ori = time2 - time1;
     //CC 還沒記時間
 
 
@@ -2327,7 +2335,8 @@ int main(int argc, char* argv[]){
         exit(1);
     }
     
-    fprintf(fptr, "%s, method1, %f, ori, %f\n", datasetPath, method1_BC_time, ori_BC_time);
+    // fprintf(fptr, "%s, method1, %f, ori, %f\n", datasetPath, method1_BC_time, ori_BC_time);
+    fprintf(fptr, "%s, CC_shareBased %f, CC_ori %f\n", datasetPath, CC_shareBasedTime, CC_ori);
     // fprintf(fptr, "%s, %f\n", datasetPath, BrandesTime);
     fclose(fptr);
     //紀錄BC分數

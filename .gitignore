@@ -5,3 +5,7 @@ dataset/youtube.txt
 Seq_Brandes/BC_Score.txt
 Seq_Brandes/BC_Score.txt
 Seq_Brandes/dblp_checkAns.txt
+dataset/road-roadNet-CA.mtx
+Seq_Brandes/CC_shareBased_amazon.txt
+Seq_Brandes/CC_shareBased_dblp.txt
+Seq_Brandes/CC_shareBased_karate.txt

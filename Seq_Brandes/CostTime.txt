@@ -267,3 +267,17 @@
 ../dataset/karate.txt, method1, 0.000000, ori, 0.000000
 ../dataset/karate.txt, method1, 0.000000, ori, 0.000000
 ../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, method1, 0.000000, ori, 0.000000
+../dataset/dblp.txt, method1, 0.000000, ori, 0.000000
+../dataset/amazon.txt, method1, 0.000000, ori, 0.000000
+../dataset/roadNet-CA_OK.txt, method1, 0.000000, ori, 0.000000
+../dataset/roadNet-CA_OK.txt, method1, 0.000000, ori, 0.000000
+../dataset/roadNet-CA_OK.txt, method1, 0.000000, ori, 0.000000
+../dataset/roadNet-CA_OK.txt, method1, 0.000000, ori, 0.000000
+../dataset/road-roadNet-CA.mtx, method1, 0.000000, ori, 0.000000
+../dataset/road-roadNet-CA.mtx, method1, 0.000000, ori, 0.000000
+../dataset/road-roadNet-CA.mtx, method1, 0.000000, ori, 0.000000
+../dataset/karate.txt, CC_shareBased 0.000014, CC_ori 0.000141
+../dataset/karate.txt, CC_shareBased 0.000021, CC_ori 0.000033
