@@ -67,14 +67,10 @@ struct CSR* createCSR(struct Graph* _adjlist){
     memcpy(csr->oriCsrV, csr->csrV, sizeof(int) * csr->csrVSize);
 
     csr->nodesType          = (char*)malloc(sizeof(char) * csr->csrVSize);
-    memset(csr->nodesType, 1, sizeof(char) * csr->csrVSize);
+    memset(csr->nodesType, 0, sizeof(char) * csr->csrVSize);
 
-    csr->representNode      = (int*)malloc(sizeof(int) * csr->csrVSize);
-    for(int i = 0 ; i < csr->csrVSize ; i ++){
-        csr->representNode[i] = 1;
-    }
-
-    csr->BCs                = (float*)calloc(sizeof(float), csr->csrVSize);
+    // csr->BCs                = (float*)calloc(sizeof(float), csr->csrVSize);
+    
 
     csr->startAtZero        = _adjlist->startAtZero;
 
@@ -106,52 +102,6 @@ void swap(int* _val1, int* _val2){
     int temp = *_val1;
     *_val1 = *_val2;
     *_val2 = temp;
-}
-
-void degreeOneFolding(struct CSR* _csr){
-    struct qQueue* d1Q = _csr->degreeOneNodesQ;
-
-    int d1Node = -1;
-
-    int hubNode = -1;
-    int currentNeighbor = -1;
-
-    while(!qIsEmpty(d1Q)){
-        d1Node = qPopFront(d1Q);
-        hubNode = _csr->csrE[_csr->csrV[d1Node]];
-        
-        #ifdef _DEBUG_
-        printf("%d, linking to %d\n", d1Node, hubNode);
-        #endif
-        // 找hubNode的neighbor中，d1Node所在的index，並把d1Node跟hubNode的當前第一個鄰居交換。
-        // hubNode的offset + 1，因為hubNode拔掉一個neighbor。
-        for(int hubNodeNeighborIndex = 0 ; hubNodeNeighborIndex < _csr->csrNodesDegree[hubNode] ; hubNodeNeighborIndex ++){
-            currentNeighbor = _csr->csrE[_csr->csrV[hubNode] + hubNodeNeighborIndex];
-            if(currentNeighbor == d1Node){
-                swap(&(_csr->csrE[_csr->csrV[hubNode] + hubNodeNeighborIndex]), &(_csr->csrE[_csr->csrV[hubNode]]));
-                break;
-            }
-        }
-        // d1Node的offset不用 + 1，因為d1Node之後還要藉由hubNode去塗色
-        _csr->csrV[d1Node] ++;
-        // d1Node的degree - 1
-        _csr->csrNodesDegree[d1Node] --;
-
-        // hubNode的offset + 1
-        _csr->csrV[hubNode] ++;
-        // hubNode的degree - 1
-        _csr->csrNodesDegree[hubNode] --;
-        // 計數有多少degreeOne
-        _csr->foldedDegreeOneCount ++;
-
-
-        // 如果d1Node需要找 hubNode，則
-        // _csr->csrV[d1Node] --; 的索引位置就是hubNode
-    }
-
-    #ifdef _DEBUG_
-    printf("Folded Degree One Count = %d\n", _csr->foldedDegreeOneCount);
-    #endif
 }
 
 void showCSR(struct CSR* csr){

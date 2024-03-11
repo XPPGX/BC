@@ -77,7 +77,7 @@ struct Graph* buildGraph(char* _datasetPath){
     
     //初始化degreeOneQueue
     graph->degreeOneQueue = InitqQueue();
-
+    qInitResize(graph->degreeOneQueue, graph->nodeNum);
     //對每個node的neighbors根據degree進行排列 and 收集degreeOne
     if(graph->startAtZero == 1){ //nodeID從0開始
         for(int nodeID = 0 ; nodeID < graph->nodeNum ; nodeID ++){
