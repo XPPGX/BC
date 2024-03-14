@@ -2259,37 +2259,6 @@ int main(int argc, char* argv[]){
     // offset              = 1;
     computeBC_shareBased(csr, BCs);
 
-#pragma region trash
-    // computeBC(csr, BCs);
-
-    // struct stack* S_method1 = computeBC_shareBased(csr, BCs);;
-    // struct stack* S_ori     = computeBC(csr, BCs);
-    // int correctStackAnsCount = 0;
-    // for(int i = csr->startNodeID ; i <= csr->endNodeID ; i ++){
-    //     offset = i;//7
-    //     printf("nodeID = %d\n", offset);
-
-    //     computeBC_shareBased(csr, BCs);
-    //     nextBFS = offset;
-    //     printf("node = %d, Next_BFS = %d\n", offset, nextBFS);
-    //     computeBC(csr, BCs2);
-        
-    //     check_SPandDist_Ans(csr);
-    //     correctStackAnsCount += checkStackans(S_ori, S_method1, csr);
-    //     for(int i = csr->startNodeID ; i <= csr->endNodeID ; i ++){
-    //         free(S_ori->predecessors[i]->dataArr);
-    //         free(S_method1->predecessors[i]->dataArr);
-    //     }
-    //     free(S_ori->predecessors);
-    //     free(S_method1->predecessors);
-    //     free(S_ori->nodeIDs);
-    //     free(S_method1->nodeIDs);
-    //     free(S_ori);
-    //     free(S_method1);
-    // }
-    // printf("\nCorrect Stack Ans = %d\n", correctStackAnsCount);
-#pragma endregion
-
     time2               = seconds();
     method1_BC_time     = time2 - time1;
     

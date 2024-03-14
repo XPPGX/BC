@@ -10,6 +10,7 @@ void D1Folding(struct CSR* _csr){
     _csr->ordinaryNodeCount     = 0;
     _csr->foldedDegreeOneCount  = 0;
     struct qQueue* d1Q      = _csr->degreeOneNodesQ;
+    
 
     int d1NodeID            = -1;
     int d1ParentID          = -1;
@@ -23,13 +24,19 @@ void D1Folding(struct CSR* _csr){
     }
     _csr->ff                = (int*)calloc(sizeof(int), _csr->csrVSize);
 
+    //record each d1Node's ancestor to recover the dist of each d1Node quickly
+    _csr->D1Parent          = (int*)malloc(sizeof(int) * (_csr->csrVSize)); //Note : its size is |V|
+    memset(_csr->D1Parent, -1, sizeof(int) * _csr->foldedDegreeOneCount);
+
     #pragma region d1Folding
     while(!qIsEmpty(d1Q)){
         d1NodeID                    = qPopFront(d1Q);
         _csr->nodesType[d1NodeID]   = D1;
 
         d1ParentID                  = _csr->csrE[_csr->csrV[d1NodeID]];
-        
+
+        _csr->D1Parent[d1NodeID]    = d1ParentID;
+
         _csr->nodesType[d1ParentID] = D1Hub;
         
         //Update reach value of represent node, formula is "represent[parent] = represent[parent] + represent[d1Node]"
@@ -50,7 +57,7 @@ void D1Folding(struct CSR* _csr){
             }
         }
 
-        // d1 node will not change its csrV offset for find the last parent quickly !!
+        // d1 node will not change its last csrV offset for find the last parent quickly !!
         
         // d1Parent的offset往後移動一格，代表刪除d1Node
         _csr->csrV[d1ParentID] ++;
@@ -69,23 +76,23 @@ void D1Folding(struct CSR* _csr){
 
 
 
-    #pragma region record_d1Node_parent
-    //record each d1Node's ancestor to recover the dist of each d1Node quickly
-    _csr->D1Parent = (int*)malloc(sizeof(int) * (_csr->csrVSize)); //Note : its size is |V|
-    memset(_csr->D1Parent, -1, sizeof(int) * _csr->foldedDegreeOneCount);
-    printf("\n");
-    for(int iter = _csr->degreeOneNodesQ->rear ; iter >= 0 ; iter --){
-        int d1NodeID        = _csr->degreeOneNodesQ->dataArr[iter];
-        int d1NodeParentID  = _csr->csrE[_csr->csrV[d1NodeID]];
+    // #pragma region record_d1Node_parent
+    // //record each d1Node's ancestor to recover the dist of each d1Node quickly
+    // _csr->D1Parent = (int*)malloc(sizeof(int) * (_csr->csrVSize)); //Note : its size is |V|
+    // memset(_csr->D1Parent, -1, sizeof(int) * _csr->foldedDegreeOneCount);
+    // printf("\n");
+    // for(int iter = _csr->degreeOneNodesQ->rear ; iter >= 0 ; iter --){
+    //     int d1NodeID        = _csr->degreeOneNodesQ->dataArr[iter];
+    //     int d1NodeParentID  = _csr->csrE[_csr->csrV[d1NodeID]];
         
-        _csr->D1Parent[d1NodeID] = d1NodeParentID;
+    //     _csr->D1Parent[d1NodeID] = d1NodeParentID;
 
-        #ifdef DEBUG_D1
-        printf("D1nodeID = %2d, Parent = %2d\n", d1NodeID, d1NodeParentID);
-        #endif
+    //     #ifdef DEBUG_D1
+    //     printf("D1nodeID = %2d, Parent = %2d\n", d1NodeID, d1NodeParentID);
+    //     #endif
 
-    }
-    #pragma endregion //record_d1Node_parent
+    // }
+    // #pragma endregion //record_d1Node_parent
 
     #pragma region PrepareNodeList
     _csr->notD1Node = (int*)malloc(sizeof(int) * (_csr->endNodeID - _csr->startNodeID + 1 - _csr->foldedDegreeOneCount));
@@ -134,6 +141,11 @@ void D1Folding(struct CSR* _csr){
     }
     #pragma endregion //PrepareNodeList
 
+    /**
+     * We've got two lists which are :
+     * 1. d1Node_List       : _csr->degreeOneNodesQ->dataArr
+     * 2. notD1Node_List    : _csr->notD1Node 
+    */
     printf("Finished.\n");
     printf("D1 node count       (|D1|)              = %8d\n", _csr->foldedDegreeOneCount);
     printf("Hub node Count      (|Hub|)             = %8d\n", _csr->hubNodeCount);

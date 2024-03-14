@@ -25,3 +25,6 @@
 //D1Process
 #include "../Lib/D1Process/D1Process.h"
 #include "../Lib/D1Process/D1Process.c"
+
+//printControl
+#include "../Lib/printControl/printControl.h"
