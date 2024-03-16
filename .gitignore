@@ -9,3 +9,9 @@ dataset/road-roadNet-CA.mtx
 Seq_Brandes/CC_shareBased_amazon.txt
 Seq_Brandes/CC_shareBased_dblp.txt
 Seq_Brandes/CC_shareBased_karate.txt
+dataset/loc-Gowalla.mtx
+dataset/soc-flickr.mtx
+dataset/web-Stanford.mtx
+dataset/web-sk-2005.mtx
+dataset/Slashdot0811-OK.mtx
+dataset/web-BerkStan-OK.mtx

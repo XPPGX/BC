@@ -48,7 +48,11 @@ int* computeCC(struct CSR* _csr, int* _CCs){
 
         qPushBack(Q, sourceID);
         dist_arr[sourceID]  = 0;
-        // printf("\nSourceID = %2d ...\n", sourceID);       
+
+        #ifdef DEBUG
+        printf("\nSourceID = %2d ...\n", sourceID);
+        #endif      
+
         int currentNodeID   = -1;
         int neighborNodeID  = -1;
 
@@ -56,23 +60,34 @@ int* computeCC(struct CSR* _csr, int* _CCs){
         while(!qIsEmpty(Q)){
             currentNodeID = qPopFront(Q);
             
-            // printf("%2d ===\n", currentNodeID);
+            #ifdef DEBUG
+            printf("%2d ===\n", currentNodeID);
+            #endif
 
             for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
                 neighborNodeID = _csr->csrE[neighborIndex];
-                // printf("\t%2d meet %2d, dist_arr[%2d] = %2d\n", currentNodeID, neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
+
+                #ifdef DEBUG
+                printf("\t%2d meet %2d, dist_arr[%2d] = %2d\n", currentNodeID, neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
+                #endif
+
                 if(dist_arr[neighborNodeID] == -1){
                     qPushBack(Q, neighborNodeID);
                     dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
 
-                    // printf("\tpush %2d to Q, dist_arr[%2d] = %2d\n", neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
+                    #ifdef DEBUG
+                    printf("\tpush %2d to Q, dist_arr[%2d] = %2d\n", neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
+                    #endif
                 }
             }
         }
 
         for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
             _CCs[nodeID] = _CCs[nodeID] + dist_arr[nodeID];
-            // printf("CC[%2d] = %2d\n", nodeID, _CCs[nodeID]);
+
+            #ifdef DEBUG
+            printf("CC[%2d] = %2d\n", nodeID, _CCs[nodeID]);
+            #endif
         }
         #ifdef CheckDistAns
         break;
@@ -1077,6 +1092,7 @@ int main(int argc, char* argv[]){
     
     double CC_shareBasedTime    = 0;
     double CC_ori               = 0;
+    double D1FoldingTime        = 0;
     double D1_CC_ori            = 0;
     double D1_CC_shareBasedTime = 0;
 
@@ -1085,33 +1101,38 @@ int main(int argc, char* argv[]){
 
     int* CCs        = (int*)calloc(sizeof(int), csr->csrVSize);
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
-    // computeCC(csr, CCs);
-    // for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
-    //     printf("%2d %2d\n", nodeID, CCs[nodeID]);
-    // }
 
-    // computeCC(csr, CCs);
-    // time1 = seconds();
-    // computeCC_shareBased(csr, CCs);
-    // time2 = seconds();
-    // CC_shareBasedTime = time2 - time1;
+    time1 = seconds();
+    D1Folding(csr);
+    time2 = seconds();
+    D1FoldingTime = time2 - time1;
+    printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
 
-    
+
     // time1 = seconds();
     // computeCC(csr, CCs);
     // time2 = seconds();
     // CC_ori = time2 - time1;
+    // printf("[Execution Time] CC_ori = %f\n", CC_ori);
     
-    // int* tempCCs    = (int*)calloc(sizeof(int), csr->csrVSize);
+    
+    // time1 = seconds();
+    // computeCC_shareBased(csr, CCs);
+    // time2 = seconds();
+    // CC_shareBasedTime = time2 - time1;
+    // printf("[Execution Time] CC_shareBased = %f\n", CC_shareBasedTime);
+    
+    
+    
     // time1 = seconds();
     // compute_D1_CC(csr, CCs);
     // time2 = seconds();
     // D1_CC_ori = time2 - time1;
+    // printf("[Execution Time] D1_CC_ori = %f\n", D1_CC_ori);
 
-    // CC_CheckAns(csr, CCs, tempCCs);
-
-    compute_D1_CC_shareBased(csr, CCs);    
-    // for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
-    //     printf("%2d %2d\n", nodeID, CCs[nodeID]);
-    // }
+    // time1 = seconds();
+    // compute_D1_CC_shareBased(csr, CCs);    
+    // time2 = seconds();
+    // D1_CC_shareBasedTime = time2 - time1;
+    // printf("[Execution Time] D1_CC_shareBasedTime = %f\n", D1_CC_shareBasedTime);
 }
