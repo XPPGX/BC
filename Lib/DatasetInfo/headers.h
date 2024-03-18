@@ -1,30 +1,30 @@
 //vVector
-#include "../Lib/vVector/vVector.h"
-#include "../Lib/vVector/vVector.c"
+#include "../vVector/vVector.h"
+#include "../vVector/vVector.c"
 
 //tTime
-#include "../Lib/tTime/tTime.h"
-#include "../Lib/tTime/tTime.c"
+#include "../tTime/tTime.h"
+#include "../tTime/tTime.c"
 
 //qQueue
-#include "../Lib/qQueue/qQueue.h"
-#include "../Lib/qQueue/qQueue.c"
+#include "../qQueue/qQueue.h"
+#include "../qQueue/qQueue.c"
 
 //FileReader
-#include "../Lib/FileReader/FileReader.h"
-#include "../Lib/FileReader/FileReader.c"
+#include "../FileReader/FileReader.h"
+#include "../FileReader/FileReader.c"
 
 //ADJLIST
-#include "../Lib/AdjList/AdjList.h"
-#include "../Lib/AdjList/AdjList.c"
+#include "../AdjList/AdjList.h"
+#include "../AdjList/AdjList.c"
 
 //cCSR
-#include "../Lib/CSR/CSR.h"
-#include "../Lib/CSR/CSR.c"
+#include "../CSR/CSR.h"
+#include "../CSR/CSR.c"
 
 //D1Process
-#include "../Lib/D1Process/D1Process.h"
-#include "../Lib/D1Process/D1Process.c"
+#include "../D1Process/D1Process.h"
+#include "../D1Process/D1Process.c"
 
 //printControl
-#include "../Lib/printControl/printControl.h"
+#include "../printControl/printControl.h"

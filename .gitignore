@@ -15,3 +15,14 @@ dataset/web-Stanford.mtx
 dataset/web-sk-2005.mtx
 dataset/Slashdot0811-OK.mtx
 dataset/web-BerkStan-OK.mtx
+Lib/DatasetInfo/Degree_distribution_amazon.txt
+Lib/DatasetInfo/Degree_distribution_dblp.txt
+Lib/DatasetInfo/Degree_distribution_karate.txt
+Lib/DatasetInfo/Degree_distribution_loc-Gowalla.mtx.txt
+Lib/DatasetInfo/Degree_distribution_road-roadNet-CA.mtx.txt
+Lib/DatasetInfo/Degree_distribution_Slashdot0811-OK.mtx.txt
+Lib/DatasetInfo/Degree_distribution_soc-flickr.mtx.txt
+Lib/DatasetInfo/Degree_distribution_web-BerkStan-OK.mtx.txt
+Lib/DatasetInfo/Degree_distribution_web-sk-2005.mtx.txt
+Lib/DatasetInfo/Degree_distribution_web-Stanford.mtx.txt
+Lib/DatasetInfo/Degree_distribution_youtube.txt
