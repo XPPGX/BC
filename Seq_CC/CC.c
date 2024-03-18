@@ -901,6 +901,9 @@ void quicksort_nodeID_with_degree(int* _nodes, int* _nodeDegrees, int _left, int
 */
 void compute_D1_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     
+    // double time1 = 0;
+    // double time2 = 0;
+
     int* dist_arr           = (int*)malloc(sizeof(int) * _csr->csrVSize);
     int* neighbor_dist_ans  = (int*)malloc(sizeof(int) * _csr->csrVSize);
 
@@ -915,9 +918,12 @@ void compute_D1_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     unsigned int* sharedBitIndex    = (unsigned int*)calloc(sizeof(unsigned int), _csr->csrVSize);
     unsigned int* relation          = (unsigned int*)calloc(sizeof(unsigned int), _csr->csrVSize);
 
+    
     //Folding D1
+    // time1 = seconds();
     D1Folding(_csr);
-
+    // time2 = seconds();
+    // printf("[Execution Time] D1Folding = %f\n", time2 - time1);
     /**
      * After D1Folding, we've got two lists which are:
      * 1. _csr->d1Node_List         : _csr->degreeOneNodesQ->dataArr
@@ -925,8 +931,12 @@ void compute_D1_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     */
 
     //sorting by the order of degree from high to low
+    // time1 = seconds();
     quicksort_nodeID_with_degree(_csr->notD1Node, _csr->csrNodesDegree, 0, _csr->ordinaryNodeCount - 1);
-    
+    // time2 = seconds();
+    // printf("[Execution Time] quickSort = %f\n", time2 - time1);
+
+    #pragma region Traverse
     int ordinaryTraversalCount  = 0;
     int sharingTraversalCount   = 0;
     int sourceID = -1;
@@ -1214,6 +1224,9 @@ void compute_D1_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
             // break;
         }
     }
+    #pragma endregion //Traverse
+
+
 
     #pragma region d1GetCC_FromParent
     /**
