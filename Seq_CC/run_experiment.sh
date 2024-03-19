@@ -7,7 +7,9 @@
 #senior dataset
 # datasets=("loc-Gowalla.mtx" "Slashdot0811-OK.mtx" "soc-flickr.mtx" "web-BerkStan-OK.mtx" "web-sk-2005.mtx" "web-Stanford.mtx")
 
+
 datasets=("musae_git.txt" "tech-RL-caida.mtx" "twitch_gamers.txt" "web-wikipedia2009.mtx" "wikiTalk.mtx")
+
 
 # 循环执行五个不同的数据集实验
 for dataset in "${datasets[@]}"; do

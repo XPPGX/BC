@@ -1893,11 +1893,11 @@ int main(int argc, char* argv[]){
     /************************************************************
      *                      D1Folding                           *
     ************************************************************/
-    time1 = seconds();
-    D1Folding(csr);
-    time2 = seconds();
-    D1FoldingTime = time2 - time1;
-    printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
+    // time1 = seconds();
+    // D1Folding(csr);
+    // time2 = seconds();
+    // D1FoldingTime = time2 - time1;
+    // printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
 
 
     /************************************************************
@@ -1923,11 +1923,11 @@ int main(int argc, char* argv[]){
     /************************************************************
      *                      compute_D1_CC                       *
     ************************************************************/
-    // time1 = seconds();
-    // compute_D1_CC(csr, CCs);
-    // time2 = seconds();
-    // D1_CC_ori = time2 - time1;
-    // printf("[Execution Time] D1_CC_ori = %f\n", D1_CC_ori);
+    time1 = seconds();
+    compute_D1_CC(csr, CCs);
+    time2 = seconds();
+    D1_CC_ori = time2 - time1;
+    printf("[Execution Time] D1_CC_ori = %f\n", D1_CC_ori);
 
 
     /************************************************************
