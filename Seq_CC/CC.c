@@ -1884,11 +1884,7 @@ int main(int argc, char* argv[]){
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
-    time1 = seconds();
-    compute_D1_CC_sharedBased_DegreeOrder_64bit(csr, CCs);
-    time2 = seconds();
-    D1_sort_CC_64Bit_shareBasedTime = time2 - time1;
-    printf("[Execution Time] D1_sort_CC_64Bit_shareBasedTime = %f\n", D1_sort_CC_64Bit_shareBasedTime);
+    
     #pragma endregion //Dev
 
 
@@ -1897,11 +1893,11 @@ int main(int argc, char* argv[]){
     /************************************************************
      *                      D1Folding                           *
     ************************************************************/
-    // time1 = seconds();
-    // D1Folding(csr);
-    // time2 = seconds();
-    // D1FoldingTime = time2 - time1;
-    // printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
+    time1 = seconds();
+    D1Folding(csr);
+    time2 = seconds();
+    D1FoldingTime = time2 - time1;
+    printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
 
 
     /************************************************************
@@ -1952,6 +1948,16 @@ int main(int argc, char* argv[]){
     // time2 = seconds();
     // D1_sort_CC_shareBasedTime = time2 - time1;
     // printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
+
+
+    /************************************************************
+     *        compute_D1_CC_shareBased_DegreeOrder_64bit        *
+    ************************************************************/
+    // time1 = seconds();
+    // compute_D1_CC_sharedBased_DegreeOrder_64bit(csr, CCs);
+    // time2 = seconds();
+    // D1_sort_CC_64Bit_shareBasedTime = time2 - time1;
+    // printf("[Execution Time] D1_sort_CC_64Bit_shareBasedTime = %f\n", D1_sort_CC_64Bit_shareBasedTime);
     #pragma endregion //Release
 
 }

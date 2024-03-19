@@ -26,3 +26,7 @@ Lib/DatasetInfo/Degree_distribution_web-BerkStan-OK.mtx.txt
 Lib/DatasetInfo/Degree_distribution_web-sk-2005.mtx.txt
 Lib/DatasetInfo/Degree_distribution_web-Stanford.mtx.txt
 Lib/DatasetInfo/Degree_distribution_youtube.txt
+dataset/twitch_gamers.txt
+dataset/web-Google-OK.mtx
+dataset/web-wikipedia2009.mtx
+dataset/wikiTalk.mtx
