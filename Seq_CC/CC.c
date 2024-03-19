@@ -26,6 +26,8 @@ inline void resetQueue(struct qQueue* _Q){
 }
 
 
+#pragma region Function_computing
+
 int* computeCC(struct CSR* _csr, int* _CCs){
     // showCSR(_csr);
     int* dist_arr       = (int*)calloc(sizeof(int), _csr->csrVSize);
@@ -490,10 +492,6 @@ void compute_D1_CC(struct CSR* _csr, int* _CCs){
  * @brief
  * 1. Perform D1Folding
  * 2. Mapping each neighbor of source, if any neighbor of source haven't been source yet
- * @todo
- * 1. let it can distinguish what kind of situation should use sharing strategy
- * 2. Timing testing
- * 
 */
 void compute_D1_CC_shareBased(struct CSR* _csr, int* _CCs){
     
@@ -1252,6 +1250,365 @@ void compute_D1_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     printf("\n");
 }
 
+/**
+ * @brief
+ * Just 64-bit SI & 64-bit relation version of compute_D1_CC_shareBased_DegreeOrder
+*/
+void compute_D1_CC_sharedBased_DegreeOrder_64bit(struct CSR* _csr, int* _CCs){
+    // double time1 = 0;
+    // double time2 = 0;
+
+    int* dist_arr           = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    int* neighbor_dist_ans  = (int*)malloc(sizeof(int) * _csr->csrVSize);
+
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, _csr->csrVSize);
+
+    //record that nodes which havn't been source yet
+    int* nodeDone = (int*)calloc(sizeof(int), _csr->csrVSize);
+
+    //record nodes belongs to which neighbor of source
+    int* mapping_SI                     = (int*)malloc(sizeof(int) * 64);
+    unsigned long long* sharedBitIndex  = (unsigned long long*)calloc(sizeof(unsigned long long), _csr->csrVSize);
+    unsigned long long* relation        = (unsigned long long*)calloc(sizeof(unsigned long long), _csr->csrVSize);
+
+    
+    //Folding D1
+    // time1 = seconds();
+    D1Folding(_csr);
+    // time2 = seconds();
+    // printf("[Execution Time] D1Folding = %f\n", time2 - time1);
+    /**
+     * After D1Folding, we've got two lists which are:
+     * 1. _csr->d1Node_List         : _csr->degreeOneNodesQ->dataArr
+     * 2. _csr->notD1Node_List      : _csr->notD1Node 
+    */
+
+    //sorting by the order of degree from high to low
+    // time1 = seconds();
+    quicksort_nodeID_with_degree(_csr->notD1Node, _csr->csrNodesDegree, 0, _csr->ordinaryNodeCount - 1);
+    // time2 = seconds();
+    // printf("[Execution Time] quickSort = %f\n", time2 - time1);
+
+    #pragma region Traverse
+    // int ordinaryTraversalCount  = 0;
+    // int sharingTraversalCount   = 0;
+    int sourceID = -1;
+    for(int notD1NodeIndex = _csr->ordinaryNodeCount - 1 ; notD1NodeIndex >= 0 ; notD1NodeIndex --){
+        sourceID = _csr->notD1Node[notD1NodeIndex];
+        if(nodeDone[sourceID] == 1){
+            continue;
+        }
+
+        nodeDone[sourceID] = 1;
+
+        #ifdef DEBUG
+        printf("\nsourceID = %2d, degree[%2d] = %2d ...\n", sourceID, sourceID, _csr->csrNodesDegree[sourceID]);
+        #endif
+
+        //reset dist_arr        
+        memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
+
+        //reset Queue
+        resetQueue(Q);
+
+        //Init dist_arr[sourceID]
+        dist_arr[sourceID] = 0;
+
+        //push sourceID into Q
+        qPushBack(Q, sourceID);
+
+        register int currentNodeID  = -1;
+        register int neighborNodeID = -1;
+        register int neighborIndex  = -1;
+
+        // Count neighbors of sourceID which are not done yet
+        int mappingCount = 0;
+        for(int neighborIndex = _csr->csrV[sourceID] ; neighborIndex < _csr->oriCsrV[sourceID + 1] ; neighborIndex ++){
+            neighborNodeID = _csr->csrE[neighborIndex];
+            if(nodeDone[neighborNodeID] == 0){
+                mappingCount ++;
+            }
+        }
+
+        //decide to use the sharing strategy or not
+        if(mappingCount < 3){ // perform ordinary traverse
+            // ordinaryTraversalCount ++;
+            
+            while(!qIsEmpty(Q)){
+                currentNodeID = qPopFront(Q);
+
+                for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+                    
+                    if(dist_arr[neighborNodeID] == -1){
+                        qPushBack(Q, neighborNodeID);
+                        dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+
+                        _CCs[neighborNodeID] += _csr->ff[sourceID] + dist_arr[neighborNodeID] * _csr->representNode[sourceID];
+                    }
+                }
+            }
+            _CCs[sourceID] += _csr->ff[sourceID];
+
+        }
+        else{ //perform traversal with sharing strategy
+            // sharingTraversalCount ++;
+
+            #pragma region mappingNeighbor
+            mappingCount = 0;
+            //each neighbor of sourceID mapping to SBI, if it haven't been source yet
+            for(neighborIndex = _csr->csrV[sourceID] ; neighborIndex < _csr->oriCsrV[sourceID + 1] ; neighborIndex ++){
+                neighborNodeID = _csr->csrE[neighborIndex];
+
+                if(nodeDone[neighborNodeID] == 0){
+                    
+                    sharedBitIndex[neighborNodeID] = 1 << mappingCount;
+                    mapping_SI[mappingCount] = neighborNodeID;
+                    
+                    #ifdef DEBUG
+                    printf("sharedBitIndex[%2d] = %8x, \tmapping_SI[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], mappingCount, mapping_SI[mappingCount]);
+                    #endif
+
+                    mappingCount ++;
+
+                    //Record to 32 bit only
+                    if(mappingCount == 64){
+                        break;
+                    }
+                    
+                }
+            }
+            #pragma endregion //mappingNeighbor
+            
+
+
+            #pragma region SourceTraverse
+            /**
+             * Main source traverse for getting some information:
+             * 
+             * ##        First Traverse        ##
+             * 1. dist              : distance from source to each node in the component
+             * 2. sharedBitIndex    : record each node that can be found first by which neighbor of source
+             * ##################################
+             * 
+             * ##        Second Traverse        ##
+             * 3. relation          : record each node that should remain the distance when source are some specific nodes
+             * ###################################
+             * 
+             * @todo 
+             * 1. consider another way to replace "the 3 if statement", the way of branchless technique may be a good choice
+             * 2. A way : when currentNodeID find unvisited node v, then just push v into Q, and don't update its dist,
+             *          until v becomes currentNodeID, then assign the distance for v.
+            */
+
+            #ifdef DEBUG
+            printf("\n####      Source %2d 1st traverse...      ####\n\n", sourceID);
+            #endif
+
+            while(!qIsEmpty(Q)){
+                currentNodeID = qPopFront(Q);
+                
+                #ifdef DEBUG
+                printf("currentNodeID = %2d ... dist = %2d ... SI = %x ... relation = %x\n", currentNodeID, dist_arr[currentNodeID], sharedBitIndex[currentNodeID], relation[currentNodeID]);
+                #endif
+
+                for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    if(dist_arr[neighborNodeID] == -1){ //traverse new succesor and update its SI
+                        qPushBack(Q, neighborNodeID);
+                        dist_arr[neighborNodeID]        = dist_arr[currentNodeID] + 1;
+                        sharedBitIndex[neighborNodeID] |= sharedBitIndex[currentNodeID];
+                        
+                        //update CC (push-based)
+                        _CCs[neighborNodeID] += _csr->ff[sourceID] + dist_arr[neighborNodeID] * _csr->representNode[sourceID];
+
+                        #ifdef DEBUG
+                        printf("\t[1]unvisited_SI[%2d] => %2x, dist[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], neighborNodeID, dist_arr[neighborNodeID]);
+                        #endif
+                    }
+                    else if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){ //traverse to discovered successor and record its SI
+                        sharedBitIndex[neighborNodeID] |= sharedBitIndex[currentNodeID];
+                        
+                        #ifdef DEBUG
+                        printf("\t[2]visited_SI[%2d] => %2x, dist[%2d] = %2d\n", neighborNodeID, sharedBitIndex[neighborNodeID], neighborNodeID, dist_arr[neighborNodeID]);
+                        #endif
+                    }
+                    else if(dist_arr[neighborNodeID] == dist_arr[currentNodeID]){ //traverse to discovered neighbor which is at same level as currentNodeID
+                        relation[currentNodeID] |= sharedBitIndex[neighborNodeID] & (~sharedBitIndex[currentNodeID]);
+                    
+                        #ifdef DEBUG
+                        printf("\t[3]Red edge found(%2d, %2d), ", currentNodeID, neighborNodeID);
+                        printf("relation[%2d] = %2x\n", currentNodeID, relation[currentNodeID], neighborNodeID, relation[neighborNodeID]);
+                        #endif
+                    }
+                }
+            }
+            
+            //each sourceID update its CC with self ff, since dist_arr[sourceID] now is 0
+            _CCs[sourceID] += _csr->ff[sourceID];
+
+            #ifdef DEBUG
+            printf("\n####      Source %2d 2nd traverse...      ####\n\n", sourceID);
+            #endif
+
+            Q->front = 0;
+            while(!qIsEmpty(Q)){
+                currentNodeID = qPopFront(Q);
+
+                #ifdef DEBUG
+                printf("currentNodeID = %2d ... dist = %2d ... relation = %x\n", currentNodeID, dist_arr[currentNodeID]);
+                #endif
+
+                for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+                    neighborNodeID = _csr->csrE[neighborIndex];
+
+                    if(dist_arr[neighborNodeID] == dist_arr[currentNodeID] + 1){
+                        relation[neighborNodeID] |= relation[currentNodeID];
+
+                        #ifdef DEBUG
+                        printf("\t[4]relation[%2d] = %2x\n", neighborNodeID, relation[neighborNodeID]);
+                        #endif
+
+                    }
+                }
+            }
+            #pragma endregion //SourceTraverse
+
+
+
+            #pragma region checkingSource_DistAns
+            #ifdef CheckDistAns
+            checkDistAns_exceptD1Node(_csr, dist_arr, sourceID);
+            #endif
+
+            #ifdef CheckCC_Ans
+            dynamic_D1_CC_trace_component_Ans(_csr, _CCs, sourceID);
+            #endif
+            #pragma endregion //checkingSourceDistAns
+
+
+
+            // #pragma region sourceCC_ComponentAccumulation_pushBased
+            // //The remaining nodes in the component should be accumulate like below
+            // for(int tempNotD1NodeIndex = 0 ; tempNotD1NodeIndex < _csr->ordinaryNodeCount ; tempNotD1NodeIndex ++){
+            //     int notD1Node = _csr->notD1Node[tempNotD1NodeIndex];
+            //     _CCs[notD1Node] += _csr->ff[sourceID] + dist_arr[notD1Node] * _csr->representNode[sourceID];
+            // }
+            // #pragma endregion //sourceCC_ComponentAccumulation_pushBased
+
+            
+
+            #pragma region neighborOfSource_GetDist_and_AccumulationCC
+            //recover the distance from source to neighbor of source
+            for(int sourceNeighborIndex = 0 ; sourceNeighborIndex < mappingCount ; sourceNeighborIndex ++){
+
+
+                #pragma region GetDist
+                memset(neighbor_dist_ans, -1, sizeof(int) * _csr->csrVSize);
+
+                int sourceNeighborID = mapping_SI[sourceNeighborIndex];
+                unsigned long long bit_SI = 1 << sourceNeighborIndex;
+
+                nodeDone[sourceNeighborID] = 1;
+                
+                #ifdef DEBUG
+                printf("\nnextBFS = %2d, bit_SI = %x\n", sourceNeighborID, bit_SI);
+                #endif
+                
+                for(int tempNotD1NodeIndex = 0 ; tempNotD1NodeIndex < _csr->ordinaryNodeCount ; tempNotD1NodeIndex ++){
+                    int nD1NodeID = _csr->notD1Node[tempNotD1NodeIndex];
+
+                    if((sharedBitIndex[nD1NodeID] & bit_SI) > 0){
+                        neighbor_dist_ans[nD1NodeID] = dist_arr[nD1NodeID] - 1;
+                    
+                        #ifdef DEBUG
+                        printf("\t[5]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", nD1NodeID, neighbor_dist_ans[nD1NodeID], nD1NodeID, sharedBitIndex[nD1NodeID]);
+                        #endif
+
+                    }
+                    else{
+                        neighbor_dist_ans[nD1NodeID] = dist_arr[nD1NodeID] + 1;
+                        
+                        #ifdef DEBUG
+                        printf("\t[6]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", nD1NodeID, neighbor_dist_ans[nD1NodeID], nD1NodeID, sharedBitIndex[nD1NodeID]);
+                        #endif
+
+                        if((relation[nD1NodeID] & bit_SI) > 0){
+                            neighbor_dist_ans[nD1NodeID] --;
+                            
+                            #ifdef DEBUG
+                            printf("\t[7]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", nD1NodeID, neighbor_dist_ans[nD1NodeID], nD1NodeID, sharedBitIndex[nD1NodeID]);
+                            #endif
+
+                        }
+                    }
+                    
+                    //update CC (push-based)
+                    _CCs[nD1NodeID] += _csr->ff[sourceNeighborID] + neighbor_dist_ans[nD1NodeID] * _csr->representNode[sourceNeighborID];
+                }
+
+                #pragma region checkingSourceNeighbor_DistAns
+                #ifdef CheckDistAns
+                checkDistAns_exceptD1Node(_csr, neighbor_dist_ans, sourceNeighborID);
+                #endif
+
+                #ifdef CheckCC_Ans
+                dynamic_D1_CC_trace_component_Ans(_csr, _CCs, sourceNeighborID);
+                #endif
+                #pragma endregion //checkingSourceNeighbor_DistAns
+
+                #pragma endregion //GetDist
+
+
+                // #pragma region sourceNeighborCC_ComponentAccumulation_pushBased
+                // for(int tempNotD1NodeIndex = 0 ; tempNotD1NodeIndex < _csr->ordinaryNodeCount ; tempNotD1NodeIndex ++){
+                //     int notD1Node = _csr->notD1Node[tempNotD1NodeIndex];
+                //     _CCs[notD1Node] += _csr->ff[sourceNeighborID] + neighbor_dist_ans[notD1Node] * _csr->representNode[sourceNeighborID];
+                // }
+                // #pragma endregion //sourceNeighborCC_ComponentAccumulation_pushBased
+            }
+            #pragma endregion //neighborOfSource_GetDist_and_AccumulationCC
+
+            //reset the SI & relation arrays
+            memset(relation, 0, sizeof(unsigned long long) * _csr->csrVSize);
+            memset(sharedBitIndex, 0, sizeof(unsigned long long) * _csr->csrVSize);
+
+            // break;
+        }
+    }
+    #pragma endregion //Traverse
+
+
+
+    #pragma region d1GetCC_FromParent
+    /**
+     * Updating CC of d1Nodes is start from the last d1Node in _csr->degreeOneNodesQ,
+     * since the nodes in rear end in _csr->degreeOneNodesQ are closer to the component,
+     * the nodes in front end in _csr->degreeOneNodesQ are farther from the component
+     * 
+     * ##         Process d1Node from rear to front        ##
+    */
+
+    int d1NodeID        = -1;
+    int d1NodeParentID  = -1;
+    for(int d1NodeIndex = _csr->degreeOneNodesQ->rear ; d1NodeIndex >= 0 ; d1NodeIndex --){
+        d1NodeID        = _csr->degreeOneNodesQ->dataArr[d1NodeIndex];
+        d1NodeParentID  = _csr->D1Parent[d1NodeID];
+        _CCs[d1NodeID]  = _CCs[d1NodeParentID] + _csr->totalNodeNumber - 2 * _csr->representNode[d1NodeID];
+        
+        #ifdef CheckCC_Ans
+        dynamic_D1_CC_trace_D1_Ans(_csr, _CCs, d1NodeID);
+        #endif
+    }
+    #pragma endregion //d1GetCC_FromParent
+    printf("\n");
+}
+#pragma endregion //Function_computing
+
+
+#pragma region Function_CheckingAns
 
 void CC_CheckAns(struct CSR* _csr, int* TrueCC_Ans, int* newCC_Ans){
     for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
@@ -1503,6 +1860,8 @@ void dynamic_D1_CC_trace_D1_Ans(struct CSR* _csr, int* _newCC_Ans, int _d1NodeID
     return;
 }
 
+#pragma endregion //Functio_CheckingAns
+
 int main(int argc, char* argv[]){
     char* datasetPath = argv[1];
     printf("exeName = %s\n", argv[0]);
@@ -1510,30 +1869,34 @@ int main(int argc, char* argv[]){
     struct Graph* graph = buildGraph(datasetPath);
     struct CSR* csr     = createCSR(graph);
     
-    double CC_shareBasedTime            = 0;
-    double CC_ori                       = 0;
-    double D1FoldingTime                = 0;
-    double D1_CC_ori                    = 0;
-    double D1_CC_shareBasedTime         = 0;
-    double D1_sort_CC_shareBasedTime    = 0;
+    double CC_shareBasedTime                = 0;
+    double CC_ori                           = 0;
+    double D1FoldingTime                    = 0;
+    double D1_CC_ori                        = 0;
+    double D1_CC_shareBasedTime             = 0;
+    double D1_sort_CC_shareBasedTime        = 0;
+    double D1_sort_CC_64Bit_shareBasedTime  = 0;
 
-    double time1                        = 0;
-    double time2                        = 0;
+    double time1                            = 0;
+    double time2                            = 0;
 
     int* CCs        = (int*)calloc(sizeof(int), csr->csrVSize);
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
     time1 = seconds();
-    compute_D1_CC_shareBased_DegreeOrder(csr, CCs);
+    compute_D1_CC_sharedBased_DegreeOrder_64bit(csr, CCs);
     time2 = seconds();
-    D1_sort_CC_shareBasedTime = time2 - time1;
-    printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
+    D1_sort_CC_64Bit_shareBasedTime = time2 - time1;
+    printf("[Execution Time] D1_sort_CC_64Bit_shareBasedTime = %f\n", D1_sort_CC_64Bit_shareBasedTime);
     #pragma endregion //Dev
 
 
 
     #pragma region Release
+    /************************************************************
+     *                      D1Folding                           *
+    ************************************************************/
     // time1 = seconds();
     // D1Folding(csr);
     // time2 = seconds();
@@ -1541,6 +1904,9 @@ int main(int argc, char* argv[]){
     // printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
 
 
+    /************************************************************
+     *                      computeCC                           *
+    ************************************************************/
     // time1 = seconds();
     // computeCC(csr, CCs);
     // time2 = seconds();
@@ -1548,23 +1914,44 @@ int main(int argc, char* argv[]){
     // printf("[Execution Time] CC_ori = %f\n", CC_ori);
     
     
+    /************************************************************
+     *                  computeCC_shareBased                    *
+    ************************************************************/
     // time1 = seconds();
     // computeCC_shareBased(csr, CCs);
     // time2 = seconds();
     // CC_shareBasedTime = time2 - time1;
     // printf("[Execution Time] CC_shareBased = %f\n", CC_shareBasedTime);
     
+
+    /************************************************************
+     *                      compute_D1_CC                       *
+    ************************************************************/
     // time1 = seconds();
     // compute_D1_CC(csr, CCs);
     // time2 = seconds();
     // D1_CC_ori = time2 - time1;
     // printf("[Execution Time] D1_CC_ori = %f\n", D1_CC_ori);
 
+
+    /************************************************************
+     *                  compute_D1_CC_shareBased                *
+    ************************************************************/
     // time1 = seconds();
     // compute_D1_CC_shareBased(csr, CCs);    
     // time2 = seconds();
     // D1_CC_shareBasedTime = time2 - time1;
     // printf("[Execution Time] D1_CC_shareBasedTime = %f\n", D1_CC_shareBasedTime);
+
+
+    /************************************************************
+     *              compute_D1_CC_shareBased_DegreeOrder        *
+    ************************************************************/
+    // time1 = seconds();
+    // compute_D1_CC_shareBased_DegreeOrder(csr, CCs);
+    // time2 = seconds();
+    // D1_sort_CC_shareBasedTime = time2 - time1;
+    // printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
     #pragma endregion //Release
 
 }
