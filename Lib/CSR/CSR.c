@@ -16,17 +16,24 @@ struct CSR* createCSR(struct Graph* _adjlist){
     if(_adjlist->startAtZero == 1){
         // printf("Graph startAtZero = yes\n");
         tempNodeNum = _adjlist->nodeNum + 1;
-        CSR_V = (int*)malloc(sizeof(int) * tempNodeNum);
+        CSR_V = (int*)malloc(sizeof(int) * (2 * tempNodeNum));
         nodeID = 0;
     }
     else{
         // printf("Graph startAtZero = no\n");
         tempNodeNum = _adjlist->nodeNum + 2;
-        CSR_V = (int*)malloc(sizeof(int) * tempNodeNum);
+        CSR_V = (int*)malloc(sizeof(int) * (2 * tempNodeNum));
         CSR_V[0] = -1;
         nodeID = 1;
     }
-    CSR_E = (int*)malloc(sizeof(int) * _adjlist->edgeNum * 2);
+
+    /**
+     * CSR_E : 4 times of _adjlist->edgeNum
+     * first "2" means undirected edges need to be record two times
+     * second "2" is the space that preserving for new node such as : AP clone...
+    */
+    CSR_E = (int*)malloc(sizeof(int) * (_adjlist->edgeNum) * 2 * 2); 
+    
     int indexCount = -1;
 
     int maxDegree = 0;
@@ -69,6 +76,8 @@ struct CSR* createCSR(struct Graph* _adjlist){
     csr->nodesType          = (char*)malloc(sizeof(char) * csr->csrVSize);
     memset(csr->nodesType, 0, sizeof(char) * csr->csrVSize);
 
+    csr->CCs                = (int*)malloc(sizeof(int) * csr->csrVSize);
+    memset(csr->CCs, 0, sizeof(int) * csr->csrVSize);
     // csr->BCs                = (float*)calloc(sizeof(float), csr->csrVSize);
     
 
@@ -111,7 +120,7 @@ void showCSR(struct CSR* csr){
         nodeID ++;
     }
     int neighborNum = 0;
-    for(; nodeID < csr->csrVSize - 1 ; nodeID ++){
+    for(nodeID = csr->startNodeID ; nodeID < csr->endNodeID ; nodeID ++){
         neighborNum = csr->csrV[nodeID + 1] - csr->csrV[nodeID];
         printf("neighborNum = %d, neighbor[%d] = {", neighborNum, nodeID);
         for(int i = 0 ; i < neighborNum ; i ++){

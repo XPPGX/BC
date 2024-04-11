@@ -5,7 +5,6 @@
 #include "qQueue.h"
 
 //#define _DEBUG_
-
 struct qQueue* InitqQueue(){
     struct qQueue* queue = (struct qQueue*)malloc(sizeof(struct qQueue));
     queue->dataArr = (int*)malloc(sizeof(int) * 5);

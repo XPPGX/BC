@@ -32,3 +32,11 @@ dataset/web-wikipedia2009.mtx
 dataset/wikiTalk.mtx
 dataset/web-Google-Ok2.mtx
 dataset/soc-Epinions1-Ok2.mtx
+Lib/DatasetInfo/Degree_distribution_musae_git.txt
+Lib/DatasetInfo/Degree_distribution_tech-RL-caida.mtx.txt
+Lib/DatasetInfo/Degree_distribution_twitch_gamers.txt
+Lib/DatasetInfo/Degree_distribution_web-Google-Ok2.mtx.txt
+Lib/DatasetInfo/Degree_distribution_web-wikipedia2009.mtx.txt
+Lib/DatasetInfo/Degree_distribution_wikiTalk.mtx.txt
+dataset/soc-youtube.mtx
+dataset/web-NotreDame-OK.mtx

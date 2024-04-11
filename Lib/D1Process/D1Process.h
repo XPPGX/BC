@@ -21,9 +21,5 @@
 #ifndef D1Process
 #define D1Process
 
-#define Ordinary    1
-#define D1          2
-#define D1Hub       3
-
 void D1Folding(struct CSR* _csr);
 #endif
