@@ -7,7 +7,7 @@
 
 
 #ifndef ADJLIST
-#error Need include "AdjList.h", pls add "vVector.h" into "headers.h"
+// #error Need include "AdjList.h", pls add "vVector.h" into "headers.h"
 #include "../AdjList/AdjList.h"
 #include "../AdjList/AdjList.c"
 #endif
@@ -27,8 +27,9 @@
 #ifndef AP_Process
 #define AP_Process
 
-struct comp_info{
-    int id;
+struct part_info{
+    int apID;
+    int compID;
     int represent;
     int ff;
 };
