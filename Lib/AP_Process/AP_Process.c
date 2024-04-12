@@ -451,12 +451,12 @@ void AP_Copy_And_Split(struct CSR* _csr){
                         }
                     }
                 }
-                printf("\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
+                printf("\t\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
 
                 part[partIndex].represent   = part_represent;
                 part[partIndex].ff          = part_ff;
 
-                printf("\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
+                printf("\t\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
 
                 total_represent += part[partIndex].represent;
                 total_ff += part[partIndex].ff;       
@@ -505,12 +505,12 @@ void AP_Copy_And_Split(struct CSR* _csr){
                         }
                     }
                 }
-                printf("\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
+                printf("\t\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
 
                 part[partIndex].represent   = part_represent + _csr->representNode[apNeighborNodeID];
                 part[partIndex].ff          = part_ff + _csr->ff[apNeighborNodeID] + part[partIndex].represent;
 
-                printf("\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
+                printf("\t\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
 
                 total_represent += part[partIndex].represent;
                 total_ff += part[partIndex].ff; 
@@ -533,24 +533,27 @@ void AP_Copy_And_Split(struct CSR* _csr){
          * 所以之後 在各 component 內的 traverse 不會在計算 apNodeID本尊 的 CCs
         */
         _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
-
         printf("_csr->CCs[%d] = %d, total_ff = %d, total_represent = %d\n", apNodeID, _csr->CCs[apNodeID], total_ff, total_represent);
         
         int partNum = compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID];
 
-        
+        //暫存apNodeID_ori_ff, apNodeID_ori_represent
+        int apNodeID_ori_ff         = _csr->ff[apNodeID];
+        int apNodeID_ori_represent  = _csr->representNode[apNodeID];
+
         for(partIndex = 0 ; partIndex < partNum ; partIndex ++){
             //apNodeID主動，其他為被動
+            
 
             if(part[partIndex].apID != -1){//Split AP
                 int apID = part[partIndex].apID;
-                int outer_represent = total_represent - part[partIndex].represent + _csr->representNode[apNodeID];
-
+                int outer_represent = total_represent - part[partIndex].represent + apNodeID_ori_represent;
+                printf("\tapID = %d, outer_represent = %d\n", apID, outer_represent);
                 //更新 represent 跟 ff
                 _csr->representNode[apID]   += outer_represent;
-                _csr->ff[apID]              += (total_ff - part[partIndex].ff) + outer_represent;
+                _csr->ff[apID]              += (total_ff - part[partIndex].ff) + outer_represent + apNodeID_ori_ff;
 
-                printf("node %d = {w = %d, ff = %d}\n", apID, _csr->representNode[apID], _csr->ff[apID]);
+                printf("\tapID %d = {w = %d, ff = %d}\n", apID, _csr->representNode[apID], _csr->ff[apID]);
 
                 //斷開 apNodeID 連到 apID 的 edge
                 for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
@@ -558,6 +561,8 @@ void AP_Copy_And_Split(struct CSR* _csr){
                     if(nid == apID){
                         swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
                         _csr->csrV[apNodeID] ++;
+                        _csr->csrNodesDegree[apNodeID] --;
+
                         break;
                     }
                 }
@@ -568,6 +573,8 @@ void AP_Copy_And_Split(struct CSR* _csr){
                     if(nid == apNodeID){
                         swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apID]]));
                         _csr->csrV[apID] ++;
+                        _csr->csrNodesDegree[apID] --;
+
                         break;
                     }
                 }
@@ -577,15 +584,27 @@ void AP_Copy_And_Split(struct CSR* _csr){
             else if(part[partIndex].compID != -1){//Split Comp
                 //取得這個 component 以外的所有 node 個數，不包含 apNodeID
                 int outer_represent = total_represent - part[partIndex].represent;
-                
+                printf("\tcompID %d, outer_represent = %d\n", part[partIndex].compID, outer_represent);
+                /**
+                 * 如果所有part之中，只有一個component，則
+                 * 1. 不須創建 AP分身，用 AP本尊就可以
+                 * 2. AP本尊.represent, AP本尊.ff，需要根據 outer_represent 去更新
+                 * 
+                 * 如果所有part之中，有 k 個 component，則
+                 * 1. 需要創建 k 個 AP分身，捨棄 AP本尊
+                 * 2. 更新每個AP分身的 represent 跟 ff，根據 outer_represent 去更新
+                */
                 if(compNum_arr[apNodeID] == 1){
-                    ;
+                    _csr->representNode[apNodeID] += outer_represent;
+                    _csr->ff[apNodeID] += (total_ff - part[partIndex].ff);
+                    printf("\t[One comp] apNodeID %d = {represent = %d, ff = %d}\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
                 }
                 // else if(compNum_arr[apNodeID] > 1){
-                //     ;
+                    
                 // }
             }
         }
+        printf("=============\n");
         #pragma endregion //Split
 
         #pragma region checkAns
@@ -605,25 +624,26 @@ void AP_Copy_And_Split(struct CSR* _csr){
         int total_dist_from_apNode = 0;
         Q->front = 0;
         Q->rear = -1;
+        int checkNode = 58;
         memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
 
-        dist_arr[apNodeID] = 0;
-        qPushBack(Q, apNodeID);
+        dist_arr[checkNode] = 0;
+        qPushBack(Q, checkNode);
 
         while(!qIsEmpty(Q)){
             curID = qPopFront(Q);
 
-            for(nIdx = _csr->csrV[curID] ; nIdx < _csr->oriCsrV[curID + 1] ; nIdx ++){
+            for(nIdx = _csr->oriCsrV[curID] ; nIdx < _csr->oriCsrV[curID + 1] ; nIdx ++){
                 nID = _csr->csrE[nIdx];
 
                 if(dist_arr[nID] == -1){
                     qPushBack(Q, nID);
                     dist_arr[nID] = dist_arr[curID] + 1;
-                    total_dist_from_apNode += _csr->ff[nID] + dist_arr[nID] * _csr->representNode[nID];
+                    total_dist_from_apNode += dist_arr[nID];
                 }
             }
         }
-        printf("total_dist_from_apNode = %d\n", total_dist_from_apNode);
+        printf("total_dist_from_apNode[%d] = %d\n", checkNode, total_dist_from_apNode);
         #pragma endregion
         printf("\n");
         // break;
