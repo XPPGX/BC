@@ -34,6 +34,18 @@ struct part_info{
     int ff;
 };
 
+struct apClone_info{
+    int* apCloneID;
+    int* apCloneCsrV;
+    int* apCloneCsrE;
+
+    int* apCloneff;
+    int* apCloneRepresent;
+    
+    int apCloneCsrV_offsetCounter;
+    int apCloneCsrE_offsetCounter;
+};
+
 /**
  * @brief
  * Find all APs existed in current graph, record them into _csr->AP_List

@@ -362,6 +362,21 @@ void AP_Copy_And_Split(struct CSR* _csr){
     
 
     #pragma region AP_splitGraph
+    /**
+     * prepare for recording apClone information
+    */
+    int apCloneMaxNewSize = ap_count * maxBranch;
+    struct apClone_info* apClone = (struct apClone_info*)malloc(sizeof(struct apClone_info));
+    apClone->apCloneCsrV        = (int*)malloc(sizeof(int) * apCloneMaxNewSize);
+    apClone->apCloneff          = (int*)malloc(sizeof(int) * apCloneMaxNewSize);
+    apClone->apCloneRepresent   = (int*)mallocs(sizeof(int) * apCloneMaxNewSize);
+    apClone->apCloneCsrE        = (int*)malloc(sizeof(int) * _csr->csrESize);
+    apClone->apCloneCsrE_offsetCounter = 0;
+    apClone->apCloneCsrV_offsetCounter = 0;
+
+    /**
+     * prepare for record each part information of every originAP
+    */
     struct part_info* part = (struct part_info*)malloc(sizeof(struct part_info) * maxBranch);
 
     int* dist_arr = (int*)malloc(sizeof(int) * _csr->csrVSize);
@@ -580,6 +595,8 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 }
                 //被動AP 的 apNeighborNum - 1
                 apNeighborNum_arr[apID] --;
+                
+                printf("\tCut (%d, %d)\n", apNodeID, apID);
             }
             else if(part[partIndex].compID != -1){//Split Comp
                 //取得這個 component 以外的所有 node 個數，不包含 apNodeID
@@ -599,6 +616,12 @@ void AP_Copy_And_Split(struct CSR* _csr){
                     _csr->ff[apNodeID] += (total_ff - part[partIndex].ff);
                     printf("\t[One comp] apNodeID %d = {represent = %d, ff = %d}\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
                 }
+                
+                /**
+                 * @todo
+                 * 遇到要compNum_arr[apNodeID] > 1 的 apNodeID，
+                 * 準備要把 ap本尊捨棄，創建 ap 分身。
+                */
                 // else if(compNum_arr[apNodeID] > 1){
                     
                 // }
@@ -624,7 +647,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
         int total_dist_from_apNode = 0;
         Q->front = 0;
         Q->rear = -1;
-        int checkNode = 58;
+        int checkNode = 60;
         memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
 
         dist_arr[checkNode] = 0;
