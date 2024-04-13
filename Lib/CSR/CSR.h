@@ -64,6 +64,8 @@ struct CSR{
     int* compID;            //儲存每個node在哪個component
     int* apCloneTrackOriAp_ID;   //紀錄 AP分身 原本的 AP本尊是誰
     int apCloneCount;       //紀錄創建了幾個 AP分身
+    int compNum;            //紀錄comp有幾個
+    int maxCompSize_afterSplit;        //紀錄AP切割後，最大的comp有幾個點
 
     float* BCs;
     int* CCs;
