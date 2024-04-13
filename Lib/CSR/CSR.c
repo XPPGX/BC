@@ -73,11 +73,11 @@ struct CSR* createCSR(struct Graph* _adjlist){
     csr->oriCsrV            = (int*)malloc(sizeof(int) * csr->csrVSize);
     memcpy(csr->oriCsrV, csr->csrV, sizeof(int) * csr->csrVSize);
 
-    csr->nodesType          = (char*)malloc(sizeof(char) * csr->csrVSize);
-    memset(csr->nodesType, 0, sizeof(char) * csr->csrVSize);
+    csr->nodesType          = (char*)malloc(sizeof(char) * (csr->csrVSize) * 2);
+    memset(csr->nodesType, 0, sizeof(char) * (csr->csrVSize) * 2);
 
-    csr->CCs                = (int*)malloc(sizeof(int) * csr->csrVSize);
-    memset(csr->CCs, 0, sizeof(int) * csr->csrVSize);
+    csr->CCs                = (int*)malloc(sizeof(int) * (csr->csrVSize) * 2);
+    memset(csr->CCs, 0, sizeof(int) * (csr->csrVSize) * 2);
     // csr->BCs                = (float*)calloc(sizeof(float), csr->csrVSize);
     
 

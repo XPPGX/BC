@@ -18,11 +18,11 @@ void D1Folding(struct CSR* _csr){
     
     int outerNodesNum       = 0;
 
-    _csr->representNode     = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    _csr->representNode     = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
     for(int i = 0 ; i < _csr->csrVSize ; i ++){
         _csr->representNode[i] = 1;
     }
-    _csr->ff                = (int*)calloc(sizeof(int), _csr->csrVSize);
+    _csr->ff                = (int*)calloc(sizeof(int), (_csr->csrVSize) * 2);
 
     //record each d1Node's ancestor to recover the dist of each d1Node quickly
     _csr->D1Parent          = (int*)malloc(sizeof(int) * (_csr->csrVSize)); //Note : its size is |V|

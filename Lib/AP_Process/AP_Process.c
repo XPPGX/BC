@@ -206,7 +206,7 @@ void quicksort_nodeID_with_apNum(int* _nodes, int* _apNum, int _left, int _right
 void AP_Copy_And_Split(struct CSR* _csr){
     _csr->compID = (int*)malloc(sizeof(int) * _csr->csrVSize);
     memset(_csr->compID, -1, sizeof(int) * _csr->csrVSize);
-
+    
     int ap_count = _csr->ap_count;
 
     struct qQueue* Q = InitqQueue();
@@ -365,15 +365,10 @@ void AP_Copy_And_Split(struct CSR* _csr){
     /**
      * prepare for recording apClone information
     */
-    int apCloneMaxNewSize = ap_count * maxBranch;
-    struct apClone_info* apClone = (struct apClone_info*)malloc(sizeof(struct apClone_info));
-    apClone->apCloneCsrV        = (int*)malloc(sizeof(int) * apCloneMaxNewSize);
-    apClone->apCloneff          = (int*)malloc(sizeof(int) * apCloneMaxNewSize);
-    apClone->apCloneRepresent   = (int*)mallocs(sizeof(int) * apCloneMaxNewSize);
-    apClone->apCloneCsrE        = (int*)malloc(sizeof(int) * _csr->csrESize);
-    apClone->apCloneCsrE_offsetCounter = 0;
-    apClone->apCloneCsrV_offsetCounter = 0;
-
+    _csr->apCloneTrackOriAp_ID = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    memset(_csr->apCloneTrackOriAp_ID, -1, sizeof(int) * (_csr->csrVSize) * 2);
+    _csr->apCloneCount = 0;
+    
     /**
      * prepare for record each part information of every originAP
     */
@@ -392,12 +387,13 @@ void AP_Copy_And_Split(struct CSR* _csr){
             continue;
         }
 
+        #pragma region GetPartInfo
         printf("AP %d :\n", apNodeID);
         memset(part, -1, sizeof(struct part_info) * maxBranch);
         memset(compFlag, -1, sizeof(int) * maxCompID);
         int total_represent = 0;
         int total_ff        = 0;
-
+        
         int partIndex = 0;
         for(apNeighborIndex = _csr->csrV[apNodeID] ; apNeighborIndex < _csr->oriCsrV[apNodeID + 1] ; apNeighborIndex ++){
             apNeighborNodeID    = _csr->csrE[apNeighborIndex];
@@ -405,7 +401,6 @@ void AP_Copy_And_Split(struct CSR* _csr){
             
             printf("\tapNeighborNodeID = %d, tempCompID = %d\n", apNeighborNodeID, tempCompID);
 
-            #pragma region GetPartInfo
             /**
              * according to apNeighborNodeID is ap or comp to 
              * 1. assign apID or compID in part[partIndex]
@@ -538,9 +533,8 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 continue;
             }
 
-            #pragma endregion //GetPartInfo
-            
         }
+        #pragma endregion //GetPartInfo
 
         #pragma region Split
         /**
@@ -560,7 +554,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
             //apNodeID主動，其他為被動
             
 
-            if(part[partIndex].apID != -1){//Split AP
+            if(part[partIndex].apID != -1){//Split target part is AP
                 int apID = part[partIndex].apID;
                 int outer_represent = total_represent - part[partIndex].represent + apNodeID_ori_represent;
                 printf("\tapID = %d, outer_represent = %d\n", apID, outer_represent);
@@ -578,6 +572,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
                         _csr->csrV[apNodeID] ++;
                         _csr->csrNodesDegree[apNodeID] --;
 
+                        printf("\tCut (%d, %d)\n", apNodeID, apID);
                         break;
                     }
                 }
@@ -590,41 +585,126 @@ void AP_Copy_And_Split(struct CSR* _csr){
                         _csr->csrV[apID] ++;
                         _csr->csrNodesDegree[apID] --;
 
+                        printf("\tCut (%d, %d)\n", apID, apNodeID);
                         break;
                     }
                 }
                 //被動AP 的 apNeighborNum - 1
                 apNeighborNum_arr[apID] --;
-                
-                printf("\tCut (%d, %d)\n", apNodeID, apID);
             }
-            else if(part[partIndex].compID != -1){//Split Comp
+            else if(part[partIndex].compID != -1){//Split target part is Comp
                 //取得這個 component 以外的所有 node 個數，不包含 apNodeID
                 int outer_represent = total_represent - part[partIndex].represent;
                 printf("\tcompID %d, outer_represent = %d\n", part[partIndex].compID, outer_represent);
+
                 /**
                  * 如果所有part之中，只有一個component，則
                  * 1. 不須創建 AP分身，用 AP本尊就可以
                  * 2. AP本尊.represent, AP本尊.ff，需要根據 outer_represent 去更新
-                 * 
-                 * 如果所有part之中，有 k 個 component，則
-                 * 1. 需要創建 k 個 AP分身，捨棄 AP本尊
-                 * 2. 更新每個AP分身的 represent 跟 ff，根據 outer_represent 去更新
+                 * 3. 斷開 AP本尊 跟 其他 component 的 edges
                 */
                 if(compNum_arr[apNodeID] == 1){
                     _csr->representNode[apNodeID] += outer_represent;
                     _csr->ff[apNodeID] += (total_ff - part[partIndex].ff);
+
                     printf("\t[One comp] apNodeID %d = {represent = %d, ff = %d}\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
+
+                    /**
+                     * apNodeID(AP本尊) 主動斷開 跟 (其他不同 comp 的 node) 的 edge
+                     * (其他不同 comp 的 node) 主動斷開 跟 apNodeID(AP本尊) 的 edge
+                    */
+                    int tempNid = -1;
+                    for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
+                        int nid = _csr->csrE[nidx];
+                        tempNid = nid;
+                        if(_csr->compID[nid] != part[partIndex].compID){
+                            // apNodeID(AP本尊) 主動斷開 跟 (其他不同 comp 的 node(有可能也包含其他AP)) 的 edge
+                            swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
+                            _csr->csrV[apNodeID] ++;
+                            _csr->csrNodesDegree[apNodeID] --;
+
+                            printf("\tcut (%d, %d)\n", apNodeID, nid);
+
+                            //(其他不同 comp 的 node(有可能也包含其他AP)) 主動斷開 跟 apNodeID(AP本尊) 的 edge
+                            for(int nidx2 = _csr->csrV[nid] ; nidx2 < _csr->oriCsrV[nid + 1] ; nidx2 ++){
+                                int nid2 = _csr->csrE[nidx2];
+                                
+                                if(nid2 == apNodeID){
+                                    swap(&(_csr->csrE[nidx2]), &(_csr->csrE[_csr->csrV[nid]]));
+                                    _csr->csrV[nid] ++;
+                                    _csr->csrNodesDegree --;
+                                    
+                                    printf("\tcut (%d, %d)\n", nid, nid2);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 /**
                  * @todo
-                 * 遇到要compNum_arr[apNodeID] > 1 的 apNodeID，
-                 * 準備要把 ap本尊捨棄，創建 ap 分身。
+                 * 如果所有part之中，有 k 個 component，則
+                 * 1. 需要創建 k 個 AP分身，捨棄 AP本尊
+                 * 2. 更新每個AP分身的 represent 跟 ff，根據 outer_represent 去更新
+                 * 3. 以 _csr->endNodeID 開始去建立新的 node
+                 * @bug
+                 * 這裡的 _csr->csrV 處理有問題
                 */
-                // else if(compNum_arr[apNodeID] > 1){
+                else if(compNum_arr[apNodeID] > 1){
+                    // int apCloneDataIndex = apClone->newNodeCount;
+                    // apClone->newNodeCount ++;
+                    _csr->apCloneCount ++;
+                    int newApCloneID = _csr->endNodeID + _csr->apCloneCount;
+                    printf("newApCloneID = %d\n", newApCloneID);
+
+                    // _csr->csrV[newApCloneID] = nextCsrV_offset;
                     
-                // }
+                    //新增 (apClone(ap分身) 的 ID) 跟 (ori_ap(ap本尊) 的 ID)
+                    // apClone->Ori_apNodeID[apCloneDataIndex]     = apNodeID;
+                    // apClone->apCloneID[apCloneDataIndex]        = _csr->endNodeID + apClone->newNodeCount;
+                    _csr->apCloneTrackOriAp_ID[newApCloneID] = apNodeID;
+
+                    //更新 apClone_ff, apClone_represent
+                    // apClone->apCloneff[apCloneDataIndex]        = (total_ff - part[partIndex].ff) + _csr->ff[apNodeID];
+                    // apClone->apCloneRepresent[apCloneDataIndex] = outer_represent + _csr->representNode[apNodeID];
+                    _csr->representNode[newApCloneID]   = outer_represent + _csr->representNode[apNodeID];
+                    _csr->ff[newApCloneID]              = (total_ff - part[partIndex].ff) + _csr->ff[apNodeID];
+
+                    /**
+                     * 此處的 neighborNodeID 是 apNodeID 的其中一個neighbor
+                     * 
+                     * 對 (compID[neighborNodeID] == part[partIndex].compID) 的 neighborNodeID
+                     * "修改" neighborNodeID(主動) 與 apNodeID(被動) 的 edge => 變成 (neighborNodeID, newApCloneID)
+                     * "調換" apNodeID(主動) 與 neighborNodeID(被動) 的 edge位置 => 相同 component 的 neighbor 會在一起，
+                     *                                                              且該 component 的第一個neighbor並被 _csr->csrV[newApCloneID] 指著
+                    */
+                    //讓 newApCloneID 指向 (apNodeID 當前指向的 csrE)
+                    _csr->csrV[newApCloneID] = _csr->csrV[apNodeID];
+                    for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
+                        int nid = _csr->csrE[nidx];
+
+                        if(_csr->compID[nid] == part[partIndex].compID){
+                            //調換 (csrE中 nid 的位置) 到 (csrV[apNodeID]目前指向的位置)
+                            swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
+                            _csr->csrV[apNodeID] ++;
+                            _csr->csrNodesDegree[apNodeID] --;
+                            printf("\t[csrE swap][csrV + 1] apNode\n");
+
+                            //修改 nid 與 apNodeID 的 edge => 變成 (nid, newApCloneID)
+                            for(int nidx2 = _csr->csrV[nid] ; nidx2 < _csr->oriCsrV[nid + 1] ; nidx2 ++){
+                                int nid2 = _csr->csrE[nidx2];
+                                if(nid2 == apNodeID){
+                                    printf("\t[change] (%d, %d) => ", nid, nid2);
+                                    _csr->csrE[nidx2] = newApCloneID;
+                                    printf("(%d, %d)\n", nid, newApCloneID);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    printf("_csr->csrV[%d] = %d\n", newApCloneID, _csr->csrV[newApCloneID]);
+                }
             }
         }
         printf("=============\n");
@@ -647,7 +727,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
         int total_dist_from_apNode = 0;
         Q->front = 0;
         Q->rear = -1;
-        int checkNode = 60;
+        int checkNode = 53;
         memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
 
         dist_arr[checkNode] = 0;

@@ -35,13 +35,16 @@ struct part_info{
 };
 
 struct apClone_info{
+    int* Ori_apNodeID;
     int* apCloneID;
-    int* apCloneCsrV;
-    int* apCloneCsrE;
 
     int* apCloneff;
     int* apCloneRepresent;
+
+    int* apCloneCsrV;
+    // int* apCloneCsrE;
     
+    int newNodeCount;
     int apCloneCsrV_offsetCounter;
     int apCloneCsrE_offsetCounter;
 };
