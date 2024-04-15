@@ -400,6 +400,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     */
     struct part_info* part = (struct part_info*)malloc(sizeof(struct part_info) * maxBranch);
     int* ignoreOri_APs = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    int* compIDs_aroundAP = (int*)malloc(sizeof(int) * maxBranch);
     int* dist_arr = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
 
     for(int i = ap_count - 1 ; i >= 0 ; i --){
@@ -413,6 +414,19 @@ void AP_Copy_And_Split(struct CSR* _csr){
 
         memset(part, -1, sizeof(struct part_info) * maxBranch);
         memset(compFlag, -1, sizeof(int) * maxCompID);
+        memset(ignoreOri_APs, 0, sizeof(int) * _csr->csrVSize);
+        memset(compIDs_aroundAP, 0, sizeof(int) * maxBranch);
+
+        //先取得 apNodeID 周圍有哪些compID，用於之後考慮是否要處理 有共享comp的AP
+        for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->csrV[apNodeID + 1] ; nidx ++){
+            int nid = _csr->csrE[nidx];
+            int compID = _csr->compID[nid];
+            if(compID != -1 && compIDs_aroundAP[compID] == 0){
+                compIDs_aroundAP[compID] = 1;
+                printf("compIDs_aroundAP[%d] = %d\n", compID, compIDs_aroundAP[compID]);
+            }
+        }
+
         int total_represent = 0;
         int total_ff        = 0;
         
@@ -422,7 +436,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
             int tempCompID      = _csr->compID[apNeighborNodeID]; //tempCompID = -1, if it is ap; else, if not
             
             #ifdef GetPartInfo_DEBUG
-            printf("\tapNeighborNodeID = %d, tempCompID = %d\n", apNeighborNodeID, tempCompID);
+            // printf("\tapNeighborNodeID = %d, tempCompID = %d\n", apNeighborNodeID, tempCompID);
             #endif
 
             /**
@@ -446,7 +460,6 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 //reset Q and dist_arr
                 Q->front = 0;
                 Q->rear = -1;
-                memset(ignoreOri_APs, 0, sizeof(int) * (_csr->csrVSize));
                 memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
 
                 //Init source information
@@ -467,7 +480,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
                         printf("\t\t(AP)neighborNodeID = %d\n", neighborNodeID);
                         for(int nidx = _csr->csrV[neighborNodeID] ; nidx < _csr->oriCsrV[neighborNodeID + 1] ; nidx ++){
                             int nid = _csr->csrE[nidx];
-                            printf("\t\t\tnid = %d, _csr->compID[%d] = %d, temp_compID = %d\n", nid, nid, _csr->compID[nid], tempCompID);
+                            // printf("\t\t\tnid = %d, _csr->compID[%d] = %d, temp_compID = %d\n", nid, nid, _csr->compID[nid], tempCompID);
 
                             //neighborNodeID 有 某個neighbor nid 的 compID 是 tempCompID
                             if(_csr->compID[nid] == tempCompID){
@@ -549,6 +562,30 @@ void AP_Copy_And_Split(struct CSR* _csr){
             }
             else if(tempCompID == -1){ //當 apNeighborNodeID u 是 AP 的時候
                 
+                #pragma region determinePassCondition
+                //如果已知 apNeighborNodeID 需要被跳過，則直接用continue跳過
+                if(ignoreOri_APs[apNeighborNodeID] == 1){
+                    printf("\t\t[Ignore apNeighborNodeID %d (already known)]\n", apNeighborNodeID);
+                    continue;
+                }
+
+                //ignoreFlag 用於判斷 當此 apNeighborNodeID u 是 AP 的時候，是否有共享comp，如果有則 ignoreFlag = 1 
+                int ignoreFlag = 0;
+                for(int nidx = _csr->csrV[apNeighborNodeID] ; nidx < _csr->csrV[apNeighborNodeID + 1] ; nidx ++){
+                    int nid = _csr->csrE[nidx];
+                    int compID = _csr->compID[nid];
+                    if(compIDs_aroundAP[compID] == 1){
+                        ignoreFlag = 1;
+                        break;
+                    }
+                }
+                if(ignoreFlag == 1){
+                    ignoreOri_APs[apNeighborNodeID] = 1;
+                    printf("\t\t[Ignore apNeighborNodeID %d (new found)] !!!\n", apNeighborNodeID);
+                    continue;
+                }
+                #pragma endregion //determinePassCondition
+
                 part[partIndex].compID  = -1;
                 part[partIndex].apID    = apNeighborNodeID;
                 // partIndex ++;
@@ -613,9 +650,15 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 #ifdef GetPartInfo_DEBUG
                 // printf("\t\t[compID] %d has been created\n", tempCompID);
                 #endif
+
                 continue;
             }
 
+        }
+
+        int partNum = partIndex;
+        for(int partIdx = 0 ; partIdx < partNum ; partIdx ++){
+            printf("\tpart[%d] = {apID = %d, compID = %d, w = %d, ff = %d}\n", partIdx, part[partIdx].apID, part[partIdx].compID, part[partIdx].represent, part[partIdx].ff);
         }
         #pragma endregion //GetPartInfo
 
@@ -863,13 +906,13 @@ void AP_Copy_And_Split(struct CSR* _csr){
         // #pragma endregion //Split
         // // printf("4, 5(%d)\n", ap_count - i);
     
-        // #pragma region checkAns
-        // /**
-        //  * 檢查每個 ap node 是否都有抓到周圍的 part
-        // */
-        // // for(partIndex = 0 ; partIndex < (compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID]) ; partIndex ++){
-        // //     printf("\tpart[%d] = {compID = %d, apID = %d}\n", partIndex, part[partIndex].compID, part[partIndex].apID);
-        // // }
+        #pragma region checkAns
+        /**
+         * 檢查每個 ap node 是否都有抓到周圍的 part
+        */
+        // for(partIndex = 0 ; partIndex < (compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID]) ; partIndex ++){
+        //     printf("\tpart[%d] = {compID = %d, apID = %d}\n", partIndex, part[partIndex].compID, part[partIndex].apID);
+        // }
 
         // /**
         //  * Check 分割的 ff, represent 是否正確
@@ -901,7 +944,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
         //     }
         // }
         // printf("total_dist_from_apNode[%d] = %d\n", checkNode, total_dist_from_apNode);
-        // #pragma endregion
+        #pragma endregion
     
         // printf("\n");
         // break;

@@ -60,7 +60,7 @@ struct CSR{
 
     int ap_count;           //紀錄有多少個 AP
     int* AP_List;           //儲存所有 AP nodeID
-    int* AP_component_number;  //紀錄 該 AP 連接多少個component
+    int* AP_component_number;  //紀錄 該 AP 連接多少個component //可能無用
     int* compID;            //儲存每個node在哪個component
     int* apCloneTrackOriAp_ID;   //紀錄 AP分身 原本的 AP本尊是誰
     int apCloneCount;       //紀錄創建了幾個 AP分身

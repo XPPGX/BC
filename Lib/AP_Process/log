@@ -22,8 +22,8 @@ D1 node count       (|D1|)              =     5236
 Hub node Count      (|Hub|)             =     2977
 Ordinary node Count (|V| - |D1|)        =    32464
 ==============================
-[Execution Time] D1Folding          = 0.000486
-[Execution Time] AP_detection       = 0.004632
+[Execution Time] D1Folding          = 0.000518
+[Execution Time] AP_detection       = 0.004582
 1
 maxBranch = 7
 AP(compN, apN) : 
@@ -3930,6 +3930,6 @@ compIDs_aroundAP[3] = 1
 	part[1] = {apID = -1, compID = 3, w = 37697, ff = 117119}
 [End csrV] _csr->csrV[37700] = 578006
 3
-[Execution Time] AP_Copy_And_Split  = 0.040024
+[Execution Time] AP_Copy_And_Split  = 0.039855
 apCount = 26
 maxCompSize = 32395
