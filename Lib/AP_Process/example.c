@@ -47,8 +47,9 @@ int main(int argc, char* argv[]){
     double AP_detectionTime;
     double AP_Copy_And_Split_Time;
 
-    // int checkNodeID = 30;
+    // int checkNodeID = 19;
     // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
+    // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
     // int AP = 19222;
     // int nAP = 22635;
     // for(int nidx = csr->csrV[AP] ; nidx < csr->csrV[AP + 1 ] ; nidx ++){
@@ -64,6 +65,8 @@ int main(int argc, char* argv[]){
     D1FoldingTime = time2 - time1;
     printf("[Execution Time] D1Folding          = %f\n", D1FoldingTime);
 
+    // printf("ff[%d] = %d, w[%d] = %d\n", checkNodeID, csr->ff[checkNodeID], checkNodeID, csr->representNode[checkNodeID]);
+
     time1 = seconds();
     AP_detection(csr);
     time2 = seconds();
@@ -76,8 +79,9 @@ int main(int argc, char* argv[]){
     time2 = seconds();
     AP_Copy_And_Split_Time = time2 - time1;
     printf("[Execution Time] AP_Copy_And_Split  = %f\n", AP_Copy_And_Split_Time);
-    printf("apCount = %d\n", csr->ap_count);
-    printf("maxCompSize = %d\n", csr->maxCompSize_afterSplit);
+    printf("apCount     = %8d\n", csr->ap_count);
+    printf("compCount   = %8d\n", csr->compNum);
+    printf("maxCompSize = %8d\n", csr->maxCompSize_afterSplit);
 
     
     // printf("\n\n");

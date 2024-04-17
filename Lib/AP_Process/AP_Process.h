@@ -57,7 +57,7 @@ struct apClone_info{
 void AP_detection(struct CSR* _csr);
 
 
-void quicksort_nodeID_with_apNum(int* _nodes, int* _apNum, int _left, int _right);
+void quicksort_nodeID_with_data(int* _nodes, int* _data, int _left, int _right);
 /**
  * @brief
  * If an AP u has AP neighbor v, then (u, v) is a bridge 

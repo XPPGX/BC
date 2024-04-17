@@ -58,6 +58,9 @@ struct CSR{
     int endNodeID;          //用於traverse
     int totalNodeNumber;    //用於traverse
 
+    int* low;               //偵測AP用的
+    int* depth_level;       //偵測AP用的
+    int* Dfs_sequence;      //紀錄哪個 node 先被 DFS 探到
     int ap_count;           //紀錄有多少個 AP
     int* AP_List;           //儲存所有 AP nodeID
     int* AP_component_number;  //紀錄 該 AP 連接多少個component //可能無用

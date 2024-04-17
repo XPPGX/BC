@@ -6,17 +6,18 @@
 void AP_detection(struct CSR* _csr){
     _csr->AP_List               = (int*)malloc(sizeof(int) * _csr->csrVSize);
     _csr->AP_component_number   = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    _csr->depth_level           = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    _csr->low                   = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    _csr->Dfs_sequence          = (int*)malloc(sizeof(int) * _csr->csrVSize);
     memset(_csr->AP_List, -1, sizeof(int) * _csr->csrVSize);
     memset(_csr->AP_component_number, 0, sizeof(int) * _csr->csrVSize);
+    memset(_csr->depth_level, 0, sizeof(int) * _csr->csrVSize);
+    memset(_csr->low, 0, sizeof(int) * _csr->csrVSize);
+    memset(_csr->Dfs_sequence, -1, sizeof(int) * _csr->csrVSize);
 
     int* parent         = (int*)malloc(sizeof(int) * _csr->csrVSize);
-    int* depth_level    = (int*)malloc(sizeof(int) * _csr->csrVSize);
-    int* low            = (int*)malloc(sizeof(int) * _csr->csrVSize);
     int* stack          = (int*)malloc(sizeof(int) * _csr->csrVSize);
-
     memset(parent, -1, sizeof(int) * _csr->csrVSize);
-    memset(depth_level, 0, sizeof(int) * _csr->csrVSize);
-    memset(low, 0, sizeof(int) * _csr->csrVSize);
     memset(stack, 0, sizeof(int) * _csr->csrVSize);
 
 
@@ -28,11 +29,13 @@ void AP_detection(struct CSR* _csr){
             continue;
         }
         
-        if(depth_level[nodeID]){
+        if(_csr->depth_level[nodeID]){
             continue;
         }
 
-        // printf("new component\n");
+        #ifdef AP_detection_DEBUG
+        printf("new component\n");
+        #endif
 
         int depth = 1;
 
@@ -42,8 +45,9 @@ void AP_detection(struct CSR* _csr){
 
         stack[stack_index]  = nodeID;
 
-        depth_level[nodeID] = depth;
-        low[nodeID]         = depth;
+        _csr->depth_level[nodeID]       = depth;
+        _csr->low[nodeID]               = depth;
+        _csr->Dfs_sequence[depth]   = nodeID;
         depth ++;
 
         int currentNodeID   = -1;
@@ -51,21 +55,23 @@ void AP_detection(struct CSR* _csr){
         int neighborIndex   = -1;
         while(stack_index >= 0){
             currentNodeID = stack[stack_index];
-            // printf("\tcurrentNodeID = %2d\n", currentNodeID);
+
             //if neighbors are all visited, neighbor_all_visited = 1, else = 0;
             int neighbor_all_visited = 1;
 
             for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
                 neighborNodeID = _csr->csrE[neighborIndex];
-                // printf("\tneighborNddeID = %2d\n", neighborNodeID);
+                // printf("\t\tneighborNddeID = %2d\n", neighborNodeID);
 
-                if(depth_level[neighborNodeID] == 0){
-                    stack[++ stack_index]       = neighborNodeID;
-                    parent[neighborNodeID]      = currentNodeID;
-                    depth_level[neighborNodeID] = depth;
-                    low[neighborNodeID]         = depth;
-
-                    // printf("\t\tstack[%d] = %d, p = %d, d = %d, l = %d\n", stack_index, neighborNodeID, parent[neighborNodeID], depth_level[neighborNodeID], low[neighborNodeID]);
+                if(_csr->depth_level[neighborNodeID] == 0){
+                    stack[++ stack_index]               = neighborNodeID;
+                    parent[neighborNodeID]              = currentNodeID;
+                    _csr->depth_level[neighborNodeID]   = depth;
+                    _csr->low[neighborNodeID]           = depth;
+                    _csr->Dfs_sequence[depth]           = neighborNodeID;
+                    #ifdef AP_detection_DEBUG
+                    printf("\t\t\tstack[%d] = %d, p = %d, d = %d, l = %d\n", stack_index, neighborNodeID, parent[neighborNodeID], _csr->depth_level[neighborNodeID], _csr->low [neighborNodeID]);
+                    #endif
 
                     depth ++;
 
@@ -84,36 +90,104 @@ void AP_detection(struct CSR* _csr){
                     neighborNodeID = _csr->csrE[neighborIndex];
 
                     if(currentNodeID == parent[neighborNodeID]){
-                        low[currentNodeID] = (low[currentNodeID] < low[neighborNodeID]) ? low[currentNodeID] : low[neighborNodeID];
+                        #ifdef AP_detection_DEBUG
+                        printf("\t\tchild neighbor %d\n", neighborNodeID);
+                        #endif
+
+                        _csr->low[currentNodeID] = (_csr->low[currentNodeID] < _csr->low[neighborNodeID]) ? _csr->low[currentNodeID] : _csr->low[neighborNodeID];
                         childNum ++;
-                        // printf("\t\t[update low][2] low[%d] = %d\n", currentNodeID, low[currentNodeID]);
-                        
+
+                        #ifdef AP_detection_DEBUG
+                        printf("\t\t[update _csr->low ][2] _csr->low [%d] = %d, neighborID = %d\n", currentNodeID, _csr->low [currentNodeID], neighborNodeID);
+                        #endif
+
                         //這一段在判斷 root 是否是 AP
-                        if((parent[currentNodeID] == -1) && (childNum > 1)){
+                        if((parent[currentNodeID] == -1) && (childNum > 1) && (!(_csr->nodesType[currentNodeID] & OriginAP))){
                             _csr->AP_List[ap_count] = currentNodeID;
                             _csr->nodesType[currentNodeID] |= OriginAP;
                             ap_count ++;
                             break;
+
+                            #ifdef AP_detection_DEBUG
+                            printf("\t\t[found AP] %d is AP!!!!!!!!!!!!!!\n", currentNodeID);
+                            #endif
                         }
 
-                        if(low[neighborNodeID] >= depth_level[currentNodeID] && (currentNodeID != rootID) && (!(_csr->nodesType[currentNodeID] & OriginAP))){
-                            // printf("\t\tneighbor %d(%d, %d)...", neighborNodeID, depth_level[neighborNodeID], low[neighborNodeID]);
+                        if(_csr->low [neighborNodeID] >= _csr->depth_level[currentNodeID] && (currentNodeID != rootID) && (!(_csr->nodesType[currentNodeID] & OriginAP))){
+                            // printf("\t\tneighbor %d(%d, %d)...", neighborNodeID, _csr->depth_level[neighborNodeID], _csr->low [neighborNodeID]);
 
                             _csr->AP_List[ap_count ++] = currentNodeID;
                             _csr->nodesType[currentNodeID] |= OriginAP;
-                            
-                            // printf("\t\t[found AP] %d is AP!!!!!!!!!!!!!!\n", currentNodeID);
+
+                            #ifdef AP_detection_DEBUG
+                            printf("\t\t[found AP] %d is AP!!!!!!!!!!!!!!\n", currentNodeID);
+                            #endif
                         }
                     }
-                    else if(neighborNodeID != parent[currentNodeID] && depth_level[neighborNodeID] < depth_level[currentNodeID]){
-                        low[currentNodeID] = (low[currentNodeID] < depth_level[neighborNodeID]) ? low[currentNodeID] : depth_level[neighborNodeID];
-                        // printf("\t\t[update low][1] low[%d] = %d\n", currentNodeID, low[currentNodeID]);
-
+                    else if(neighborNodeID != parent[currentNodeID] && _csr->depth_level[neighborNodeID] < _csr->depth_level[currentNodeID]){
+                        _csr->low[currentNodeID] = (_csr->low[currentNodeID] < _csr->depth_level[neighborNodeID]) ? _csr->low[currentNodeID] : _csr->depth_level[neighborNodeID];
+                        
+                        #ifdef AP_detection_DEBUG
+                        printf("\t\t[update _csr->low ][1] _csr->low [%d] = %d, neighborID = %d\n", currentNodeID, _csr->low [currentNodeID], neighborNodeID);
+                        #endif
                     }
                     
                 }
+                
             }
         }
+
+        //把AP的個數記錄在 _csr->ap_count
+        _csr->ap_count = ap_count;
+        
+        
+        /**
+         * 把同component，但low 值不同的 nodes 整合，並assign componentID 給每個 node
+         * 
+         * 整合後，low值相同的nodes，代表有可能在同一component，但實際是否在同一component
+         * 還要用 BFS 配合 low值 去確認。
+        */
+        for(int depthIter = 1 ; depthIter < _csr->ordinaryNodeCount + 1 ; depthIter ++){
+            int nodeID = _csr->Dfs_sequence[depthIter];
+
+            #ifdef AP_detection_DEBUG
+            printf("nodeID %d, ", nodeID);
+            #endif
+
+            if(_csr->nodesType[nodeID] & OriginAP){
+
+                #ifdef AP_detection_DEBUG
+                printf("is AP, childNum %d\n", childCompsNum[nodeID]);
+                #endif
+
+                continue;
+            }
+            
+            
+            int ancestorNodeID = _csr->Dfs_sequence[_csr->low[nodeID]];
+            if(ancestorNodeID != nodeID && !(_csr->nodesType[ancestorNodeID] & OriginAP)){
+                _csr->low[nodeID] = _csr->low[ancestorNodeID];
+
+                #ifdef AP_detection_DEBUG
+                printf("ancestorNodeID %d, low %d => update nodeID %d, low %d", ancestorNodeID, _csr->low[ancestorNodeID], nodeID, _csr->low[nodeID]);
+                #endif
+
+            }
+            // else{
+
+            //     #ifdef AP_detection_DEBUG
+            //     printf("low %d", _csr->low[nodeID]);
+            //     #endif
+            // }
+
+            #ifdef AP_detection_DEBUG
+            printf("\n");
+            #endif
+        }
+
+        #ifdef AP_detection_DEBUG
+        printf("\n\n");
+        #endif
 
         #ifdef AP_DEBUG
         printf("AP : ");
@@ -130,21 +204,28 @@ void AP_detection(struct CSR* _csr){
         }
         printf("\n");
         #endif
-        //把AP的個數記錄在 _csr->ap_count
-        _csr->ap_count = ap_count;
+        
 
         #ifdef AP_detection_DEBUG
+
+        for(int depthIter = 1 ; depthIter < _csr->ordinaryNodeCount + 1 ; depthIter ++){
+            printf("nodeID %d = {depth %d, low %d}", _csr->Dfs_sequence[depthIter], depthIter, _csr->low[_csr->Dfs_sequence[depthIter]]);
+            if(_csr->nodesType[_csr->Dfs_sequence[depthIter]] & OriginAP){
+                printf("\t AP");
+            }
+            printf("\n");
+        }
         printf("_csr->ap_count = %d\n", ap_count);   
         #endif
     }
 
     free(parent);
-    free(depth_level);
-    free(low);
+    // free(_csr->depth_level);
+    // free(_csr->low);
     free(stack);
 }
 
-void quicksort_nodeID_with_apNum(int* _nodes, int* _apNum, int _left, int _right){
+void quicksort_nodeID_with_data(int* _nodes, int* _data, int _left, int _right){
     if(_left > _right){
         return;
     }
@@ -171,7 +252,7 @@ void quicksort_nodeID_with_apNum(int* _nodes, int* _apNum, int _left, int _right
         // printf("\tDegree_s[%d] = %d, Degree_e[%d] = %d, Degree_l[%d] = %d\n", smallerAgentNode, _nodeDegrees[smallerAgentNode], equalAgentNode, _nodeDegrees[equalAgentNode], largerAgentNode, _nodeDegrees[largerAgentNode]);
         #endif
 
-        if(_apNum[equalAgentNode] < _apNum[pivotNode]){ //equalAgentNode的degree < pivotNode的degree
+        if(_data[equalAgentNode] < _data[pivotNode]){ //equalAgentNode的degree < pivotNode的degree
             // swap smallerAgentNode and equalAgentNode
             tempNode = _nodes[smallerAgent];
             _nodes[smallerAgent] = _nodes[equalAgent];
@@ -180,7 +261,7 @@ void quicksort_nodeID_with_apNum(int* _nodes, int* _apNum, int _left, int _right
             smallerAgent ++;
             equalAgent ++;
         }
-        else if(_apNum[equalAgentNode] > _apNum[pivotNode]){ //equalAgentNode的degree > pivotNode的degree
+        else if(_data[equalAgentNode] > _data[pivotNode]){ //equalAgentNode的degree > pivotNode的degree
             // swap largerAgentNode and equalAgentNode
             tempNode = _nodes[largerAgent];
             _nodes[largerAgent] = _nodes[equalAgent];
@@ -201,13 +282,13 @@ void quicksort_nodeID_with_apNum(int* _nodes, int* _apNum, int _left, int _right
 
     // smallerAgent現在是pivot key的開頭
     // largerAgent現在是pivotKey的結尾
-    quicksort_nodeID_with_apNum(_nodes, _apNum, _left, smallerAgent - 1);
-    quicksort_nodeID_with_apNum(_nodes, _apNum, largerAgent + 1, _right);
+    quicksort_nodeID_with_data(_nodes, _data, _left, smallerAgent - 1);
+    quicksort_nodeID_with_data(_nodes, _data, largerAgent + 1, _right);
 }
 
-// #define assignComponentID_DEBUG
+#define assignComponentID_DEBUG
 #define sortAP_By_apNum_DEBUG
-#define GetPartInfo_DEBUG
+// #define GetPartInfo_DEBUG
 // #define Split_DEBUG
 void AP_Copy_And_Split(struct CSR* _csr){
     _csr->compID = (int*)malloc(sizeof(int) * _csr->csrVSize);
@@ -223,14 +304,13 @@ void AP_Copy_And_Split(struct CSR* _csr){
     int apNodeID        = -1;
 
     /**
-     * 1. 先用 AP 走過整個 graph，並 assign 每個 node 一個 componentID
+     * 1. 先用 AP 走過整個 graph，並配合 low值 assign 每個 node 一個 componentID
      * (AP node 不會 assign componentID)
-     * 2. mapping AP to Index
     */
     // double time1 = seconds();
     #pragma region assignComponentID
-
-    int temp_compID = 0;
+    int* visited = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    int compCounter = 0;
     for(int i = 0 ; i < ap_count ; i ++){
         apNodeID = _csr->AP_List[i];
         
@@ -244,14 +324,26 @@ void AP_Copy_And_Split(struct CSR* _csr){
 
             /**
              * 如果某個 非AP 的 apNeighborNodeID 還沒有被走過，
-             * 以 apNeighborNodeID 為起點 進行BFS，且遇到 AP 則不把 AP 塞進 Queue
+             * 令 tempLow = _csr->low[apNeighborNodeID]，代表此次 traverse，所有(_csr->low[nodeID] == tempLow)的 nodeID 都有可能是同一個 component
+             * 以 apNeighborNodeID 為起點 進行BFS，若過程中遇到 新的neighbor u，則把 u 塞入 Q 中
+             * case 1. u 是 AP
+             *      => 則不 assign compID 給 u
+             * case 2. u 不是 AP
+             *      => assign compID 給 u
+             * 
+             * 如果currentNodeID v，
+             * case 3. v 是 AP
+             *      => v 探訪自己的鄰居，並把 low[neighborNodeID] == tempLow 的 nodes加入 Q中，並 assign compID 給 neighborNodeID
+             * case 4. v 不是 AP
+             *      => v 探訪自己的鄰居，並做case 1 與 case 2的判斷與對應動作
             */
             if((_csr->compID[apNeighborNodeID] == -1) && (!(_csr->nodesType[apNeighborNodeID] & OriginAP))){
-
+                memset(visited, 0, sizeof(int) * _csr->csrVSize);
+                int tempLow = _csr->low[apNeighborNodeID];
                 int tempCompSize = 0;
 
                 #ifdef assignComponentID_DEBUG
-                printf("\t[new comp %d]\n", temp_compID);
+                printf("\t[new comp %d]\n", compCounter);
                 #endif
 
                 //reset Q
@@ -259,10 +351,12 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 Q->rear = -1;
 
                 qPushBack(Q, apNeighborNodeID);
-                _csr->compID[apNeighborNodeID] = temp_compID;
-
+                visited[apNeighborNodeID] = 1;
+                _csr->compID[apNeighborNodeID] = compCounter;
+                tempCompSize ++;
+                
                 #ifdef assignComponentID_DEBUG
-                printf("\t\t\t[comp %d] add node %d\n", temp_compID, apNeighborNodeID);
+                printf("\t\t\t[comp %d] add node %d\n", compCounter, apNeighborNodeID);
                 #endif
                 
                 int currentNodeID   = -1;
@@ -270,30 +364,52 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 int neighborNodeID  = -1;
                 while(!qIsEmpty(Q)){ 
                     currentNodeID = qPopFront(Q);
-
-                    tempCompSize ++;
                     
                     #ifdef assignComponentID_DEBUG
                     printf("\t\tcurrentNodeID = %d\n", currentNodeID);
                     #endif
 
-                    for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
-                        neighborNodeID = _csr->csrE[neighborIndex];
+                    if(!(_csr->nodesType[currentNodeID] & OriginAP)){ //當 currentNodeID 不是 原生的AP
+                        for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+                            neighborNodeID = _csr->csrE[neighborIndex];
+                            //&& (!(_csr->nodesType[neighborNodeID] & OriginAP))
 
-                        if((_csr->compID[neighborNodeID] == -1) && (!(_csr->nodesType[neighborNodeID] & OriginAP))){
+                            if(_csr->compID[neighborNodeID] == -1 && neighborNodeID != apNodeID && visited[neighborNodeID] == 0){
+                                
+                                //可以推 AP 跟 普通node 進Q，但是不會assign compID 給 AP
+                                qPushBack(Q, neighborNodeID);
+                                visited[neighborNodeID] = 1;
 
-                            #ifdef assignComponentID_DEBUG
-                            printf("\t\t\t[comp %d] add node %d\n", temp_compID, neighborNodeID);
-                            #endif
+                                if(!(_csr->nodesType[neighborNodeID] & OriginAP)){
+                                    _csr->compID[neighborNodeID] = compCounter;
+                                    tempCompSize ++;
 
-                            qPushBack(Q, neighborNodeID);
-                            _csr->compID[neighborNodeID] = temp_compID;
+                                    #ifdef assignComponentID_DEBUG
+                                    printf("\t\t\t[comp %d] add node %d\n", compCounter, neighborNodeID);
+                                    #endif
+                                }
+                            }
+                        }
+                    }
+                    else{ //當 currentNodeID 是 原生的AP
+                        for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+                            neighborNodeID = _csr->csrE[neighborIndex];
 
+                            if((_csr->compID[neighborNodeID] == -1) && (_csr->low[neighborNodeID] == tempLow) && (!(_csr->nodesType[neighborNodeID] & OriginAP)) && (neighborNodeID != apNodeID) && visited[neighborNodeID] == 0){
+                                qPushBack(Q, neighborNodeID);
+                                visited[neighborNodeID] = 1;
+                                _csr->compID[neighborNodeID] = compCounter;
+                                tempCompSize ++;
+
+                                #ifdef assignComponentID_DEBUG
+                                printf("\t\t\t[comp %d] add node %d\n", compCounter, neighborNodeID);
+                                #endif
+                            }
                         }
                     }
                 }
 
-                temp_compID ++;
+                compCounter ++;
 
                 if(_csr->maxCompSize_afterSplit < tempCompSize){
                     _csr->maxCompSize_afterSplit = tempCompSize;
@@ -302,15 +418,18 @@ void AP_Copy_And_Split(struct CSR* _csr){
         }
     }
 
-    int maxCompID = temp_compID;
-    _csr->compNum = maxCompID;
+    int compNumber = compCounter;
+    _csr->compNum = compNumber;
     
     // printf("_csr->compNum = %d\n", _csr->compNum);
     // for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
     //     if(_csr->nodesType[nodeID] == D1){continue;}
     //     printf("\t_csr->compID[%d] = %d\n", nodeID, _csr->compID[nodeID]);
     // }
-
+    free(visited);
+    free(_csr->low);
+    free(_csr->depth_level);
+    free(_csr->Dfs_sequence);
     #pragma endregion assignComponentID
     // double time2 = seconds();
     // double assignComponentID_time = time2 - time1;
@@ -327,7 +446,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     int apNeighborNum;
 
     //record the AP u connects to which components, if u connects to comp 0, then compFlag[0] is 1; else is 0. 
-    int* compFlag           = (int*)malloc(sizeof(int) * maxCompID);
+    int* compFlag           = (int*)malloc(sizeof(int) * compNumber);
 
     //prepare two arrays "compNum_arr" and "apNeighborNum_arr"
     int* compNum_arr        = (int*)calloc(sizeof(int), _csr->csrVSize);
@@ -342,11 +461,22 @@ void AP_Copy_And_Split(struct CSR* _csr){
 
         compNum         = 0;
         apNeighborNum   = 0;
-        memset(compFlag, 0, sizeof(int) * maxCompID);
+        memset(compFlag, 0, sizeof(int) * compNumber);
 
         for(apNeighborIndex = _csr->csrV[apNodeID] ; apNeighborIndex < _csr->csrV[apNodeID + 1] ; apNeighborIndex ++){
             apNeighborNodeID    = _csr->csrE[apNeighborIndex];
             cid                 = _csr->compID[apNeighborNodeID];
+
+
+            // if(cid != -1){
+            //     if(compFlag[cid] == 0){
+            //         compFlag[cid] = 1;
+            //         compNum ++;
+            //     }
+            // }
+            // else{
+            //     apNeighborNum ++;
+            // }
 
             if((compFlag[cid] == 0)){
                 
@@ -357,7 +487,6 @@ void AP_Copy_And_Split(struct CSR* _csr){
                 else{
                     apNeighborNum ++;
                 }
-
             }
         }
 
@@ -369,7 +498,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
         }
     }
 
-    quicksort_nodeID_with_apNum(_csr->AP_List, apNeighborNum_arr, 0, ap_count - 1);
+    quicksort_nodeID_with_data(_csr->AP_List, apNeighborNum_arr, 0, ap_count - 1);
 
     #ifdef sortAP_By_apNum_DEBUG
     printf("maxBranch = %d\n", maxBranch);
@@ -380,589 +509,615 @@ void AP_Copy_And_Split(struct CSR* _csr){
     printf("\n");
     #endif
 
-    #pragma endregion //sortAP_By_apNum
+    #pragma endregion sortAP_By_apNum
     printf("2\n");
 
     
-    #pragma region AP_splitGraph
+    // #pragma region AP_splitGraph
 
-    /**
-     * prepare for recording apClone information
-    */
-    int nextCsrE_offset = _csr->csrV[_csr->endNodeID + 1]; //從這個位置開始可以放新 node
-    printf("nextCsrE_offset = %d\n", nextCsrE_offset);
-    _csr->apCloneTrackOriAp_ID = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
-    memset(_csr->apCloneTrackOriAp_ID, -1, sizeof(int) * (_csr->csrVSize) * 2);
-    _csr->apCloneCount = 0;
+    // /**
+    //  * prepare for recording apClone information
+    // */
+    // int nextCsrE_offset = _csr->csrV[_csr->endNodeID + 1]; //從這個位置開始可以放新 node
+    // printf("nextCsrE_offset = %d\n", nextCsrE_offset);
+    // _csr->apCloneTrackOriAp_ID = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    // memset(_csr->apCloneTrackOriAp_ID, -1, sizeof(int) * (_csr->csrVSize) * 2);
+    // _csr->apCloneCount = 0;
     
-    /**
-     * prepare for record each part information of every originAP
-    */
-    struct part_info* part = (struct part_info*)malloc(sizeof(struct part_info) * maxBranch);
-    int* ignoreOri_APs = (int*)malloc(sizeof(int) * _csr->csrVSize);
-    int* compIDs_aroundAP = (int*)malloc(sizeof(int) * maxBranch);
-    int* dist_arr = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    // /**
+    //  * prepare for record each part information of every originAP
+    // */
+    // struct part_info* part = (struct part_info*)malloc(sizeof(struct part_info) * maxBranch);
+    // int* ignoreOri_APs = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    // int* compIDs_aroundAP = (int*)malloc(sizeof(int) * maxBranch);
+    // int* dist_arr = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    
+    // printf("maxBranch = %d\n", maxBranch);
 
-    for(int i = ap_count - 1 ; i >= 0 ; i --){
-        apNodeID = _csr->AP_List[i];
+    // for(int i = ap_count - 1 ; i >= 0 ; i --){
+    //     apNodeID = _csr->AP_List[i];
 
-        #pragma region GetPartInfo
+    //     // #pragma region GetPartInfo
         
-        #ifdef GetPartInfo_DEBUG
-        printf("AP %d :\n", apNodeID);
-        #endif
+    //     // #ifdef GetPartInfo_DEBUG
+    //     // printf("AP %d :\n", apNodeID);
+    //     // #endif
 
-        memset(part, -1, sizeof(struct part_info) * maxBranch);
-        memset(compFlag, -1, sizeof(int) * maxCompID);
-        memset(ignoreOri_APs, 0, sizeof(int) * _csr->csrVSize);
-        memset(compIDs_aroundAP, 0, sizeof(int) * maxBranch);
+    //     // memset(part, -1, sizeof(struct part_info) * maxBranch);
+    //     // memset(compFlag, -1, sizeof(int) * compNumber);
+    //     // memset(ignoreOri_APs, 0, sizeof(int) * _csr->csrVSize);
+    //     // memset(compIDs_aroundAP, 0, sizeof(int) * compNumber);
 
-        //先取得 apNodeID 周圍有哪些compID，用於之後考慮是否要處理 有共享comp的AP
-        for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->csrV[apNodeID + 1] ; nidx ++){
-            int nid = _csr->csrE[nidx];
-            int compID = _csr->compID[nid];
-            if(compID != -1 && compIDs_aroundAP[compID] == 0){
-                compIDs_aroundAP[compID] = 1;
-                printf("compIDs_aroundAP[%d] = %d\n", compID, compIDs_aroundAP[compID]);
-            }
-        }
-
-        int total_represent = 0;
-        int total_ff        = 0;
         
-        int partIndex = 0;
-        for(apNeighborIndex = _csr->csrV[apNodeID] ; apNeighborIndex < _csr->oriCsrV[apNodeID + 1] ; apNeighborIndex ++){
-            apNeighborNodeID    = _csr->csrE[apNeighborIndex];
-            int tempCompID      = _csr->compID[apNeighborNodeID]; //tempCompID = -1, if it is ap; else, if not
+
+    //     // //先取得 apNodeID 周圍有哪些compID，用於之後考慮是否要處理 有共享comp的AP
+    //     // for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->csrV[apNodeID + 1] ; nidx ++){
+    //     //     int nid = _csr->csrE[nidx];
+    //     //     int compID = _csr->compID[nid];
+    //     //     printf("\tnid %d, compID %d\n", nid, compID);
+    //     //     if(compID != -1 && compIDs_aroundAP[compID] == 0){
+    //     //         compIDs_aroundAP[compID] = 1;
+    //     //         printf("\t\tcompIDs_aroundAP[%d] = %d\n", compID, compIDs_aroundAP[compID]);
+    //     //     }
+    //     // }
+
+    //     // int total_represent = 0;
+    //     // int total_ff        = 0;
+        
+    //     // int partIndex = 0;
+    //     // for(apNeighborIndex = _csr->csrV[apNodeID] ; apNeighborIndex < _csr->oriCsrV[apNodeID + 1] ; apNeighborIndex ++){
+    //     //     apNeighborNodeID    = _csr->csrE[apNeighborIndex];
+    //     //     int tempCompID      = _csr->compID[apNeighborNodeID]; //tempCompID = -1, if it is ap; else, if not
             
-            #ifdef GetPartInfo_DEBUG
-            // printf("\tapNeighborNodeID = %d, tempCompID = %d\n", apNeighborNodeID, tempCompID);
-            #endif
+    //     //     #ifdef GetPartInfo_DEBUG
+    //     //     // printf("\tapNeighborNodeID = %d, tempCompID = %d\n", apNeighborNodeID, tempCompID);
+    //     //     #endif
 
-            /**
-             * according to apNeighborNodeID is ap or comp to 
-             * 1. assign apID or compID in part[partIndex]
-             * 2. assign part[].represent
-             * 3. assign part[].ff
-             * @todo
-             * 在else if 這裡加條件
-            */
-            if(tempCompID != -1 && compFlag[tempCompID] == -1){ //當 apNeighborNodeID u 不是AP 且 u的comp未被探訪
-                compFlag[tempCompID]    = 1;
-                part[partIndex].compID  = tempCompID;
-                part[partIndex].apID    = -1;
-                // partIndex ++;
+    //     //     /**
+    //     //      * according to apNeighborNodeID is ap or comp to 
+    //     //      * 1. assign apID or compID in part[partIndex]
+    //     //      * 2. assign part[].represent
+    //     //      * 3. assign part[].ff
+    //     //      * @todo
+    //     //      * 在else if 這裡加條件
+    //     //     */
+    //     //     if(tempCompID != -1 && compFlag[tempCompID] == -1){ //當 apNeighborNodeID u 不是AP 且 u的comp未被探訪
+    //     //         compFlag[tempCompID]    = 1;
+    //     //         part[partIndex].compID  = tempCompID;
+    //     //         part[partIndex].apID    = -1;
+    //     //         // partIndex ++;
 
-                #ifdef GetPartInfo_DEBUG
-                printf("\t\t[compID] %d\n", tempCompID);
-                #endif
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         printf("\t\t[compID] %d\n", tempCompID);
+    //     //         #endif
 
-                //reset Q and dist_arr
-                Q->front = 0;
-                Q->rear = -1;
-                memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
+    //     //         //reset Q and dist_arr
+    //     //         Q->front = 0;
+    //     //         Q->rear = -1;
+    //     //         memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
 
-                //Init source information
-                dist_arr[apNodeID] = 0;
-                int currentNodeID   = -1;
-                int neighborIndex   = -1;
-                int neighborNodeID  = -1;
+    //     //         //Init source information
+    //     //         dist_arr[apNodeID] = 0;
+    //     //         int currentNodeID   = -1;
+    //     //         int neighborIndex   = -1;
+    //     //         int neighborNodeID  = -1;
                 
-                int part_represent = 0;
-                int part_ff        = 0;
+    //     //         int part_represent = 0;
+    //     //         int part_ff        = 0;
 
-                //先對 apNodeID 周圍 compID == tempCompID 的 node 更新距離 與 part_info
-                for(int neighborIndex = _csr->csrV[apNodeID] ; neighborIndex < _csr->oriCsrV[apNodeID + 1] ; neighborIndex ++){
-                    int neighborNodeID = _csr->csrE[neighborIndex];
+    //     //         //先對 apNodeID 周圍 compID == tempCompID 的 node 更新距離 與 part_info
+    //     //         for(int neighborIndex = _csr->csrV[apNodeID] ; neighborIndex < _csr->oriCsrV[apNodeID + 1] ; neighborIndex ++){
+    //     //             int neighborNodeID = _csr->csrE[neighborIndex];
 
-                    //如果neighborNodeID 是 AP，要看他是否也是這個 part (這個方向) 的
-                    if(_csr->compID[neighborNodeID] == -1){
-                        printf("\t\t(AP)neighborNodeID = %d\n", neighborNodeID);
-                        for(int nidx = _csr->csrV[neighborNodeID] ; nidx < _csr->oriCsrV[neighborNodeID + 1] ; nidx ++){
-                            int nid = _csr->csrE[nidx];
-                            // printf("\t\t\tnid = %d, _csr->compID[%d] = %d, temp_compID = %d\n", nid, nid, _csr->compID[nid], tempCompID);
+    //     //             /**
+    //     //              * @bug assign dist 給 neighbor 的條件錯誤
+    //     //             */
+    //     //             //如果neighborNodeID 是 AP，要看他是否也是當前這個 part (這個方向) 的
+    //     //             if(_csr->compID[neighborNodeID] == -1){ 
+    //     //                 printf("\t\t\t(AP)neighborNodeID = %d\n", neighborNodeID);
 
-                            //neighborNodeID 有 某個neighbor nid 的 compID 是 tempCompID
-                            if(_csr->compID[nid] == tempCompID){
+    //     //                 for(int nidx = _csr->csrV[neighborNodeID] ; nidx < _csr->oriCsrV[neighborNodeID + 1] ; nidx ++){
+    //     //                     int nid = _csr->csrE[nidx];
+    //     //                     // printf("\t\t\tnid = %d, _csr->compID[%d] = %d, compCounter = %d\n", nid, nid, _csr->compID[nid], tempCompID);
 
-                                #ifdef GetPartInfo_DEBUG
-                                printf("\t\t\t(AP)neighborNodeID = %d, dist = 1 !!!!\n", neighborNodeID);
-                                #endif
+    //     //                     //neighborNodeID 有 某個neighbor nid 的 compID 是 tempCompID
+    //     //                     if(_csr->compID[nid] == tempCompID){
+
+    //     //                         #ifdef GetPartInfo_DEBUG
+    //     //                         printf("\t\t\t[1](AP)neighborNodeID = %d, dist = 1 !!!!\n", neighborNodeID);
+    //     //                         #endif
                                 
-                                qPushBack(Q, neighborNodeID);
-                                dist_arr[neighborNodeID] = 1;
-                                part_represent  += _csr->representNode[neighborNodeID];
-                                part_ff         += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
+    //     //                         qPushBack(Q, neighborNodeID);
+    //     //                         dist_arr[neighborNodeID] = 1;
+    //     //                         part_represent  += _csr->representNode[neighborNodeID];
+    //     //                         part_ff         += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
 
-                                /**
-                                 * neighborNodeID 也是 ap node，且跟 apNodeID 共有同一個 component(tempCompID)，
-                                 * 之後 apNodeID 在切割的時候 要跳過這個neighborNodeID，也就是 (apNodeID, neighborNodeID) 這條edge不切。
-                                 * 
-                                 * ignoreOri_APs[neighborNodeID] = 1，代表 apNodeID 不把 neighborNodeID 當成一個分支
-                                */ 
-                                ignoreOri_APs[neighborNodeID] = 1;
+    //     //                         /**
+    //     //                          * neighborNodeID 也是 ap node，且跟 apNodeID 共有同一個 component(tempCompID)，
+    //     //                          * 之後 apNodeID 在切割的時候 要跳過這個neighborNodeID，也就是 (apNodeID, neighborNodeID) 這條edge不切。
+    //     //                          * 
+    //     //                          * ignoreOri_APs[neighborNodeID] = 1，代表 apNodeID 不把 neighborNodeID 當成一個分支
+    //     //                         */ 
+    //     //                         ignoreOri_APs[neighborNodeID] = tempCompID;
+    //     //                         printf("\t\t\t\t[2]ignoreOri_APs[%d] = %d\n", neighborNodeID, tempCompID);
+    //     //                         break;
+    //     //                     }
+    //     //                 }
+    //     //             }
+    //     //             else if(_csr->compID[neighborNodeID] == tempCompID){
 
-                                break;
-                            }
-                        }
-                    }
-                    else if(_csr->compID[neighborNodeID] == tempCompID){
+    //     //                 #ifdef GetPartInfo_DEBUG
+    //     //                 printf("\t\t\t[3]neighborNodeID = %d, dist = 1, _csr->compID[%d] = %d\n", neighborNodeID, neighborNodeID, _csr->compID[neighborNodeID]);
+    //     //                 #endif
 
-                        #ifdef GetPartInfo_DEBUG
-                        printf("\t\t\tneighborNodeID = %d, dist = 1, _csr->compID[%d] = %d\n", neighborNodeID, neighborNodeID, _csr->compID[neighborNodeID]);
-                        #endif
-
-                        qPushBack(Q, neighborNodeID);
-                        dist_arr[neighborNodeID] = 1;
-                        part_represent  += _csr->representNode[neighborNodeID];
-                        part_ff         += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
-                    }
-                }
-                // qPushBack(Q, apNodeID);
+    //     //                 qPushBack(Q, neighborNodeID);
+    //     //                 dist_arr[neighborNodeID] = 1;
+    //     //                 part_represent  += _csr->representNode[neighborNodeID];
+    //     //                 part_ff         += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
+    //     //             }
+    //     //         }
+    //     //         // qPushBack(Q, apNodeID);
                 
                 
-                while(!qIsEmpty(Q)){
-                    currentNodeID = qPopFront(Q);
-                    // printf("currentNodeID = %d : ", currentNodeID);
-                    // printf("\tdist_arr[%d] = %d\n", currentNodeID, dist_arr[currentNodeID]);
-                    for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
-                        neighborNodeID = _csr->csrE[neighborIndex];
-                        /**
-                         * 不用特別判斷 neighborNodeID 是否是 source(apNeighborNodeID)，
-                         * 因為 dist_arr[apNeighborNodeID] == 0，apNeighborNodeID 是 起點
-                        */
-                        if(dist_arr[neighborNodeID] == -1){
-                            // printf("%d, ", neighborNodeID);
-                            qPushBack(Q, neighborNodeID);
-                            dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
-                            part_represent += _csr->representNode[neighborNodeID];
-                            part_ff        += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
-                        }
-                    }
-                    // printf("\n");
-                }
+    //     //         while(!qIsEmpty(Q)){
+    //     //             currentNodeID = qPopFront(Q);
+    //     //             if(tempCompID == 379){
+    //     //                 printf("currentNodeID = %d : ", currentNodeID);
+    //     //             }
+    //     //             printf("\t\t\t\tdist_arr[%d] = %d\n", currentNodeID, dist_arr[currentNodeID]);
+    //     //             for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+    //     //                 neighborNodeID = _csr->csrE[neighborIndex];
+    //     //                 /**
+    //     //                  * 不用特別判斷 neighborNodeID 是否是 source(apNeighborNodeID)，
+    //     //                  * 因為 dist_arr[apNeighborNodeID] == 0，apNeighborNodeID 是 起點
+    //     //                 */
+    //     //                 // && (_csr->compID[neighborNodeID] == tempCompID)
+    //     //                 if(dist_arr[neighborNodeID] == -1){
+    //     //                     if(tempCompID == 379){
+    //     //                         printf("%d, ", neighborNodeID);
+    //     //                     }
+    //     //                     qPushBack(Q, neighborNodeID);
+    //     //                     dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+    //     //                     part_represent += _csr->representNode[neighborNodeID];
+    //     //                     part_ff        += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
+    //     //                 }
+    //     //             }
+    //     //             if(tempCompID == 379){
+    //     //                 printf("\n");
+    //     //             }
+                    
+    //     //         }
                 
-                #ifdef GetPartInfo_DEBUG
-                printf("\t\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
-                #endif
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         printf("\t\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
+    //     //         #endif
 
-                part[partIndex].represent   = part_represent;
-                part[partIndex].ff          = part_ff;
+    //     //         part[partIndex].represent   = part_represent;
+    //     //         part[partIndex].ff          = part_ff;
 
-                #ifdef GetPartInfo_DEBUG
-                printf("\t\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
-                #endif
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         printf("\t\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
+    //     //         #endif
 
-                total_represent += part[partIndex].represent;
-                total_ff        += part[partIndex].ff;       
+    //     //         total_represent += part[partIndex].represent;
+    //     //         total_ff        += part[partIndex].ff;       
 
-                partIndex ++;
+    //     //         partIndex ++;
 
                          
-            }
-            else if(tempCompID == -1){ //當 apNeighborNodeID u 是 AP 的時候
+    //     //     }
+    //     //     else if(tempCompID == -1){ //當 apNeighborNodeID u 是 AP 的時候
                 
-                #pragma region determinePassCondition
-                //如果已知 apNeighborNodeID 需要被跳過，則直接用continue跳過
-                if(ignoreOri_APs[apNeighborNodeID] == 1){
-                    printf("\t\t[Ignore apNeighborNodeID %d (already known)]\n", apNeighborNodeID);
-                    continue;
-                }
+    //     //         #pragma region determinePassCondition
+    //     //         //如果已知 apNeighborNodeID 需要被跳過，則直接用continue跳過
+    //     //         if(ignoreOri_APs[apNeighborNodeID] != 0){
+    //     //             printf("\t\t[Ignore apNeighborNodeID %d (already known)]\n", apNeighborNodeID);
+    //     //             continue;
+    //     //         }
 
-                //ignoreFlag 用於判斷 當此 apNeighborNodeID u 是 AP 的時候，是否有共享comp，如果有則 ignoreFlag = 1 
-                int ignoreFlag = 0;
-                for(int nidx = _csr->csrV[apNeighborNodeID] ; nidx < _csr->csrV[apNeighborNodeID + 1] ; nidx ++){
-                    int nid = _csr->csrE[nidx];
-                    int compID = _csr->compID[nid];
-                    if(compIDs_aroundAP[compID] == 1){
-                        ignoreFlag = 1;
-                        break;
-                    }
-                }
-                if(ignoreFlag == 1){
-                    ignoreOri_APs[apNeighborNodeID] = 1;
-                    printf("\t\t[Ignore apNeighborNodeID %d (new found)] !!!\n", apNeighborNodeID);
-                    continue;
-                }
-                #pragma endregion //determinePassCondition
+    //     //         //ignoreFlag 用於判斷 當此 apNeighborNodeID u 是 AP 的時候，是否有共享comp，如果有則 ignoreFlag = 1 
+    //     //         int ignoreFlag = 0;
+    //     //         for(int nidx = _csr->csrV[apNeighborNodeID] ; nidx < _csr->csrV[apNeighborNodeID + 1] ; nidx ++){
+    //     //             int nid = _csr->csrE[nidx];
+    //     //             int compID = _csr->compID[nid];
+    //     //             // printf("\t\t nid %d, compID %d\n", nid, compID);
+    //     //             if(compIDs_aroundAP[compID] == 1){
+    //     //                 ignoreFlag = 1;
+    //     //                 ignoreOri_APs[apNeighborNodeID] = compID;
+    //     //                 printf("\t\t[Ignore apNeighborNodeID %d, compID %d (new found)] !!!\n", apNeighborNodeID, ignoreOri_APs[apNeighborNodeID]);
+    //     //                 break;
+    //     //             }
+    //     //         }
+    //     //         if(ignoreFlag == 1){
+                    
+    //     //             continue;
+    //     //         }
+    //     //         #pragma endregion //determinePassCondition
 
-                part[partIndex].compID  = -1;
-                part[partIndex].apID    = apNeighborNodeID;
-                // partIndex ++;
+    //     //         part[partIndex].compID  = -1;
+    //     //         part[partIndex].apID    = apNeighborNodeID;
+    //     //         // partIndex ++;
 
-                #ifdef GetPartInfo_DEBUG
-                printf("\t\t[apNeighborNodeID] %d\n", apNeighborNodeID);
-                #endif
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         printf("\t\t[apNeighborNodeID] %d\n", apNeighborNodeID);
+    //     //         #endif
 
-                //reset Q and dist_arr
-                Q->front = 0;
-                Q->rear = -1;
-                memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
+    //     //         //reset Q and dist_arr
+    //     //         Q->front = 0;
+    //     //         Q->rear = -1;
+    //     //         memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
 
-                //Init source information
-                dist_arr[apNeighborNodeID]  = 0;
-                qPushBack(Q, apNeighborNodeID);
+    //     //         //Init source information
+    //     //         dist_arr[apNeighborNodeID]  = 0;
+    //     //         qPushBack(Q, apNeighborNodeID);
 
-                int currentNodeID   = -1;
-                int neighborIndex   = -1;
-                int neighborNodeID  = -1;
+    //     //         int currentNodeID   = -1;
+    //     //         int neighborIndex   = -1;
+    //     //         int neighborNodeID  = -1;
                 
-                int part_represent = 0;
-                int part_ff        = 0;
-                while(!qIsEmpty(Q)){
-                    currentNodeID = qPopFront(Q);
-                    // printf("\tdist_arr[%d] = %d\n", currentNodeID, dist_arr[currentNodeID]);
-                    for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
-                        neighborNodeID = _csr->csrE[neighborIndex];
+    //     //         int part_represent = 0;
+    //     //         int part_ff        = 0;
+    //     //         while(!qIsEmpty(Q)){
+    //     //             currentNodeID = qPopFront(Q);
+    //     //             // printf("\tdist_arr[%d] = %d\n", currentNodeID, dist_arr[currentNodeID]);
+    //     //             for(neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
+    //     //                 neighborNodeID = _csr->csrE[neighborIndex];
 
-                        /**
-                         * 不用特別判斷 neighborNodeID 是否是 source(apNeighborNodeID)，
-                         * 因為 dist_arr[apNeighborNodeID] == 0，apNeighborNodeID 是 起點
-                        */
-                        if(dist_arr[neighborNodeID] == -1 && neighborNodeID != apNodeID){
-                            // if(_csr->compID[neighborNodeID] == 3){printf("ap %d find comp 3 neighbor %d\n", apNeighborNodeID, neighborNodeID);}
-                            qPushBack(Q, neighborNodeID);
-                            dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
-                            part_represent += _csr->representNode[neighborNodeID];
-                            part_ff        += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
-                        }
-                    }
-                }
+    //     //                 /**
+    //     //                  * 不用特別判斷 neighborNodeID 是否是 source(apNeighborNodeID)，
+    //     //                  * 因為 dist_arr[apNeighborNodeID] == 0，apNeighborNodeID 是 起點
+    //     //                 */
+    //     //                 if(dist_arr[neighborNodeID] == -1 && neighborNodeID != apNodeID){
+    //     //                     // if(_csr->compID[neighborNodeID] == 3){printf("ap %d find comp 3 neighbor %d\n", apNeighborNodeID, neighborNodeID);}
+    //     //                     qPushBack(Q, neighborNodeID);
+    //     //                     dist_arr[neighborNodeID] = dist_arr[currentNodeID] + 1;
+    //     //                     part_represent += _csr->representNode[neighborNodeID];
+    //     //                     part_ff        += _csr->ff[neighborNodeID] + dist_arr[neighborNodeID] * _csr->representNode[neighborNodeID];
+    //     //                 }
+    //     //             }
+    //     //         }
                 
-                #ifdef GetPartInfo_DEBUG
-                printf("\t\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
-                #endif
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         printf("\t\t\tpart_represent = %d, part_ff = %d\n", part_represent, part_ff);
+    //     //         #endif
 
-                part[partIndex].represent   = part_represent + _csr->representNode[apNeighborNodeID];
-                part[partIndex].ff          = part_ff + _csr->ff[apNeighborNodeID] + part[partIndex].represent;
+    //     //         part[partIndex].represent   = part_represent + _csr->representNode[apNeighborNodeID];
+    //     //         part[partIndex].ff          = part_ff + _csr->ff[apNeighborNodeID] + part[partIndex].represent;
 
-                #ifdef GetPartInfo_DEBUG
-                printf("\t\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
-                #endif
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         printf("\t\t\tpart[%d] = {represent = %d, ff = %d}\n", partIndex, part[partIndex].represent, part[partIndex].ff);
+    //     //         #endif
 
-                total_represent += part[partIndex].represent;
-                total_ff += part[partIndex].ff; 
+    //     //         total_represent += part[partIndex].represent;
+    //     //         total_ff += part[partIndex].ff; 
 
-                partIndex ++;
+    //     //         partIndex ++;
 
-            }
-            else{ //碰到的node，其compID的資料已被創建
-                #ifdef GetPartInfo_DEBUG
-                // printf("\t\t[compID] %d has been created\n", tempCompID);
-                #endif
+    //     //     }
+    //     //     else{ //碰到的node，其compID的資料已被創建
+    //     //         #ifdef GetPartInfo_DEBUG
+    //     //         // printf("\t\t[compID] %d has been created\n", tempCompID);
+    //     //         #endif
 
-                continue;
-            }
+    //     //         continue;
+    //     //     }
 
-        }
+    //     // }
 
-        int partNum = partIndex;
-        for(int partIdx = 0 ; partIdx < partNum ; partIdx ++){
-            printf("\tpart[%d] = {apID = %d, compID = %d, w = %d, ff = %d}\n", partIdx, part[partIdx].apID, part[partIdx].compID, part[partIdx].represent, part[partIdx].ff);
-        }
-        #pragma endregion //GetPartInfo
+    //     // // int partNum = partIndex;
+    //     // // for(int partIdx = 0 ; partIdx < partNum ; partIdx ++){
+    //     // //     printf("\tpart[%d] = {apID = %d, compID = %d, w = %d, ff = %d}\n", partIdx, part[partIdx].apID, part[partIdx].compID, part[partIdx].represent, part[partIdx].ff);
+    //     // // }
+    //     // #pragma endregion //GetPartInfo
 
-        // #pragma region Split
-        // /**
-        //  * apNodeID 已知 它對整個graph的dist，所以 CCs[apNodeID] 已經可得，
-        //  * 所以之後 在各 component 內的 traverse 不會在計算 apNodeID本尊 的 CCs
-        // */
-        // _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
+    //     // /**
+    //     //  * apNodeID 已知 它對整個graph的dist，所以 CCs[apNodeID] 已經可得，
+    //     //  * 所以之後 在各 component 內的 traverse 不會在計算 apNodeID本尊 的 CCs
+    //     // */
 
-        // #ifdef Split_DEBUG
-        // printf("_csr->CCs[%d] = %d, total_ff = %d, total_represent = %d\n", apNodeID, _csr->CCs[apNodeID], total_ff, total_represent);
-        // #endif
+    //     // #pragma region Split
 
-        // int partNum = compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID];
+    //     // _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
 
-        // //暫存apNodeID_ori_ff, apNodeID_ori_represent
-        // int apNodeID_ori_ff         = _csr->ff[apNodeID];
-        // int apNodeID_ori_represent  = _csr->representNode[apNodeID];
+    //     // #ifdef Split_DEBUG
+    //     // printf("_csr->CCs[%d] = %d, total_ff = %d, total_represent = %d\n", apNodeID, _csr->CCs[apNodeID], total_ff, total_represent);
+    //     // #endif
 
-        // for(partIndex = 0 ; partIndex < partNum ; partIndex ++){
-        //     //apNodeID主動，其他為被動
+    //     // int partNum = compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID];
+
+    //     // //暫存apNodeID_ori_ff, apNodeID_ori_represent
+    //     // int apNodeID_ori_ff         = _csr->ff[apNodeID];
+    //     // int apNodeID_ori_represent  = _csr->representNode[apNodeID];
+
+    //     // for(partIndex = 0 ; partIndex < partNum ; partIndex ++){
+    //     //     //apNodeID主動，其他為被動
             
+    //     //     if(part[partIndex].apID != -1){//Split target part is AP
 
-        //     if(part[partIndex].apID != -1){//Split target part is AP
-        //         int apID = part[partIndex].apID;
-        //         int outer_represent = total_represent - part[partIndex].represent + apNodeID_ori_represent;
+    //     //         int apID = part[partIndex].apID;
+    //     //         int outer_represent = total_represent - part[partIndex].represent + apNodeID_ori_represent;
 
-        //         #ifdef Split_DEBUG
-        //         printf("\tapID = %d, outer_represent = %d\n", apID, outer_represent);
-        //         #endif
+    //     //         #ifdef Split_DEBUG
+    //     //         printf("\tapID = %d, outer_represent = %d\n", apID, outer_represent);
+    //     //         #endif
 
-        //         //更新 represent 跟 ff
-        //         _csr->representNode[apID]   += outer_represent;
-        //         _csr->ff[apID]              += (total_ff - part[partIndex].ff) + outer_represent + apNodeID_ori_ff;
+    //     //         //更新 represent 跟 ff
+    //     //         _csr->representNode[apID]   += outer_represent;
+    //     //         _csr->ff[apID]              += (total_ff - part[partIndex].ff) + outer_represent + apNodeID_ori_ff;
 
-        //         #ifdef Split_DEBUG
-        //         printf("\tapID %d = {w = %d, ff = %d}\n", apID, _csr->representNode[apID], _csr->ff[apID]);
-        //         #endif
+    //     //         #ifdef Split_DEBUG
+    //     //         printf("\tapID %d = {w = %d, ff = %d}\n", apID, _csr->representNode[apID], _csr->ff[apID]);
+    //     //         #endif
 
-        //         //斷開 apNodeID 連到 apID 的 edge
-        //         for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
-        //             int nid = _csr->csrE[nidx];
-        //             if(nid == apID){
-        //                 swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
-        //                 _csr->csrV[apNodeID] ++;
-        //                 _csr->csrNodesDegree[apNodeID] --;
+    //     //         //斷開 apNodeID 連到 apID 的 edge
+    //     //         for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
+    //     //             int nid = _csr->csrE[nidx];
+    //     //             if(nid == apID){
+    //     //                 swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
+    //     //                 _csr->csrV[apNodeID] ++;
+    //     //                 _csr->csrNodesDegree[apNodeID] --;
 
-        //                 #ifdef Split_DEBUG
-        //                 printf("\tCut (%d, %d)\n", apNodeID, apID);
-        //                 #endif
+    //     //                 #ifdef Split_DEBUG
+    //     //                 printf("\tCut (%d, %d)\n", apNodeID, apID);
+    //     //                 #endif
 
-        //                 break;
-        //             }
-        //         }
+    //     //                 break;
+    //     //             }
+    //     //         }
 
-        //         //斷開 apID 連到 apNodeID 的 edge
-        //         for(int nidx = _csr->csrV[apID] ; nidx < _csr->oriCsrV[apID + 1] ; nidx ++){
-        //             int nid = _csr->csrE[nidx];
-        //             if(nid == apNodeID){
-        //                 swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apID]]));
-        //                 _csr->csrV[apID] ++;
-        //                 _csr->csrNodesDegree[apID] --;
+    //     //         //斷開 apID 連到 apNodeID 的 edge
+    //     //         for(int nidx = _csr->csrV[apID] ; nidx < _csr->oriCsrV[apID + 1] ; nidx ++){
+    //     //             int nid = _csr->csrE[nidx];
+    //     //             if(nid == apNodeID){
+    //     //                 swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apID]]));
+    //     //                 _csr->csrV[apID] ++;
+    //     //                 _csr->csrNodesDegree[apID] --;
 
-        //                 #ifdef Split_DEBUG
-        //                 printf("\tCut (%d, %d)\n", apID, apNodeID);
-        //                 #endif
+    //     //                 #ifdef Split_DEBUG
+    //     //                 printf("\tCut (%d, %d)\n", apID, apNodeID);
+    //     //                 #endif
 
-        //                 break;
-        //             }
-        //         }
-        //         //被動AP 的 apNeighborNum - 1
-        //         apNeighborNum_arr[apID] --;
-        //     }
-        //     else if(part[partIndex].compID != -1){//Split target part is Comp
-        //         //取得這個 component 以外的所有 node 個數，不包含 apNodeID
-        //         int outer_represent = total_represent - part[partIndex].represent;
+    //     //                 break;
+    //     //             }
+    //     //         }
+    //     //         //被動AP 的 apNeighborNum - 1
+    //     //         apNeighborNum_arr[apID] --;
+    //     //     }
+    //     //     else if(part[partIndex].compID != -1){//Split target part is Comp
+    //     //         //取得這個 component 以外的所有 node 個數，不包含 apNodeID
+    //     //         int outer_represent = total_represent - part[partIndex].represent;
 
-        //         #ifdef Split_DEBUG
-        //         printf("\tcompID %d, outer_represent = %d\n", part[partIndex].compID, outer_represent);
-        //         #endif
+    //     //         #ifdef Split_DEBUG
+    //     //         printf("\tcompID %d, outer_represent = %d\n", part[partIndex].compID, outer_represent);
+    //     //         #endif
 
-        //         /**
-        //          * 如果所有part之中，只有一個component，則
-        //          * 1. 不須創建 AP分身，用 AP本尊就可以
-        //          * 2. AP本尊.represent, AP本尊.ff，需要根據 outer_represent 去更新
-        //          * 3. 斷開 AP本尊 跟 其他 component 的 edges
-        //         */
-        //         if(compNum_arr[apNodeID] == 1){
-        //             _csr->representNode[apNodeID] += outer_represent;
-        //             _csr->ff[apNodeID] += (total_ff - part[partIndex].ff);
-        //             if(_csr->ff[apNodeID] > 100000){
-        //                 printf("apNodeID %d, ff = %d, total_ff = %d !!!!!!!!!!!\n", apNodeID, _csr->ff[apNodeID], total_ff);
-        //             }
+    //     //         /**
+    //     //          * 如果所有part之中，只有一個component，則
+    //     //          * 1. 不須創建 AP分身，用 AP本尊就可以
+    //     //          * 2. AP本尊.represent, AP本尊.ff，需要根據 outer_represent 去更新
+    //     //          * 3. 斷開 AP本尊 跟 其他 component 的 edges
+    //     //         */
+    //     //         if(compNum_arr[apNodeID] == 1){
+    //     //             _csr->representNode[apNodeID] += outer_represent;
+    //     //             _csr->ff[apNodeID] += (total_ff - part[partIndex].ff);
+    //     //             // if(_csr->ff[apNodeID] > 100000){
+    //     //             //     printf("apNodeID %d, ff = %d, total_ff = %d !!!!!!!!!!!\n", apNodeID, _csr->ff[apNodeID], total_ff);
+    //     //             // }
 
-        //             #ifdef Split_DEBUG
-        //             printf("\t[One comp] apNodeID %d = {represent = %d, ff = %d}\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
-        //             #endif
+    //     //             #ifdef Split_DEBUG
+    //     //             printf("\t[One comp] apNodeID %d = {represent = %d, ff = %d}\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
+    //     //             #endif
 
-        //             /**
-        //              * apNodeID(AP本尊) 主動斷開 跟 (其他不同 comp 的 node) 的 edge
-        //              * (其他不同 comp 的 node) 主動斷開 跟 apNodeID(AP本尊) 的 edge
-        //             */
-        //             int tempNid = -1;
-        //             for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
-        //                 int nid = _csr->csrE[nidx];
-        //                 tempNid = nid;
-        //                 if(_csr->compID[nid] != part[partIndex].compID){
-        //                     // apNodeID(AP本尊) 主動斷開 跟 (其他不同 comp 的 node(有可能也包含其他AP)) 的 edge
-        //                     swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
-        //                     _csr->csrV[apNodeID] ++;
-        //                     _csr->csrNodesDegree[apNodeID] --;
+    //     //             /**
+    //     //              * apNodeID(AP本尊) 主動斷開 跟 (其他不同 comp 的 node) 的 edge
+    //     //              * (其他不同 comp 的 node) 主動斷開 跟 apNodeID(AP本尊) 的 edge
+    //     //             */
+    //     //             for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
+    //     //                 int nid = _csr->csrE[nidx];
 
-        //                     #ifdef Split_DEBUG
-        //                     printf("\tcut (%d, %d)\n", apNodeID, nid);
-        //                     #endif
+    //     //                 if(_csr->compID[nid] != part[partIndex].compID){
+    //     //                     // apNodeID(AP本尊) 主動斷開 跟 (其他不同 comp 的 node(有可能也包含其他AP)) 的 edge
+    //     //                     if(ignoreOri_APs[nid] != 0){
+    //     //                         continue;
+    //     //                     }
 
-        //                     //(其他不同 comp 的 node(有可能也包含其他AP)) 主動斷開 跟 apNodeID(AP本尊) 的 edge
-        //                     for(int nidx2 = _csr->csrV[nid] ; nidx2 < _csr->oriCsrV[nid + 1] ; nidx2 ++){
-        //                         int nid2 = _csr->csrE[nidx2];
+    //     //                     swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
+    //     //                     _csr->csrV[apNodeID] ++;
+    //     //                     _csr->csrNodesDegree[apNodeID] --;
+
+    //     //                     #ifdef Split_DEBUG
+    //     //                     printf("\tcut (%d, %d)\n", apNodeID, nid);
+    //     //                     #endif
+
+    //     //                     //(其他不同 comp 的 node(有可能也包含其他AP)) 主動斷開 跟 apNodeID(AP本尊) 的 edge
+    //     //                     for(int nidx2 = _csr->csrV[nid] ; nidx2 < _csr->oriCsrV[nid + 1] ; nidx2 ++){
+    //     //                         int nid2 = _csr->csrE[nidx2];
                                 
-        //                         if(nid2 == apNodeID){
-        //                             swap(&(_csr->csrE[nidx2]), &(_csr->csrE[_csr->csrV[nid]]));
-        //                             _csr->csrV[nid] ++;
-        //                             _csr->csrNodesDegree --;
+    //     //                         if(nid2 == apNodeID){
+    //     //                             swap(&(_csr->csrE[nidx2]), &(_csr->csrE[_csr->csrV[nid]]));
+    //     //                             _csr->csrV[nid] ++;
+    //     //                             _csr->csrNodesDegree --;
                                     
-        //                             #ifdef Split_DEBUG
-        //                             printf("\tcut (%d, %d)\n", nid, nid2);
-        //                             #endif
+    //     //                             #ifdef Split_DEBUG
+    //     //                             printf("\tcut (%d, %d)\n", nid, nid2);
+    //     //                             #endif
 
-        //                             break;
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
+    //     //                             break;
+    //     //                         }
+    //     //                     }
+    //     //                 }
+    //     //             }
+    //     //         }
                 
-        //         /**
-        //          * @todo
-        //          * 如果所有part之中，有 k 個 component，則
-        //          * 1. 需要創建 k 個 AP分身，捨棄 AP本尊
-        //          * 2. 更新每個AP分身的 represent 跟 ff，根據 outer_represent 去更新
-        //          * 3. 以 _csr->endNodeID 開始去建立新的 node
-        //          * @bug
-        //          * 這裡的 _csr->csrV 處理有問題
-        //         */
-        //         else if(compNum_arr[apNodeID] > 1){
-        //             // int apCloneDataIndex = apClone->newNodeCount;
-        //             // apClone->newNodeCount ++;
-        //             _csr->apCloneCount ++;
-        //             int newApCloneID = _csr->endNodeID + _csr->apCloneCount;
-        //             _csr->nodesType[newApCloneID] = ClonedAP;
+    //     //         /**
+    //     //          * @todo
+    //     //          * 如果所有part之中，有 k 個 component，則
+    //     //          * 1. 需要創建 k 個 AP分身，捨棄 AP本尊
+    //     //          * 2. 更新每個AP分身的 represent 跟 ff，根據 outer_represent 去更新
+    //     //          * 3. 以 _csr->endNodeID 開始去建立新的 node
+    //     //          * @bug
+    //     //          * 這裡的 _csr->csrV 處理有問題
+    //     //         */
+    //     //         else if(compNum_arr[apNodeID] > 1){
+    //     //             // int apCloneDataIndex = apClone->newNodeCount;
+    //     //             // apClone->newNodeCount ++;
+    //     //             _csr->apCloneCount ++;
+    //     //             int newApCloneID = _csr->endNodeID + _csr->apCloneCount;
+    //     //             _csr->nodesType[newApCloneID] = ClonedAP;
                     
-        //             #ifdef Split_DEBUG
-        //             printf("\tnewApCloneID = %d, ", newApCloneID);
-        //             #endif
+    //     //             #ifdef Split_DEBUG
+    //     //             printf("\tnewApCloneID = %d, ", newApCloneID);
+    //     //             #endif
 
-        //             // _csr->csrV[newApCloneID] = nextCsrV_offset;
+    //     //             // _csr->csrV[newApCloneID] = nextCsrV_offset;
                     
-        //             //新增 (apClone(ap分身) 的 ID) 跟 (ori_ap(ap本尊) 的 ID)
-        //             // apClone->Ori_apNodeID[apCloneDataIndex]     = apNodeID;
-        //             // apClone->apCloneID[apCloneDataIndex]        = _csr->endNodeID + apClone->newNodeCount;
-        //             _csr->apCloneTrackOriAp_ID[newApCloneID] = apNodeID;
+    //     //             //新增 (apClone(ap分身) 的 ID) 跟 (ori_ap(ap本尊) 的 ID)
+    //     //             // apClone->Ori_apNodeID[apCloneDataIndex]     = apNodeID;
+    //     //             // apClone->apCloneID[apCloneDataIndex]        = _csr->endNodeID + apClone->newNodeCount;
+    //     //             _csr->apCloneTrackOriAp_ID[newApCloneID] = apNodeID;
 
-        //             //更新 apClone_ff, apClone_represent
-        //             // apClone->apCloneff[apCloneDataIndex]        = (total_ff - part[partIndex].ff) + _csr->ff[apNodeID];
-        //             // apClone->apCloneRepresent[apCloneDataIndex] = outer_represent + _csr->representNode[apNodeID];
-        //             _csr->representNode[newApCloneID]   = outer_represent + _csr->representNode[apNodeID];
-        //             _csr->ff[newApCloneID]              = (total_ff - part[partIndex].ff) + _csr->ff[apNodeID];
+    //     //             //更新 apClone_ff, apClone_represent
+    //     //             // apClone->apCloneff[apCloneDataIndex]        = (total_ff - part[partIndex].ff) + _csr->ff[apNodeID];
+    //     //             // apClone->apCloneRepresent[apCloneDataIndex] = outer_represent + _csr->representNode[apNodeID];
+    //     //             _csr->representNode[newApCloneID]   = outer_represent + _csr->representNode[apNodeID];
+    //     //             _csr->ff[newApCloneID]              = (total_ff - part[partIndex].ff) + _csr->ff[apNodeID];
 
-        //             /**
-        //              * 此處的 
-        //              * 1. neighborNodeID 是 apNodeID 的其中一個neighbor
-        //              * 2. apNodeID 是 AP本尊
-        //              * 3. newAPcloneID 是 AP分身
-        //              * 
-        //              * 對 (compID[neighborNodeID] == part[partIndex].compID) 的 neighborNodeID
-        //              * "修改" neighborNodeID(主動) 與 apNodeID(被動) 的 edge => 變成 (neighborNodeID, newApCloneID)
-        //              * "新增" newAPcloneID 對 neighborNodeID 的 edge (newApCloneID, neighborNodeID)
-        //              * "移除" apNodeID 對 neighborNodeID 的 edge (apNodeID, neighborNodeID)
-        //             */
-        //             //讓 newApCloneID 指向 (apNodeID 當前指向的 csrE)
-        //             _csr->csrV[newApCloneID] = nextCsrE_offset;
-        //             _csr->oriCsrV[newApCloneID] = nextCsrE_offset;
+    //     //             /**
+    //     //              * 此處的 
+    //     //              * 1. neighborNodeID 是 apNodeID 的其中一個neighbor
+    //     //              * 2. apNodeID 是 AP本尊
+    //     //              * 3. newAPcloneID 是 AP分身
+    //     //              * 
+    //     //              * 對 (compID[neighborNodeID] == part[partIndex].compID) 的 neighborNodeID
+    //     //              * "修改" neighborNodeID(主動) 與 apNodeID(被動) 的 edge => 變成 (neighborNodeID, newApCloneID)
+    //     //              * "新增" newAPcloneID 對 neighborNodeID 的 edge (newApCloneID, neighborNodeID)
+    //     //              * "移除" apNodeID 對 neighborNodeID 的 edge (apNodeID, neighborNodeID)
+    //     //             */
+    //     //             //讓 newApCloneID 指向 (apNodeID 當前指向的 csrE)
+    //     //             _csr->csrV[newApCloneID] = nextCsrE_offset;
+    //     //             _csr->oriCsrV[newApCloneID] = nextCsrE_offset;
 
-        //             #ifdef Split_DEBUG
-        //             printf("_csr->csrV[%d] = %d\n", newApCloneID, nextCsrE_offset);
-        //             #endif
+    //     //             #ifdef Split_DEBUG
+    //     //             printf("_csr->csrV[%d] = %d\n", newApCloneID, nextCsrE_offset);
+    //     //             #endif
 
-        //             for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
-        //                 int nid = _csr->csrE[nidx];
-                        
-        //                 //找 compID == part[partIndex].compID 的 neighbor
-        //                 if(_csr->compID[nid] == part[partIndex].compID){
-        //                     //[新增] (apCloneID, neighborNodeID)
-        //                     _csr->csrE[nextCsrE_offset] = nid;
+    //     //             for(int nidx = _csr->csrV[apNodeID] ; nidx < _csr->oriCsrV[apNodeID + 1] ; nidx ++){
+    //     //                 int nid = _csr->csrE[nidx];
+    //     //                 if(apNodeID == 22635){
+    //     //                     printf("\t\tnid %d, ignoreOri_APs[%d] = %d\n", nid, nid, ignoreOri_APs[nid]);
+    //     //                 }
+    //     //                 //找 compID == part[partIndex].compID 的 neighbor
+    //     //                 if(_csr->compID[nid] == part[partIndex].compID || ignoreOri_APs[nid] == part[partIndex].compID){
+    //     //                     //[新增] (apCloneID, neighborNodeID)
+    //     //                     _csr->csrE[nextCsrE_offset] = nid;
 
-        //                     #ifdef Split_DEBUG
-        //                     printf("\t\t[add] _csr->csrE[%d] = %d, ", nextCsrE_offset, _csr->csrE[nextCsrE_offset]);
-        //                     #endif
+    //     //                     #ifdef Split_DEBUG
+    //     //                     printf("\t\t[add] _csr->csrE[%d] = %d, ", nextCsrE_offset, _csr->csrE[nextCsrE_offset]);
+    //     //                     #endif
 
-        //                     nextCsrE_offset ++;
+    //     //                     nextCsrE_offset ++;
 
-        //                     #ifdef Split_DEBUG
-        //                     printf("\t\tnextCsrE_offset => %d\n", nextCsrE_offset);
-        //                     #endif
+    //     //                     #ifdef Split_DEBUG
+    //     //                     printf("\t\tnextCsrE_offset => %d\n", nextCsrE_offset);
+    //     //                     #endif
 
-        //                     //[移除] (apNodeID, neighborNodeID)
-        //                     swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
-        //                     _csr->csrV[apNodeID] ++;
-        //                     _csr->csrNodesDegree[apNodeID] --;
+    //     //                     //[移除] (apNodeID, neighborNodeID)
+    //     //                     swap(&(_csr->csrE[nidx]), &(_csr->csrE[_csr->csrV[apNodeID]]));
+    //     //                     _csr->csrV[apNodeID] ++;
+    //     //                     _csr->csrNodesDegree[apNodeID] --;
 
-        //                     #ifdef Split_DEBUG
-        //                     printf("\t\t[cut] (%d, %d)\n", apNodeID, nid);
-        //                     #endif
+    //     //                     #ifdef Split_DEBUG
+    //     //                     printf("\t\t[cut] (%d, %d)\n", apNodeID, nid);
+    //     //                     #endif
 
-        //                     //[修改] (neighborNodeID, apNodeID) => (neighborNodeID, newApCloneID)
-        //                     for(int nidx2 = _csr->csrV[nid] ; nidx2 < _csr->oriCsrV[nid + 1] ; nidx2 ++){
-        //                         int nid2 = _csr->csrE[nidx2];
+    //     //                     //[修改] (neighborNodeID, apNodeID) => (neighborNodeID, newApCloneID)
+    //     //                     for(int nidx2 = _csr->csrV[nid] ; nidx2 < _csr->oriCsrV[nid + 1] ; nidx2 ++){
+    //     //                         int nid2 = _csr->csrE[nidx2];
                                 
-        //                         if(nid2 == apNodeID){
-        //                             _csr->csrE[nidx2] = newApCloneID;
+    //     //                         if(nid2 == apNodeID){
+    //     //                             _csr->csrE[nidx2] = newApCloneID;
 
-        //                             #ifdef Split_DEBUG
-        //                             printf("\t\t[fix] (%d, %d) => (%d, %d)\n", nid, apNodeID, nid, newApCloneID);
-        //                             #endif
+    //     //                             #ifdef Split_DEBUG
+    //     //                             printf("\t\t[fix] (%d, %d) => (%d, %d)\n", nid, apNodeID, nid, newApCloneID);
+    //     //                             #endif
 
-        //                             break;
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //             #ifdef Split_DEBUG
-        //             printf("\tnewApCloneID %d = {ff = %d, represent = %d, type = %x}\n\n", newApCloneID, _csr->ff[newApCloneID], _csr->representNode[newApCloneID], _csr->nodesType[newApCloneID]);
-        //             #endif
-        //         }
+    //     //                             break;
+    //     //                         }
+    //     //                     }
+    //     //                 }
+    //     //             }
+    //     //             #ifdef Split_DEBUG
+    //     //             printf("\tnewApCloneID %d = {ff = %d, represent = %d, type = %x}\n\n", newApCloneID, _csr->ff[newApCloneID], _csr->representNode[newApCloneID], _csr->nodesType[newApCloneID]);
+    //     //             #endif
+    //     //         }
 
-        //     }
-        // }
+    //     //     }
+    //     // }
 
-        // #ifdef Split_DEBUG
-        // printf("=============\n");
-        // #endif
+    //     // #ifdef Split_DEBUG
+    //     // printf("=============\n");
+    //     // #endif
 
-        // #pragma endregion //Split
-        // // printf("4, 5(%d)\n", ap_count - i);
+    //     // #pragma endregion //Split
+    //     // // printf("4, 5(%d)\n", ap_count - i);
     
-        #pragma region checkAns
-        /**
-         * 檢查每個 ap node 是否都有抓到周圍的 part
-        */
-        // for(partIndex = 0 ; partIndex < (compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID]) ; partIndex ++){
-        //     printf("\tpart[%d] = {compID = %d, apID = %d}\n", partIndex, part[partIndex].compID, part[partIndex].apID);
-        // }
+    //     #pragma region checkAns
+    //     /**
+    //      * 檢查每個 ap node 是否都有抓到周圍的 part
+    //     */
+    //     // for(partIndex = 0 ; partIndex < (compNum_arr[apNodeID] + apNeighborNum_arr[apNodeID]) ; partIndex ++){
+    //     //     printf("\tpart[%d] = {compID = %d, apID = %d}\n", partIndex, part[partIndex].compID, part[partIndex].apID);
+    //     // }
 
-        // /**
-        //  * Check 分割的 ff, represent 是否正確
-        // */
-        // int curID   = -1;
-        // int nIdx    = -1;
-        // int nID     = -1;
-        // int total_dist_from_apNode = 0;
-        // Q->front = 0;
-        // Q->rear = -1;
-        // int checkNode = 7;
-        // memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
+    //     // /**
+    //     //  * Check 分割的 ff, represent 是否正確
+    //     // */
+    //     // int curID   = -1;
+    //     // int nIdx    = -1;
+    //     // int nID     = -1;
+    //     // int total_dist_from_apNode = 0;
+    //     // Q->front = 0;
+    //     // Q->rear = -1;
+    //     // int checkNode = 7;
+    //     // memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
 
-        // dist_arr[checkNode] = 0;
-        // qPushBack(Q, checkNode);
+    //     // dist_arr[checkNode] = 0;
+    //     // qPushBack(Q, checkNode);
 
-        // while(!qIsEmpty(Q)){
-        //     curID = qPopFront(Q);
-        //     // printf("currentNodeID %d :\n", curID);
-        //     for(nIdx = _csr->oriCsrV[curID] ; nIdx < _csr->oriCsrV[curID + 1] ; nIdx ++){
-        //         nID = _csr->csrE[nIdx];
+    //     // while(!qIsEmpty(Q)){
+    //     //     curID = qPopFront(Q);
+    //     //     // printf("currentNodeID %d :\n", curID);
+    //     //     for(nIdx = _csr->oriCsrV[curID] ; nIdx < _csr->oriCsrV[curID + 1] ; nIdx ++){
+    //     //         nID = _csr->csrE[nIdx];
 
-        //         if(dist_arr[nID] == -1){
-        //             // printf("\tnID = %d\n", nID);
-        //             qPushBack(Q, nID);
-        //             dist_arr[nID] = dist_arr[curID] + 1;
-        //             total_dist_from_apNode += dist_arr[nID];
-        //         }
-        //     }
-        // }
-        // printf("total_dist_from_apNode[%d] = %d\n", checkNode, total_dist_from_apNode);
-        #pragma endregion
+    //     //         if(dist_arr[nID] == -1){
+    //     //             // printf("\tnID = %d\n", nID);
+    //     //             qPushBack(Q, nID);
+    //     //             dist_arr[nID] = dist_arr[curID] + 1;
+    //     //             total_dist_from_apNode += dist_arr[nID];
+    //     //         }
+    //     //     }
+    //     // }
+    //     // printf("total_dist_from_apNode[%d] = %d\n", checkNode, total_dist_from_apNode);
+    //     #pragma endregion
     
-        // printf("\n");
-        // break;
-    }
+    //     // printf("\n");
+    //     // break;
+    // }
 
     
-    /**
-     * 最後要在 csrV, oriCsr都加上 csr的結尾
-    */
-    int theLastNodeID                   = _csr->endNodeID + _csr->apCloneCount;
-    int theLastCsrE_offset              = nextCsrE_offset;
-    _csr->csrV[theLastNodeID + 1]       = theLastCsrE_offset;
-    _csr->oriCsrV[theLastNodeID + 1]    = theLastCsrE_offset;
-    printf("[End csrV] _csr->csrV[%d] = %d\n", theLastNodeID + 1, _csr->csrV[theLastNodeID + 1]);
+    // /**
+    //  * 最後要在 csrV, oriCsr都加上 csr的結尾
+    // */
+    // int theLastNodeID                   = _csr->endNodeID + _csr->apCloneCount;
+    // int theLastCsrE_offset              = nextCsrE_offset;
+    // _csr->csrV[theLastNodeID + 1]       = theLastCsrE_offset;
+    // _csr->oriCsrV[theLastNodeID + 1]    = theLastCsrE_offset;
+    // printf("[End csrV] _csr->csrV[%d] = %d\n", theLastNodeID + 1, _csr->csrV[theLastNodeID + 1]);
 
-    #pragma endregion //AP_splitGraph
+    // #pragma endregion //AP_splitGraph
 
-    printf("3\n");
+    // printf("3\n");
 
     free(Q->dataArr);
     free(Q);
