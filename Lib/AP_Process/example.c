@@ -2,7 +2,7 @@
 #include "AP_Process.h"
 #include "AP_Process.c"
 
-
+// #define AfterD1Folding
 int checkCC_Ans(struct CSR* _csr, int checkNodeID){
     struct qQueue* Q = InitqQueue();
     qInitResize(Q, _csr->csrVSize);
@@ -18,13 +18,18 @@ int checkCC_Ans(struct CSR* _csr, int checkNodeID){
         int curID = qPopFront(Q);
         // printf("curID = %d\n", curID);
 
-        for(int nidx = _csr->csrV[curID] ; nidx < _csr->csrV[curID + 1] ; nidx ++){
+        for(int nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
             int nid = _csr->csrE[nidx];
-            
+            // if(nid == 74655 || nid == 74684){continue;}
             if(dist_arr[nid] == -1){
                 qPushBack(Q, nid);
                 dist_arr[nid] = dist_arr[curID] + 1;
+
+                #ifdef AfterD1Folding
+                CC_ans += _csr->ff[nid] + dist_arr[nid] * _csr->representNode[nid];
+                #else
                 CC_ans += dist_arr[nid];
+                #endif
             }
         }
     }
@@ -47,7 +52,7 @@ int main(int argc, char* argv[]){
     double AP_detectionTime;
     double AP_Copy_And_Split_Time;
 
-    // int checkNodeID = 19;
+    // int checkNodeID = 14294 ;
     // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
     // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
     // int AP = 19222;
@@ -65,6 +70,8 @@ int main(int argc, char* argv[]){
     D1FoldingTime = time2 - time1;
     printf("[Execution Time] D1Folding          = %f\n", D1FoldingTime);
 
+    // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
+    // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
     // printf("ff[%d] = %d, w[%d] = %d\n", checkNodeID, csr->ff[checkNodeID], checkNodeID, csr->representNode[checkNodeID]);
 
     time1 = seconds();
@@ -74,8 +81,10 @@ int main(int argc, char* argv[]){
     printf("[Execution Time] AP_detection       = %f\n", AP_detectionTime);
 
     
+
     time1 = seconds();
     AP_Copy_And_Split(csr);
+    // printf("compID[38621] = %d\n", csr->compID[38621]);
     time2 = seconds();
     AP_Copy_And_Split_Time = time2 - time1;
     printf("[Execution Time] AP_Copy_And_Split  = %f\n", AP_Copy_And_Split_Time);

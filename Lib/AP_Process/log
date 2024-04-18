@@ -24,128 +24,73 @@ Ordinary node Count (|V| - |D1|)        =       54
 ==============================
 [Execution Time] D1Folding          = 0.000003
 [Execution Time] AP_detection       = 0.000005
-AP 53 : 
-	[new comp 0]
-			[comp 0] add node 61
-		currentNodeID = 61
-			[comp 0] add node 60
-		currentNodeID = 60
-	[new comp 1]
-			[comp 1] add node 55
-		currentNodeID = 55
-			[comp 1] add node 56
-		currentNodeID = 56
-AP 54 : 
-	[new comp 2]
-			[comp 2] add node 58
-		currentNodeID = 58
-			[comp 2] add node 59
-			[comp 2] add node 57
-		currentNodeID = 59
-		currentNodeID = 57
-AP 52 : 
-AP 38 : 
-	[new comp 3]
-			[comp 3] add node 37
-		currentNodeID = 37
-			[comp 3] add node 33
-			[comp 3] add node 34
-		currentNodeID = 33
-			[comp 3] add node 32
-			[comp 3] add node 47
-		currentNodeID = 34
-			[comp 3] add node 43
-		currentNodeID = 32
-			[comp 3] add node 42
-		currentNodeID = 47
-		currentNodeID = 43
-			[comp 3] add node 45
-			[comp 3] add node 36
-		currentNodeID = 42
-			[comp 3] add node 44
-		currentNodeID = 17
-			[comp 3] add node 40
-			[comp 3] add node 41
-		currentNodeID = 45
-			[comp 3] add node 35
-			[comp 3] add node 46
-		currentNodeID = 36
-		currentNodeID = 44
-		currentNodeID = 40
-		currentNodeID = 41
-		currentNodeID = 35
-		currentNodeID = 46
-AP 17 : 
-	[new comp 4]
-			[comp 4] add node 21
-		currentNodeID = 21
-			[comp 4] add node 9
-		currentNodeID = 9
-			[comp 4] add node 6
-			[comp 4] add node 10
-			[comp 4] add node 15
-		currentNodeID = 6
-			[comp 4] add node 2
-		currentNodeID = 10
-			[comp 4] add node 11
-			[comp 4] add node 8
-		currentNodeID = 15
-			[comp 4] add node 13
-			[comp 4] add node 14
-			[comp 4] add node 18
-		currentNodeID = 2
-			[comp 4] add node 4
-			[comp 4] add node 5
-			[comp 4] add node 1
-			[comp 4] add node 0
-		currentNodeID = 7
-			[comp 4] add node 3
-		currentNodeID = 11
-		currentNodeID = 8
-			[comp 4] add node 19
-			[comp 4] add node 12
-		currentNodeID = 13
-		currentNodeID = 14
-			[comp 4] add node 16
-		currentNodeID = 18
-		currentNodeID = 4
-		currentNodeID = 5
-		currentNodeID = 1
-		currentNodeID = 0
-		currentNodeID = 3
-		currentNodeID = 19
-		currentNodeID = 12
-		currentNodeID = 16
-AP 7 : 
-	[new comp 5]
-			[comp 5] add node 30
-		currentNodeID = 30
-			[comp 5] add node 29
-			[comp 5] add node 26
-		currentNodeID = 29
-			[comp 5] add node 28
-			[comp 5] add node 27
-		currentNodeID = 26
-			[comp 5] add node 23
-			[comp 5] add node 25
-			[comp 5] add node 22
-		currentNodeID = 28
-		currentNodeID = 27
-		currentNodeID = 23
-		currentNodeID = 25
-		currentNodeID = 22
 1
-maxBranch = 3
-AP(compN, apN) : 
-	 7(2, 0)
-	17(2, 0)
-	38(1, 1)
-	53(2, 1)
-	54(1, 2)
-	52(0, 2)
-
 2
-[Execution Time] AP_Copy_And_Split  = 0.000008
+nextCsrE_offset = 202
+maxBranch = 3
+AP 52 : 
+	[Find Interface AP 54]
+	[Find Interface AP 38]
+AP 52 : 
+	part[0] = {partID = 0, w = 9, ff = 22}
+	part[1] = {partID = 1, w = 52, ff = 341}
+	total_w = 61, total_ff = 363
+	info[52] = {w = 1, ff = 0}
+	part 0 neighborNum_of_ap = 1
+	part 1 neighborNum_of_ap = 1
+	ap 54 = {w = 54, ff = 394}
+		[Cut] (52, 54)
+		[Cut] (54, 52)
+	ap 38 = {w = 16, ff = 41}
+		[Cut] (52, 38)
+		[Cut] (38, 52)
+AP 54 : 
+	[Find Interface AP 53]
+AP 54 : 
+	part[0] = {partID = 0, w = 3, ff = 4}
+	part[1] = {partID = 1, w = 5, ff = 9}
+	total_w = 8, total_ff = 13
+	info[54] = {w = 54, ff = 394}
+	part 0 neighborNum_of_ap = 2
+	part 1 neighborNum_of_ap = 1
+	ap 53 = {w = 58, ff = 455}
+		[Cut] (54, 53)
+		[Cut] (53, 54)
+AP 53 : 
+AP 53 : 
+	part[0] = {partID = 0, w = 2, ff = 2}
+	part[1] = {partID = 1, w = 2, ff = 2}
+	total_w = 4, total_ff = 4
+	info[53] = {w = 58, ff = 455}
+	part 0 neighborNum_of_ap = 2
+	part 1 neighborNum_of_ap = 2
+	[Need to create AP Clone]
+AP 38 : 
+AP 38 : 
+	part[0] = {partID = 0, w = 46, ff = 280}
+	total_w = 46, total_ff = 280
+	info[38] = {w = 16, ff = 41}
+	part 0 neighborNum_of_ap = 4
+AP 17 : 
+AP 17 : 
+	part[0] = {partID = 0, w = 30, ff = 142}
+	part[1] = {partID = 1, w = 31, ff = 121}
+	total_w = 61, total_ff = 263
+	info[17] = {w = 1, ff = 0}
+	part 0 neighborNum_of_ap = 3
+	part 1 neighborNum_of_ap = 4
+	[Need to create AP Clone]
+AP 7 : 
+AP 7 : 
+	part[0] = {partID = 0, w = 51, ff = 324}
+	part[1] = {partID = 1, w = 10, ff = 24}
+	total_w = 61, total_ff = 348
+	info[7] = {w = 1, ff = 0}
+	part 0 neighborNum_of_ap = 4
+	part 1 neighborNum_of_ap = 2
+	[Need to create AP Clone]
+3
+[Execution Time] AP_Copy_And_Split  = 0.000019
 apCount     =        6
 compCount   =        6
 maxCompSize =       19

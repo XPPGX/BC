@@ -28,8 +28,9 @@
 #define AP_Process
 
 struct part_info{
-    int apID;
-    int compID;
+    // int apID;
+    // int compID;
+    int partID;
     int represent;
     int ff;
 };
@@ -47,6 +48,7 @@ struct apClone_info{
     int newNodeCount;
     int apCloneCsrV_offsetCounter;
     int apCloneCsrE_offsetCounter;
+    
 };
 
 /**
@@ -58,6 +60,17 @@ void AP_detection(struct CSR* _csr);
 
 
 void quicksort_nodeID_with_data(int* _nodes, int* _data, int _left, int _right);
+
+//取得所有 nodes 對 _apNodeID 而言 是在哪個 part，assign part id 到 _partID 的 array中
+void assignPartId_for_AP(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _Q);
+
+//取得 _apNodeID 的 neighbors中 (是AP) && (該AP 跟 _apNodeID 共享某個 part)
+void findInterfaceAPs(struct CSR* _csr, int* _partID,  int* _eachPartNeighborNum, int* _partInterfaceAP, int _apNodeID);
+
+//取得每個 part 的 w 跟 ff
+int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _Q, struct part_info* _parts, int _maxBranch, int* _partFlag, int* _dist_arr, int* _total_represent, int* _total_ff);
+
+
 /**
  * @brief
  * If an AP u has AP neighbor v, then (u, v) is a bridge 
