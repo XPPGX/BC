@@ -23,11 +23,11 @@
 #ifndef cCSR
 #define cCSR
 
-#define Ordinary    0x01
-#define D1          0x02
-#define D1Hub       0x04
-#define OriginAP    0x08
-#define ClonedAP    0x10
+#define Ordinary    0x00000001U
+#define D1          0x00000002U
+#define D1Hub       0x00000004U
+#define OriginAP    0x00000008U
+#define ClonedAP    0x00000010U
 
 struct CSR{
     int* csrV;              //O(2 * |V|)
@@ -39,7 +39,7 @@ struct CSR{
     int* oriCsrV;           //O(|V|)
     int* oriCsrNodesDegree; //O(|V|), 紀錄原始csr的各個node的degree
 
-    char* nodesType;        //用於紀錄所有node的類型
+    unsigned int* nodesType;//用於紀錄所有node的類型
 
     int* representNode;     //用於紀錄有多少點被壓縮到該點
     int* ff;                //用於紀錄壓縮進自己node的dist是多少, 參考自BADIOS論文(Graph manipulation)

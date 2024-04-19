@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/amazon.txt
+Success : Build AdjList
+==============================
+dataset = ../../dataset/amazon.txt
+nodeNum = 334863
+edgeNum = 925872
+degreeOneNum = 25709
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 334865
+csr->csrESize = 1851744
+csr->degreeOneNum = 25709
+csr->startAtZero = 0
+csr->maxDegree = 549
+[Success] CreateCSR finish
+==============================
+CCs[7] = 3277553
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =    28971
+Hub node Count      (|Hub|)             =    19730
+Ordinary node Count (|V| - |D1|)        =   305892
+==============================
+[Execution Time] D1Folding          = 0.002303
+[Execution Time] AP_detection       = 0.028677
+1
+2
+nextCsrE_offset = 1851744
+maxBranch = 20
+3
+[Execution Time] AP_Copy_And_Split  = 73.486642
+apCount     =     6272
+compCount   =     4194
+maxCompSize =   277322

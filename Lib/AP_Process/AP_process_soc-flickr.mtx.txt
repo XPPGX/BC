@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/soc-flickr.mtx
+Success : Build AdjList
+==============================
+dataset = ../../dataset/soc-flickr.mtx
+nodeNum = 513969
+edgeNum = 3190452
+degreeOneNum = 263273
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 513971
+csr->csrESize = 6380904
+csr->degreeOneNum = 263273
+csr->startAtZero = 0
+csr->maxDegree = 4369
+[Success] CreateCSR finish
+==============================
+CCs[7] = 3419230
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =   280574
+Hub node Count      (|Hub|)             =    78462
+Ordinary node Count (|V| - |D1|)        =   233395
+==============================
+[Execution Time] D1Folding          = 0.008656
+[Execution Time] AP_detection       = 0.042034
+1
+2
+nextCsrE_offset = 6380904
+maxBranch = 281
+3
+[Execution Time] AP_Copy_And_Split  = 125.448383
+apCount     =     7340
+compCount   =     6697
+maxCompSize =   208223

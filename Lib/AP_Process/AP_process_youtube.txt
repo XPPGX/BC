@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/youtube.txt
+Success : Build AdjList
+==============================
+dataset = ../../dataset/youtube.txt
+nodeNum = 1134890
+edgeNum = 2987624
+degreeOneNum = 602539
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 1134891
+csr->csrESize = 5975248
+csr->degreeOneNum = 602539
+csr->startAtZero = 1
+csr->maxDegree = 28754
+[Success] CreateCSR finish
+==============================
+CCs[7] = 5859446
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =   664726
+Hub node Count      (|Hub|)             =   158270
+Ordinary node Count (|V| - |D1|)        =   470164
+==============================
+[Execution Time] D1Folding          = 0.025182
+[Execution Time] AP_detection       = 0.076607
+1
+2
+nextCsrE_offset = 5975248
+maxBranch = 783
+3
+[Execution Time] AP_Copy_And_Split  = 215.150066
+apCount     =     8387
+compCount   =     6835
+maxCompSize =   436368

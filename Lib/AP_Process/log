@@ -1,96 +1,100 @@
-datasetPath = ./testdata1.txt
+datasetPath = ./testdata.txt
 Success : Build AdjList
 ==============================
-dataset = ./testdata1.txt
-nodeNum = 62
-edgeNum = 101
-degreeOneNum = 7
-graph start with 0
+dataset = ./testdata.txt
+nodeNum = 10
+edgeNum = 12
+degreeOneNum = 0
+graph start with 1
 ==============================
 ==============================
 CreateCSR...
-csr->csrVSize = 63
-csr->csrESize = 202
-csr->degreeOneNum = 7
-csr->startAtZero = 1
-csr->maxDegree = 7
+csr->csrVSize = 12
+csr->csrESize = 24
+csr->degreeOneNum = 0
+csr->startAtZero = 0
+csr->maxDegree = 4
 [Success] CreateCSR finish
 ==============================
+CCs[7] = 19
 ==============================
 D1 Folding...Finished.
-D1 node count       (|D1|)              =        8
-Hub node Count      (|Hub|)             =        4
-Ordinary node Count (|V| - |D1|)        =       54
+D1 node count       (|D1|)              =        0
+Hub node Count      (|Hub|)             =        0
+Ordinary node Count (|V| - |D1|)        =       10
 ==============================
-[Execution Time] D1Folding          = 0.000003
-[Execution Time] AP_detection       = 0.000005
+[Execution Time] D1Folding          = 0.000001
+[Execution Time] AP_detection       = 0.000001
 1
 2
-nextCsrE_offset = 202
-maxBranch = 3
-AP 52 : 
-	[Find Interface AP 54]
-	[Find Interface AP 38]
-AP 52 : 
-	part[0] = {partID = 0, w = 9, ff = 22}
-	part[1] = {partID = 1, w = 52, ff = 341}
-	total_w = 61, total_ff = 363
-	info[52] = {w = 1, ff = 0}
-	part 0 neighborNum_of_ap = 1
-	part 1 neighborNum_of_ap = 1
-	ap 54 = {w = 54, ff = 394}
-		[Cut] (52, 54)
-		[Cut] (54, 52)
-	ap 38 = {w = 16, ff = 41}
-		[Cut] (52, 38)
-		[Cut] (38, 52)
-AP 54 : 
-	[Find Interface AP 53]
-AP 54 : 
-	part[0] = {partID = 0, w = 3, ff = 4}
-	part[1] = {partID = 1, w = 5, ff = 9}
-	total_w = 8, total_ff = 13
-	info[54] = {w = 54, ff = 394}
-	part 0 neighborNum_of_ap = 2
-	part 1 neighborNum_of_ap = 1
-	ap 53 = {w = 58, ff = 455}
-		[Cut] (54, 53)
-		[Cut] (53, 54)
-AP 53 : 
-AP 53 : 
-	part[0] = {partID = 0, w = 2, ff = 2}
-	part[1] = {partID = 1, w = 2, ff = 2}
-	total_w = 4, total_ff = 4
-	info[53] = {w = 58, ff = 455}
+nextCsrE_offset = 24
+maxBranch = 2
 	part 0 neighborNum_of_ap = 2
 	part 1 neighborNum_of_ap = 2
 	[Need to create AP Clone]
-AP 38 : 
-AP 38 : 
-	part[0] = {partID = 0, w = 46, ff = 280}
-	total_w = 46, total_ff = 280
-	info[38] = {w = 16, ff = 41}
-	part 0 neighborNum_of_ap = 4
-AP 17 : 
-AP 17 : 
-	part[0] = {partID = 0, w = 30, ff = 142}
-	part[1] = {partID = 1, w = 31, ff = 121}
-	total_w = 61, total_ff = 263
-	info[17] = {w = 1, ff = 0}
-	part 0 neighborNum_of_ap = 3
-	part 1 neighborNum_of_ap = 4
-	[Need to create AP Clone]
-AP 7 : 
-AP 7 : 
-	part[0] = {partID = 0, w = 51, ff = 324}
-	part[1] = {partID = 1, w = 10, ff = 24}
-	total_w = 61, total_ff = 348
-	info[7] = {w = 1, ff = 0}
-	part 0 neighborNum_of_ap = 4
+CC[3] = 19
+	outer_represent = 7, outer_ff = 17
+	[New AP Clone] _csr->csrV[11] = 24
+		[add] csrE[24] = 1, 		nextCsrE_offset => 25
+		[cut] (3, 1)
+		[fix] (1, 3) => (1, 11)
+		[add] csrE[25] = 2, 		nextCsrE_offset => 26
+		[cut] (3, 2)
+		[fix] (2, 3) => (2, 11)
+	newApCloneID 11 = {w = 8, ff = 17, type = 10, csrE_offset = 24}
+
+	outer_represent = 2, outer_ff = 2
+	[New AP Clone] _csr->csrV[12] = 26
+		[add] csrE[26] = 4, 		nextCsrE_offset => 27
+		[cut] (3, 4)
+		[fix] (4, 3) => (4, 12)
+		[add] csrE[27] = 6, 		nextCsrE_offset => 28
+		[cut] (3, 6)
+		[fix] (6, 3) => (6, 12)
+	newApCloneID 12 = {w = 3, ff = 2, type = 10, csrE_offset = 26}
+
+	part 0 neighborNum_of_ap = 2
 	part 1 neighborNum_of_ap = 2
 	[Need to create AP Clone]
+CC[8] = 19
+	outer_represent = 2, outer_ff = 2
+	[New AP Clone] _csr->csrV[13] = 28
+		[add] csrE[28] = 5, 		nextCsrE_offset => 29
+		[cut] (8, 5)
+		[fix] (5, 8) => (5, 13)
+		[add] csrE[29] = 7, 		nextCsrE_offset => 30
+		[cut] (8, 7)
+		[fix] (7, 8) => (7, 13)
+	newApCloneID 13 = {w = 3, ff = 2, type = 10, csrE_offset = 28}
+
+	outer_represent = 7, outer_ff = 17
+	[New AP Clone] _csr->csrV[14] = 30
+		[add] csrE[30] = 9, 		nextCsrE_offset => 31
+		[cut] (8, 9)
+		[fix] (9, 8) => (9, 14)
+		[add] csrE[31] = 10, 		nextCsrE_offset => 32
+		[cut] (8, 10)
+		[fix] (10, 8) => (10, 14)
+	newApCloneID 14 = {w = 8, ff = 17, type = 10, csrE_offset = 30}
+
 3
-[Execution Time] AP_Copy_And_Split  = 0.000019
-apCount     =        6
-compCount   =        6
-maxCompSize =       19
+[Execution Time] AP_Copy_And_Split  = 0.000005
+apCount     =        2
+compCount   =        3
+maxCompSize =        4
+endNodeID   =       14
+sourceID 1 :
+	curID = 1
+	curID = 2
+	curID = 11
+sourceID 4 :
+	curID = 4
+	curID = 5
+	curID = 12
+	curID = 13
+	curID = 6
+	curID = 7
+sourceID 9 :
+	curID = 9
+	curID = 10
+	curID = 14

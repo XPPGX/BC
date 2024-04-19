@@ -52,9 +52,9 @@ int main(int argc, char* argv[]){
     double AP_detectionTime;
     double AP_Copy_And_Split_Time;
 
-    // int checkNodeID = 14294 ;
-    // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
-    // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
+    int checkNodeID = 7;
+    int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
+    printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
     // int AP = 19222;
     // int nAP = 22635;
     // for(int nidx = csr->csrV[AP] ; nidx < csr->csrV[AP + 1 ] ; nidx ++){
@@ -69,6 +69,9 @@ int main(int argc, char* argv[]){
     time2 = seconds();
     D1FoldingTime = time2 - time1;
     printf("[Execution Time] D1Folding          = %f\n", D1FoldingTime);
+    // for(int sourceID = csr->startNodeID ; sourceID <= csr->endNodeID ; sourceID ++){
+    //     printf("type[%d] = %x\n", sourceID, csr->nodesType[sourceID]);
+    // }
 
     // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
     // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
@@ -79,20 +82,57 @@ int main(int argc, char* argv[]){
     time2 = seconds();
     AP_detectionTime = time2 - time1;
     printf("[Execution Time] AP_detection       = %f\n", AP_detectionTime);
-
+    // for(int sourceID = csr->startNodeID ; sourceID <= csr->endNodeID ; sourceID ++){
+    //     printf("type[%d] = %x\n", sourceID, csr->nodesType[sourceID]);
+    // }
     
 
     time1 = seconds();
     AP_Copy_And_Split(csr);
-    // printf("compID[38621] = %d\n", csr->compID[38621]);
     time2 = seconds();
     AP_Copy_And_Split_Time = time2 - time1;
     printf("[Execution Time] AP_Copy_And_Split  = %f\n", AP_Copy_And_Split_Time);
     printf("apCount     = %8d\n", csr->ap_count);
     printf("compCount   = %8d\n", csr->compNum);
     printf("maxCompSize = %8d\n", csr->maxCompSize_afterSplit);
-
+    printf("endNodeID   = %8d\n", csr->endNodeID);
     
+    
+    int* visited = (int*)malloc(sizeof(int) * (csr->csrVSize) * 2);
+    memset(visited, 0, sizeof(int) * (csr->csrVSize) * 2);
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, (csr->csrVSize) * 2);
+
+    for(int sourceID = csr->startNodeID ; sourceID <= csr->endNodeID ; sourceID ++){
+        if(csr->nodesType[sourceID] & D1 || csr->nodesType[sourceID] & OriginAP || csr->nodesType[sourceID] & ClonedAP){
+            continue;
+        }
+        
+        if(visited[sourceID] == 1){
+            continue;
+        }
+
+
+        printf("sourceID %d :\n", sourceID);
+        visited[sourceID] = 1;
+        qPushBack(Q, sourceID);
+        
+        while(!qIsEmpty(Q)){
+            int curID = qPopFront(Q);
+            printf("\tcurID = %d\n", curID);
+
+            for(int nidx = csr->csrV[curID] ; nidx < csr->oriCsrV[curID + 1] ; nidx ++){
+                int nid = csr->csrE[nidx];
+
+                if(visited[nid] == 0){
+                    
+                    qPushBack(Q, nid);
+                    visited[nid] = 1;
+                }
+            }
+        }
+    }
+
     // printf("\n\n");
     // printf("[Dist Ans Checking]...\n");
     // printf("checkNodeID = %d, compID[%d] = %d\n", checkNodeID, checkNodeID, csr->compID[checkNodeID]);

@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/twitch_gamers.txt
+Success : Build AdjList
+==============================
+dataset = ../../dataset/twitch_gamers.txt
+nodeNum = 168114
+edgeNum = 6797557
+degreeOneNum = 4037
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 168116
+csr->csrESize = 13595114
+csr->degreeOneNum = 4037
+csr->startAtZero = 0
+csr->maxDegree = 35279
+[Success] CreateCSR finish
+==============================
+CCs[7] = 550206
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =     4080
+Hub node Count      (|Hub|)             =     3253
+Ordinary node Count (|V| - |D1|)        =   164034
+==============================
+[Execution Time] D1Folding          = 0.000878
+[Execution Time] AP_detection       = 0.061235
+1
+2
+nextCsrE_offset = 13595114
+maxBranch = 2
+3
+[Execution Time] AP_Copy_And_Split  = 0.150256
+apCount     =        4
+compCount   =        4
+maxCompSize =   164024
