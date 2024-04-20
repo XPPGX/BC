@@ -13,11 +13,13 @@
 #define CUDA
 
 #ifndef ADJLIST
-#error Need include "AdjList.h", pls add "vVector.h" into "headers.h"
+// #error Need include "AdjList.h", pls add "vVector.h" into "headers.h"
+#include "../AdjList/AdjList.h"
 #endif
 
 #ifndef QQueue
-#error Need include "qQueue.h", pls add "qQueue.h" into "headers.h"
+// #error Need include "qQueue.h", pls add "qQueue.h" into "headers.h"
+#include "../qQueue/qQueue.h"
 #endif
 
 #ifndef cCSR

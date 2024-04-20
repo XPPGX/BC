@@ -1893,11 +1893,11 @@ int main(int argc, char* argv[]){
     /************************************************************
      *                      D1Folding                           *
     ************************************************************/
-    time1 = seconds();
-    D1Folding(csr);
-    time2 = seconds();
-    D1FoldingTime = time2 - time1;
-    printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
+    // time1 = seconds();
+    // D1Folding(csr);
+    // time2 = seconds();
+    // D1FoldingTime = time2 - time1;
+    // printf("[Execution Time] D1Folding_Time = %f\n", D1FoldingTime);
 
 
     /************************************************************
@@ -1943,11 +1943,11 @@ int main(int argc, char* argv[]){
     /************************************************************
      *              compute_D1_CC_shareBased_DegreeOrder        *
     ************************************************************/
-    // time1 = seconds();
-    // compute_D1_CC_shareBased_DegreeOrder(csr, CCs);
-    // time2 = seconds();
-    // D1_sort_CC_shareBasedTime = time2 - time1;
-    // printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
+    time1 = seconds();
+    compute_D1_CC_shareBased_DegreeOrder(csr, CCs);
+    time2 = seconds();
+    D1_sort_CC_shareBasedTime = time2 - time1;
+    printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
 
 
     /************************************************************

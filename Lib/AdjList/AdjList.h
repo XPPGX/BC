@@ -14,15 +14,18 @@
 
 //content
 #ifndef VVECTOR
-#error Need include "vVector.h", pls add "vVector.h" into "headers.h"
+// #error Need include "vVector.h", pls add "vVector.h" into "headers.h"
+#include "../vVector/vVector.h"
 #endif 
 
 #ifndef FileReader
-#error Need include "FileReader.h", pls add "FileReader.h" into "headers.h"
+// #error Need include "FileReader.h", pls add "FileReader.h" into "headers.h"
+#include "../FileReader/FileReader.h"
 #endif
 
 #ifndef QQueue
-#error Need include "qQueue.h", pls add "qQueue.h" into "headers.h"
+// #error Need include "qQueue.h", pls add "qQueue.h" into "headers.h"
+#include "../qQueue/qQueue.h"
 #endif
 
 #ifndef ADJLIST

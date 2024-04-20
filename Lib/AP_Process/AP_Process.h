@@ -9,7 +9,6 @@
 #ifndef ADJLIST
 // #error Need include "AdjList.h", pls add "vVector.h" into "headers.h"
 #include "../AdjList/AdjList.h"
-#include "../AdjList/AdjList.c"
 #endif
 
 #ifndef QQueue
@@ -21,7 +20,6 @@
 #ifndef cCSR
 // #error Need include "CSR.h", pls add "CSR.h" into "headers.h"
 #include "../CSR/CSR.h"
-#include "../CSR/CSR.c"
 #endif
 
 #ifndef AP_Process
