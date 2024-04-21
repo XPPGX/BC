@@ -1605,6 +1605,73 @@ void compute_D1_CC_sharedBased_DegreeOrder_64bit(struct CSR* _csr, int* _CCs){
     #pragma endregion //d1GetCC_FromParent
     printf("\n");
 }
+
+void compute_D1_AP_CC(struct CSR* _csr, int* _CCs){
+    int* dist_arr = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, _csr->csrVSize * 2);
+
+    //D1 Folding
+    D1Folding(_csr);
+
+    //AP Process
+    AP_detection(_csr);
+    AP_Copy_And_Split(_csr);
+
+    int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount;
+    printf("oriEndNodeID = %d\n", oriEndNodeID);
+
+    for(int sourceID = _csr->startNodeID ; sourceID <= oriEndNodeID ; sourceID ++){
+        if(_csr->nodesType[sourceID] & D1 || _csr->nodesType[sourceID] & OriginAP){
+            continue;
+        }
+
+        //reset Q
+        Q->front = 0;
+        Q->rear = -1;
+        memset(dist_arr, -1, sizeof(int) * _csr->csrVSize * 2);
+
+        //Init
+        dist_arr[sourceID] = 0;
+        qPushBack(Q, sourceID);
+        
+        //traverse
+        register int curID  = -1;
+        register int nid    = -1;
+        register int nidx   = -1;
+        while(!qIsEmpty(Q)){
+            curID = qPopFront(Q);
+            for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
+                nid = _csr->csrE[nidx];
+
+                if(dist_arr[nid] == -1){
+                    qPushBack(Q, nid);
+                    dist_arr[nid] = dist_arr[curID] + 1;
+                    
+                    _CCs[sourceID] += _csr->ff[nid] + dist_arr[nid] * _csr->representNode[nid];
+                }
+            }
+        }
+        _CCs[sourceID] += _csr->ff[sourceID];
+    }
+
+    #pragma region d1Node_Dist_And_CC_Recovery
+    // printf("_csr->totalNodeNumber = %2d\n", _csr->totalNodeNumber);
+    int d1NodeID        = -1;
+    int d1NodeParentID  = -1;
+    for(int d1NodeIndex = _csr->degreeOneNodesQ->rear ; d1NodeIndex >= 0 ; d1NodeIndex --){
+        d1NodeID        = _csr->degreeOneNodesQ->dataArr[d1NodeIndex];
+        d1NodeParentID  = _csr->D1Parent[d1NodeID];
+        _CCs[d1NodeID]  = _CCs[d1NodeParentID] + _csr->totalNodeNumber - 2 * _csr->representNode[d1NodeID];
+        // printf("d1NodeID = %2d, _CCs[%2d] = %2d, ParentID = %2d, _CCs[%2d] = %2d\n", d1NodeID, d1NodeID, _CCs[d1NodeID], d1NodeParentID, d1NodeParentID, _CCs[d1NodeParentID]);
+    }
+    #pragma endregion //d1Node_Dist_And_CC_Recovery
+
+    for(int ID = _csr->startNodeID ; ID <= oriEndNodeID ; ID ++){
+        printf("CC[%d] = %d\n", ID, _CCs[ID]);
+    }
+}
+
 #pragma endregion //Function_computing
 
 
@@ -1876,6 +1943,7 @@ int main(int argc, char* argv[]){
     double D1_CC_shareBasedTime             = 0;
     double D1_sort_CC_shareBasedTime        = 0;
     double D1_sort_CC_64Bit_shareBasedTime  = 0;
+    double D1_AP_CC_ori                     = 0;
 
     double time1                            = 0;
     double time2                            = 0;
@@ -1884,7 +1952,11 @@ int main(int argc, char* argv[]){
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
-    
+    time1 = seconds();
+    compute_D1_AP_CC(csr, csr->CCs);
+    time2 = seconds();
+    D1_AP_CC_ori = time2 - time1;
+    printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
     #pragma endregion //Dev
 
 
@@ -1943,11 +2015,11 @@ int main(int argc, char* argv[]){
     /************************************************************
      *              compute_D1_CC_shareBased_DegreeOrder        *
     ************************************************************/
-    time1 = seconds();
-    compute_D1_CC_shareBased_DegreeOrder(csr, CCs);
-    time2 = seconds();
-    D1_sort_CC_shareBasedTime = time2 - time1;
-    printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
+    // time1 = seconds();
+    // compute_D1_CC_shareBased_DegreeOrder(csr, CCs);
+    // time2 = seconds();
+    // D1_sort_CC_shareBasedTime = time2 - time1;
+    // printf("[Execution Time] D1_sort_CC_shareBasedTime = %f\n", D1_sort_CC_shareBasedTime);
 
 
     /************************************************************

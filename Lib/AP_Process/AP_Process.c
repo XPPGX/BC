@@ -465,8 +465,10 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 // #define assignComponentID_DEBUG
 // #define sortAP_By_apNum_DEBUG
 // #define GetPartInfo_DEBUG
-#define Split_DEBUG
+// #define Split_DEBUG
 void AP_Copy_And_Split(struct CSR* _csr){
+    printf("==============================\n");
+    printf("AP Copy and Split... ");
     _csr->compID = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
     memset(_csr->compID, -1, sizeof(int) * (_csr->csrVSize) * 2);
     _csr->maxCompSize_afterSplit = 0;
@@ -610,7 +612,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     // double time2 = seconds();
     // double assignComponentID_time = time2 - time1;
     // printf("[Execution Time] assignComponentID = %f\n", assignComponentID_time);
-    printf("1\n");
+    // printf("1\n");
     
     /**
      * We've got all compID of each nodes except for AP nodes so far
@@ -676,7 +678,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     #endif
 
     #pragma endregion sortAP_By_apNum
-    printf("2\n");
+    // printf("2\n");
     
 
     #pragma region AP_splitGraph
@@ -684,7 +686,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
      * prepare for recording apClone information
     */
     int nextCsrE_offset = _csr->csrV[_csr->endNodeID + 1]; //從這個位置開始可以放新 node
-    printf("nextCsrE_offset = %d\n", nextCsrE_offset);
+    // printf("nextCsrE_offset = %d\n", nextCsrE_offset);
     _csr->apCloneTrackOriAp_ID = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
     memset(_csr->apCloneTrackOriAp_ID, -1, sizeof(int) * (_csr->csrVSize) * 2);
     _csr->apCloneCount = 0;
@@ -701,7 +703,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     int* partFlag = (int*)malloc(sizeof(int) * maxBranch);
     
 
-    printf("maxBranch = %d\n", maxBranch);
+    // printf("maxBranch = %d\n", maxBranch);
 
     for(int i = ap_count - 1 ; i >= 0 ; i --){
         apNodeID = _csr->AP_List[i];
@@ -1009,7 +1011,13 @@ void AP_Copy_And_Split(struct CSR* _csr){
     _csr->endNodeID = _csr->endNodeID + _csr->apCloneCount;
     #pragma endregion //AP_splitGraph
     
-    printf("3\n");
+    // printf("3\n");
+    printf("Finished.\n");
+    printf("apCount         = %8d\n", _csr->ap_count);
+    printf("compCount       = %8d\n", _csr->compNum);
+    printf("maxCompSize     = %8d\n", _csr->maxCompSize_afterSplit);
+    printf("endNodeID       = %8d\n", _csr->endNodeID);
+    printf("==============================\n");
 
     free(Q->dataArr);
     free(Q);
