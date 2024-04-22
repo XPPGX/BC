@@ -72,6 +72,13 @@ struct CSR{
     int compNum;            //紀錄comp有幾個
     int maxCompSize_afterSplit;        //紀錄AP切割後，最大的comp有幾個點
 
+    int* aliveNode;         //紀錄 "非D1", "非 ori AP", "非 AP clone" 的nodes
+    int aliveNodeCount;     //紀錄有幾個aliveNode
+
+    int* comp_NodesID_CsrData;  //把aliveNode中，相同comp的nodes放在一起
+    int* comp_CsrOffset;        //csr offset for nodeID with same component
+    int* nodesCompID;           //nodesCompID 把每個 aliveNodes 都 assign compID
+
     float* BCs;
     int* CCs;
 };

@@ -73,5 +73,6 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 */
 void AP_Copy_And_Split(struct CSR* _csr);
 
+void compactNodesByComp(struct CSR* _csr);
 
 #endif

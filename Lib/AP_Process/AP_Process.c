@@ -1007,6 +1007,18 @@ void AP_Copy_And_Split(struct CSR* _csr){
         #pragma endregion Split
     }
 
+    int count = 0;
+    _csr->aliveNode = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+        if(_csr->nodesType[nodeID] & D1 || _csr->nodesType[nodeID] & OriginAP){
+            continue;
+        }
+        // printf("aliveNode[%d] = %d\n", count, nodeID);
+        _csr->aliveNode[count] = nodeID;
+        count ++;
+    }
+    _csr->aliveNodeCount = count;
+
     //更新 endNodeID
     _csr->endNodeID = _csr->endNodeID + _csr->apCloneCount;
     #pragma endregion //AP_splitGraph
@@ -1033,4 +1045,77 @@ void AP_Copy_And_Split(struct CSR* _csr){
     free(partsID);
     free(eachPartNeighborNum);
     free(partFlag);
+}
+
+// #define compactNodesByComp_DEBUG
+void compactNodesByComp(struct CSR* _csr){
+    _csr->comp_NodesID_CsrData = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    _csr->comp_CsrOffset = (int*)malloc(sizeof(int) * _csr->aliveNodeCount);
+    _csr->nodesCompID = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    memset(_csr->nodesCompID, -1, sizeof(int) * (_csr->csrVSize) * 2);
+
+    int offset = 0;
+    int compID = 0;
+
+    int* checked = (int*)calloc(sizeof(int), (_csr->csrVSize) * 2);
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, (_csr->csrVSize) * 2);
+    
+    for(int aliveNodeIndex = 0 ; aliveNodeIndex < _csr->aliveNodeCount ; aliveNodeIndex ++){
+        int nodeID = _csr->aliveNode[aliveNodeIndex];
+
+        if(checked[nodeID] == 0){
+            _csr->comp_CsrOffset[compID] = offset;
+
+            #ifdef compactNodesByComp_DEBUG
+            printf("CsrOffset[%d] = %d\n", compID, offset);            
+            #endif
+
+            checked[nodeID] = 1;
+            _csr->comp_NodesID_CsrData[offset++] = nodeID;
+            _csr->nodesCompID[nodeID] = compID;
+
+            #ifdef compactNodesByComp_DEBUG
+            printf("\tCsrData[%d] = %d, nodesCompID[%d] = %d\n", offset - 1, _csr->comp_NodesID_CsrData[offset - 1], nodeID, _csr->nodesCompID[nodeID]);
+            #endif
+
+            qPushBack(Q, nodeID);
+            
+            while(!(qIsEmpty(Q))){
+                int curID = qPopFront(Q);
+
+                for(int nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
+                    int nid = _csr->csrE[nidx];
+                    
+                    #ifdef compactNodesByComp_DEBUG
+                    printf("\tnid %d\n", nid);
+                    #endif
+
+                    if(checked[nid] == 0){
+                        checked[nid] = 1;
+                        _csr->comp_NodesID_CsrData[offset++] = nid;
+                        _csr->nodesCompID[nid] = compID;
+
+                        #ifdef compactNodesByComp_DEBUG    
+                        printf("\tCsrData[%d] = %d, nodesCompID[%d] = %d\n", offset - 1, _csr->comp_NodesID_CsrData[offset - 1], nid, _csr->nodesCompID[nid]);
+                        #endif
+                        
+                        qPushBack(Q, nid);
+                    }
+                }
+            }
+
+            compID ++;
+        }
+    }
+
+    _csr->comp_CsrOffset[compID] = offset;
+    
+    #ifdef compactNodesByComp_DEBUG
+    printf("_csr->comp_CsrOffset[%d] = %d\n", compID, _csr->comp_CsrOffset[compID]);
+    #endif
+
+    free(checked);
+    free(Q->dataArr);
+    free(Q);
 }

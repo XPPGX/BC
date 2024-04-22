@@ -1606,6 +1606,7 @@ void compute_D1_CC_sharedBased_DegreeOrder_64bit(struct CSR* _csr, int* _CCs){
     printf("\n");
 }
 
+
 void compute_D1_AP_CC(struct CSR* _csr, int* _CCs){
     int* dist_arr = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
     struct qQueue* Q = InitqQueue();
@@ -1667,9 +1668,220 @@ void compute_D1_AP_CC(struct CSR* _csr, int* _CCs){
     }
     #pragma endregion //d1Node_Dist_And_CC_Recovery
 
-    for(int ID = _csr->startNodeID ; ID <= oriEndNodeID ; ID ++){
-        printf("CC[%d] = %d\n", ID, _CCs[ID]);
+    // for(int ID = _csr->startNodeID ; ID <= oriEndNodeID ; ID ++){
+    //     printf("CC[%d] = %d\n", ID, _CCs[ID]);
+    // }
+}
+
+void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
+    int* dist_arr = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    int* neighbor_dist_ans = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    struct qQueue* Q = InitqQueue();
+    qInitResize(Q, (_csr->csrVSize) * 2);
+
+    //record that nodes which havn't been source yet
+    int* nodeDone = (int*)calloc(sizeof(int*), (_csr->csrVSize) * 2);
+
+    //record nodes belongs to which neighbor of source
+    int* mapping_SI                 = (int*)malloc(sizeof(int) * 32);
+    unsigned int* sharedBitIndex    = (unsigned int*)calloc(sizeof(unsigned int), (_csr->csrVSize) * 2);
+    unsigned int* relation          = (unsigned int*)calloc(sizeof(unsigned int), (_csr->csrVSize) * 2);
+
+    //D1 Folding
+    D1Folding(_csr);
+
+    //AP Process
+    AP_detection(_csr);
+    AP_Copy_And_Split(_csr);
+    compactNodesByComp(_csr);
+    //Sort aliveNodeID with degree
+    quicksort_nodeID_with_degree(_csr->aliveNode, _csr->csrNodesDegree, 0, _csr->aliveNodeCount - 1);
+
+    printf("[Check point 1]\n");
+
+    for(int aliveNodeIndex = _csr->aliveNodeCount - 1 ; aliveNodeIndex >= 0 ; aliveNodeIndex --){
+        int sourceID = _csr->aliveNode[aliveNodeIndex];
+
+        printf("sourceID = %d, ", sourceID);
+
+        if(nodeDone[sourceID] == 1){
+            continue;
+        }
+        
+        nodeDone[sourceID] = 1;
+
+        //reset Q, dist_arr
+        memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
+        resetQueue(Q);
+
+        //Init Q, dist_arr
+        dist_arr[sourceID] = 0;
+        qPushBack(Q, sourceID);
+
+        register int curID  = -1;
+        register int nID    = -1;
+        register int nidx   = -1;
+
+        int mappingCount = 0;
+        for(nidx = _csr->csrV[sourceID] ; nidx < _csr->oriCsrV[sourceID + 1] ; nidx ++){
+            nID = _csr->csrE[nidx];
+            if((nodeDone[nID] == 0) && (!(_csr->nodesType[nID] & ClonedAP)) && (!(_csr->nodesType[nID] & OriginAP))){
+                mappingCount ++;
+            }
+        }
+        printf("mappingCount = %d\n", mappingCount);
+
+        //decide to use the sharing strategy or not
+        if(mappingCount < 3){ //perform ordinary traverse
+            while(!qIsEmpty(Q)){
+                curID = qPopFront(Q);
+                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID] ; nidx ++){
+                    nID = _csr->csrE[nidx];
+
+                    if(dist_arr[nID] == -1){
+                        qPushBack(Q, nID);
+                        dist_arr[nID] = dist_arr[curID] + 1;
+
+                        _CCs[sourceID] += _csr->ff[nID] + dist_arr[nID] * _csr->representNode[nID];
+                    }
+                }
+            }
+            _CCs[sourceID] += _csr->ff[sourceID];
+        }
+        else{ //perform traversal with sharing strategy
+            #pragma region mappingNeighbor
+            mappingCount = 0;
+            //each neighbor of sourceID mapping to SBI, if it haven't been sourceID and not ClonedAP
+            for(nidx = _csr->csrV[sourceID] ; nidx < _csr->oriCsrV[sourceID + 1] ; nidx ++){
+                nID = _csr->csrE[nidx];
+
+                if(nodeDone[nID] == 0 && (!(_csr->nodesType[nID] & ClonedAP)) && (!(_csr->nodesType[nID] & OriginAP))){
+                    sharedBitIndex[nID] = 1 << mappingCount;
+                    mapping_SI[mappingCount] = nID;
+
+                    // printf("\tshared nID %d\n", nID);
+
+                    mappingCount ++;
+
+                    //Record to 32 bit only
+                    if(mappingCount == 32){
+                        break;
+                    }
+                }
+            }
+            #pragma endregion mappingNeighbor
+
+            #pragma region SourceTraverse
+            /**
+             * Main source traverse for getting some information:
+             * 
+             * ##        First Traverse        ##
+             * 1. dist              : distance from source to each node in the component
+             * 2. sharedBitIndex    : record each node that can be found first by which neighbor of source
+             * ##################################
+             * 
+             * ##        Second Traverse        ##
+             * 3. relation          : record each node that should remain the distance when source are some specific nodes
+             * ###################################
+             * 
+             * @todo 
+             * 1. consider another way to replace "the 3 if statement", the way of branchless technique may be a good choice
+             * 2. A way : when currentNodeID find unvisited node v, then just push v into Q, and don't update its dist,
+             *          until v becomes currentNodeID, then assign the distance for v.
+            */
+            
+            printf("\n\t####      Source %2d 1st Traverse...      ####\n\n", sourceID);
+            while(!qIsEmpty(Q)){
+                curID = qPopFront(Q);
+                
+                printf("\tcurID = %2d, dist = %2d, SI = %x, relation = %x\n", curID, dist_arr[curID], sharedBitIndex[curID], relation[curID]);
+
+                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
+                    nID = _csr->csrE[nidx];
+
+                    if(dist_arr[nID] == -1){
+                        qPushBack(Q, nID);
+                        dist_arr[nID] = dist_arr[curID] + 1;
+                        sharedBitIndex[nID] |= sharedBitIndex[curID];
+
+                        _CCs[sourceID] += _csr->ff[nID] + dist_arr[nID] * _csr->representNode[nID];
+                    }
+                    else if(dist_arr[nID] == dist_arr[curID] + 1){
+                        sharedBitIndex[nID] |= sharedBitIndex[curID];
+                    }
+                    else if(dist_arr[nID] == dist_arr[curID]){
+                        relation[curID] |= sharedBitIndex[nID] & (~sharedBitIndex[curID]);
+                    }
+                }
+            }
+            _CCs[sourceID] += _csr->ff[sourceID];
+
+            printf("\n\t####      Source %2d 2nd Traverse...      ####\n\n", sourceID);
+            Q->front = 0;
+            while(!qIsEmpty(Q)){
+                curID = qPopFront(Q);
+
+                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
+                    nID = _csr->csrE[nidx];
+
+                    if(dist_arr[nID] == dist_arr[curID] + 1){
+                        relation[nID] |= relation[curID];
+
+                        printf("\trelation[%2d] = %2x\n", nID, relation[nID]);
+                    }
+                }
+            }
+            #pragma endregion SourceTraverse
+        
+            /**
+             * @todo 
+             * 把相同 component 的 nodeID 排在一起，用類似 csrV，csrE的方式記錄 component 的 nodeID，
+             * 所以在這邊把 distance 復原的時候 只要復原一部分就可以了
+            */
+            #pragma region neighborOfSource_GetDist_and_AccumulationCC
+            //recover the distance from source to neighbor of source
+            for(int sourceNeighborIndex = 0 ; sourceNeighborIndex < mappingCount ; sourceNeighborIndex ++){
+                // memset(neighbor_dist_ans, -1, sizeof(int) * _csr->csrVSize );
+                int sourceNeighborID = mapping_SI[sourceNeighborIndex];
+                unsigned int bit_SI = 1 << sourceNeighborIndex;
+                
+                
+                nodeDone[sourceNeighborID] = 1;
+                
+                int nodeCompID = _csr->nodesCompID[sourceNeighborID];
+                printf("\nnextBFS = %2d, bit_SI = %x, nodeCompID = %d\n", sourceNeighborID, bit_SI, nodeCompID);
+
+                for(int compOffsetIter = _csr->comp_CsrOffset[nodeCompID] ; compOffsetIter < _csr->comp_CsrOffset[nodeCompID + 1] ; compOffsetIter ++){
+                    int sameCompAliveNodeID = _csr->comp_NodesID_CsrData[compOffsetIter];
+                    
+                    if((sharedBitIndex[sameCompAliveNodeID] & bit_SI) > 0){
+                        neighbor_dist_ans[sameCompAliveNodeID] = dist_arr[sameCompAliveNodeID] - 1;
+
+                        printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameCompAliveNodeID, neighbor_dist_ans[sameCompAliveNodeID], sameCompAliveNodeID, sharedBitIndex[sameCompAliveNodeID]);
+                    }
+                    else{
+                        neighbor_dist_ans[sameCompAliveNodeID] = dist_arr[sameCompAliveNodeID] + 1;
+
+                        printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameCompAliveNodeID, neighbor_dist_ans[sameCompAliveNodeID], sameCompAliveNodeID, sharedBitIndex[sameCompAliveNodeID]);
+
+                        if((relation[sameCompAliveNodeID] & bit_SI) > 0){
+                            neighbor_dist_ans[sameCompAliveNodeID] --;
+                            printf("\t\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameCompAliveNodeID, neighbor_dist_ans[sameCompAliveNodeID], sameCompAliveNodeID, sharedBitIndex[sameCompAliveNodeID]);
+                        }
+                    }
+
+                    _CCs[sourceNeighborID] += _csr->ff[sameCompAliveNodeID] + neighbor_dist_ans[sameCompAliveNodeID] * _csr->representNode[sameCompAliveNodeID];
+                    
+                }
+                printf("CC[%d] = %d\n", sourceNeighborID, _CCs[sourceNeighborID]);
+            }
+
+            #pragma endregion neighborOfSource_GetDist_and_AccumulationCC
+
+        }
+
     }
+    printf("[Check point 2]\n");
 }
 
 #pragma endregion //Function_computing
@@ -1944,6 +2156,7 @@ int main(int argc, char* argv[]){
     double D1_sort_CC_shareBasedTime        = 0;
     double D1_sort_CC_64Bit_shareBasedTime  = 0;
     double D1_AP_CC_ori                     = 0;
+    double D1_AP_CC_shareBasedTime          = 0;
 
     double time1                            = 0;
     double time2                            = 0;
@@ -1953,10 +2166,9 @@ int main(int argc, char* argv[]){
     
     #pragma region Dev
     time1 = seconds();
-    compute_D1_AP_CC(csr, csr->CCs);
+    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
     time2 = seconds();
-    D1_AP_CC_ori = time2 - time1;
-    printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
+    D1_AP_CC_shareBasedTime = time2 - time1;
     #pragma endregion //Dev
 
 
@@ -2030,6 +2242,15 @@ int main(int argc, char* argv[]){
     // time2 = seconds();
     // D1_sort_CC_64Bit_shareBasedTime = time2 - time1;
     // printf("[Execution Time] D1_sort_CC_64Bit_shareBasedTime = %f\n", D1_sort_CC_64Bit_shareBasedTime);
+
+    /************************************************************
+     *                      compute_D1_AP_CC                    *
+    ************************************************************/
+    // time1 = seconds();
+    // compute_D1_AP_CC(csr, csr->CCs);
+    // time2 = seconds();
+    // D1_AP_CC_ori = time2 - time1;
+    // printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
     #pragma endregion //Release
 
 }
