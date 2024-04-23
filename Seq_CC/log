@@ -1,114 +1,37 @@
 exeName = ./a
-datasetPath = ../dataset/testdata2.txt
+datasetPath = ../dataset/dblp.txt
 Success : Build AdjList
 ==============================
-dataset = ../dataset/testdata2.txt
-nodeNum = 9
-edgeNum = 12
-degreeOneNum = 0
-graph start with 1
+dataset = ../dataset/dblp.txt
+nodeNum = 317080
+edgeNum = 1049866
+degreeOneNum = 43181
+graph start with 0
 ==============================
 ==============================
 CreateCSR...
-csr->csrVSize = 11
-csr->csrESize = 24
-csr->degreeOneNum = 0
-csr->startAtZero = 0
-csr->maxDegree = 5
+csr->csrVSize = 317081
+csr->csrESize = 2099732
+csr->degreeOneNum = 43181
+csr->startAtZero = 1
+csr->maxDegree = 343
 [Success] CreateCSR finish
 ==============================
-CC[1] = 17
-CC[2] = 17
-CC[3] = 11
-CC[4] = 16
-CC[5] = 16
-CC[6] = 11
-CC[7] = 14
-CC[8] = 17
-CC[9] = 17
 ==============================
 D1 Folding...Finished.
-D1 node count       (|D1|)              =        0
-Hub node Count      (|Hub|)             =        0
-Ordinary node Count (|V| - |D1|)        =        9
+D1 node count       (|D1|)              =    45434
+Hub node Count      (|Hub|)             =    25730
+Ordinary node Count (|V| - |D1|)        =   271646
 ==============================
 ==============================
-AP Copy and Split... 	part 0 neighborNum_of_ap = 2
-	part 1 neighborNum_of_ap = 3
-	[Need to create AP Clone]
-CC[3] = 11
-	outer_represent = 6, outer_ff = 9
-	[New AP Clone] _csr->csrV[10] = 24
-		[add] csrE[24] = 1, 		nextCsrE_offset => 25
-		[cut] (3, 1)
-		[fix] (1, 3) => (1, 10)
-		[add] csrE[25] = 2, 		nextCsrE_offset => 26
-		[cut] (3, 2)
-		[fix] (2, 3) => (2, 10)
-	newApCloneID 10 = {w = 7, ff = 9, type = 10, csrE_offset = 24}
-
-	outer_represent = 2, outer_ff = 2
-	[New AP Clone] _csr->csrV[11] = 26
-		[add] csrE[26] = 4, 		nextCsrE_offset => 27
-		[cut] (3, 4)
-		[fix] (4, 3) => (4, 11)
-		[add] csrE[27] = 7, 		nextCsrE_offset => 28
-		[cut] (3, 7)
-		[fix] (7, 3) => (7, 11)
-		[add] csrE[28] = 6, 		nextCsrE_offset => 29
-		[cut] (3, 6)
-		[fix] (6, 3) => (6, 11)
-	newApCloneID 11 = {w = 3, ff = 2, type = 10, csrE_offset = 26}
-
-	part 0 neighborNum_of_ap = 2
-	part 1 neighborNum_of_ap = 3
-	[Need to create AP Clone]
-CC[6] = 11
-	outer_represent = 6, outer_ff = 9
-	[New AP Clone] _csr->csrV[12] = 29
-		[add] csrE[29] = 9, 		nextCsrE_offset => 30
-		[cut] (6, 9)
-		[fix] (9, 6) => (9, 12)
-		[add] csrE[30] = 8, 		nextCsrE_offset => 31
-		[cut] (6, 8)
-		[fix] (8, 6) => (8, 12)
-	newApCloneID 12 = {w = 7, ff = 9, type = 10, csrE_offset = 29}
-
-	outer_represent = 2, outer_ff = 2
-	[New AP Clone] _csr->csrV[13] = 31
-		[add] csrE[31] = 7, 		nextCsrE_offset => 32
-		[cut] (6, 7)
-		[fix] (7, 6) => (7, 13)
-		[add] csrE[32] = 5, 		nextCsrE_offset => 33
-		[cut] (6, 5)
-		[fix] (5, 6) => (5, 13)
-		[add] csrE[33] = 11, 		nextCsrE_offset => 34
-		[cut] (6, 11)
-		[fix] (11, 6) => (11, 13)
-	newApCloneID 13 = {w = 3, ff = 2, type = 10, csrE_offset = 31}
-
-aliveNode[0] = 1
-aliveNode[1] = 2
-aliveNode[2] = 4
-aliveNode[3] = 5
-aliveNode[4] = 7
-aliveNode[5] = 8
-aliveNode[6] = 9
-Finished.
-apCount         =        2
-compCount       =        3
-maxCompSize     =        3
-endNodeID       =       13
+AP Copy and Split... Finished.
+apCount         =    18837
+compCount       =    21332
+maxCompSize     =   188951
+endNodeID       =   353070
 ==============================
 [Check point 1]
-sourceID = 9, mappingCount = 1
-sourceID = 8, mappingCount = 0
-sourceID = 7, mappingCount = 0
-sourceID = 5, mappingCount = 1
-sourceID = 4, mappingCount = 0
-sourceID = 2, mappingCount = 1
-sourceID = 1, mappingCount = 0
 [Check point 2]
 
-D1_AP_CC_shareBasedTime = 0.000012
-_csr->endNodeID = 13, _csr->apCloneCount = 4, oriEndNodeID = 9
+D1_AP_CC_shareBasedTime = 1193.282793
+_csr->endNodeID = 353070, _csr->apCloneCount = 35991, oriEndNodeID = 317079

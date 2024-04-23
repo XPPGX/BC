@@ -465,7 +465,7 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 // #define assignComponentID_DEBUG
 // #define sortAP_By_apNum_DEBUG
 // #define GetPartInfo_DEBUG
-#define Split_DEBUG
+// #define Split_DEBUG
 void AP_Copy_And_Split(struct CSR* _csr){
     printf("==============================\n");
     printf("AP Copy and Split... ");
@@ -1013,7 +1013,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
         if(_csr->nodesType[nodeID] & D1 || ((_csr->nodesType[nodeID] & OriginAP) && (_csr->CCs[nodeID] != 0))){
             continue;
         }
-        printf("aliveNode[%d] = %d\n", count, nodeID);
+        // printf("aliveNode[%d] = %d\n", count, nodeID);
         _csr->aliveNode[count] = nodeID;
         count ++;
     }
