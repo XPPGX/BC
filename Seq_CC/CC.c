@@ -1735,7 +1735,7 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
         if(mappingCount < 3){ //perform ordinary traverse
             while(!qIsEmpty(Q)){
                 curID = qPopFront(Q);
-                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID] ; nidx ++){
+                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
                     nID = _csr->csrE[nidx];
 
                     if(dist_arr[nID] == -1){
@@ -1759,7 +1759,7 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
                     sharedBitIndex[nID] = 1 << mappingCount;
                     mapping_SI[mappingCount] = nID;
 
-                    // printf("\tshared nID %d\n", nID);
+                    printf("\tshared nID %d\n", nID);
 
                     mappingCount ++;
 
@@ -1875,13 +1875,25 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
                 }
                 printf("CC[%d] = %d\n", sourceNeighborID, _CCs[sourceNeighborID]);
             }
-
+            memset(sharedBitIndex, 0, sizeof(unsigned int) * _csr->csrVSize * 2);
+            memset(relation, 0, sizeof(unsigned int) * _csr->csrVSize * 2);
             #pragma endregion neighborOfSource_GetDist_and_AccumulationCC
 
         }
 
     }
     printf("[Check point 2]\n");
+
+    #pragma region d1GetCC_FromParent
+    int d1NodeID        = -1;
+    int d1NodeParentID  = -1;
+    for(int d1NodeIndex = _csr->degreeOneNodesQ->rear ; d1NodeIndex >= 0 ; d1NodeIndex --){
+        d1NodeID        = _csr->degreeOneNodesQ->dataArr[d1NodeIndex];
+        d1NodeParentID  = _csr->D1Parent[d1NodeID];
+        _CCs[d1NodeID]  = _CCs[d1NodeParentID] + _csr->totalNodeNumber - 2 * _csr->representNode[d1NodeID];
+    }
+    printf("\n");
+    #pragma endregion d1GetCC_FromParent
 }
 
 #pragma endregion //Function_computing
@@ -1890,7 +1902,8 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
 #pragma region Function_CheckingAns
 
 void CC_CheckAns(struct CSR* _csr, int* TrueCC_Ans, int* newCC_Ans){
-    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+    printf("_csr->endNodeID = %d, _csr->apCloneCount = %d, oriEndNodeID = %d\n", _csr->endNodeID, _csr->apCloneCount, _csr->endNodeID - _csr->apCloneCount);
+    for(int nodeID = _csr->startNodeID ; nodeID <= (_csr->endNodeID - _csr->apCloneCount) ; nodeID ++){
         if(TrueCC_Ans[nodeID] != newCC_Ans[nodeID]){
             printf("[ERROR] CC ans : TrueCC_Ans[%2d] = %2d, newCC_Ans[%2d] = %2d\n", nodeID, TrueCC_Ans[nodeID], nodeID, newCC_Ans[nodeID]);
             exit(1);
@@ -2165,10 +2178,18 @@ int main(int argc, char* argv[]){
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
+    computeCC(csr, TrueCC_Ans);
+    for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
+        printf("CC[%d] = %d\n", nodeID, TrueCC_Ans[nodeID]);
+    }
+
     time1 = seconds();
     compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
     time2 = seconds();
     D1_AP_CC_shareBasedTime = time2 - time1;
+    printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+
+    CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
     #pragma endregion //Dev
 
 

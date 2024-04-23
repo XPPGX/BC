@@ -1,964 +1,114 @@
 exeName = ./a
-datasetPath = ../dataset/testdata1.txt
+datasetPath = ../dataset/testdata2.txt
 Success : Build AdjList
 ==============================
-dataset = ../dataset/testdata1.txt
-nodeNum = 62
-edgeNum = 101
-degreeOneNum = 7
-graph start with 0
+dataset = ../dataset/testdata2.txt
+nodeNum = 9
+edgeNum = 12
+degreeOneNum = 0
+graph start with 1
 ==============================
 ==============================
 CreateCSR...
-csr->csrVSize = 63
-csr->csrESize = 202
-csr->degreeOneNum = 7
-csr->startAtZero = 1
-csr->maxDegree = 7
+csr->csrVSize = 11
+csr->csrESize = 24
+csr->degreeOneNum = 0
+csr->startAtZero = 0
+csr->maxDegree = 5
 [Success] CreateCSR finish
 ==============================
+CC[1] = 17
+CC[2] = 17
+CC[3] = 11
+CC[4] = 16
+CC[5] = 16
+CC[6] = 11
+CC[7] = 14
+CC[8] = 17
+CC[9] = 17
 ==============================
 D1 Folding...Finished.
-D1 node count       (|D1|)              =        8
-Hub node Count      (|Hub|)             =        4
-Ordinary node Count (|V| - |D1|)        =       54
+D1 node count       (|D1|)              =        0
+Hub node Count      (|Hub|)             =        0
+Ordinary node Count (|V| - |D1|)        =        9
 ==============================
 ==============================
-AP Copy and Split... Finished.
-apCount         =        6
-compCount       =        6
-maxCompSize     =       19
-endNodeID       =       67
+AP Copy and Split... 	part 0 neighborNum_of_ap = 2
+	part 1 neighborNum_of_ap = 3
+	[Need to create AP Clone]
+CC[3] = 11
+	outer_represent = 6, outer_ff = 9
+	[New AP Clone] _csr->csrV[10] = 24
+		[add] csrE[24] = 1, 		nextCsrE_offset => 25
+		[cut] (3, 1)
+		[fix] (1, 3) => (1, 10)
+		[add] csrE[25] = 2, 		nextCsrE_offset => 26
+		[cut] (3, 2)
+		[fix] (2, 3) => (2, 10)
+	newApCloneID 10 = {w = 7, ff = 9, type = 10, csrE_offset = 24}
+
+	outer_represent = 2, outer_ff = 2
+	[New AP Clone] _csr->csrV[11] = 26
+		[add] csrE[26] = 4, 		nextCsrE_offset => 27
+		[cut] (3, 4)
+		[fix] (4, 3) => (4, 11)
+		[add] csrE[27] = 7, 		nextCsrE_offset => 28
+		[cut] (3, 7)
+		[fix] (7, 3) => (7, 11)
+		[add] csrE[28] = 6, 		nextCsrE_offset => 29
+		[cut] (3, 6)
+		[fix] (6, 3) => (6, 11)
+	newApCloneID 11 = {w = 3, ff = 2, type = 10, csrE_offset = 26}
+
+	part 0 neighborNum_of_ap = 2
+	part 1 neighborNum_of_ap = 3
+	[Need to create AP Clone]
+CC[6] = 11
+	outer_represent = 6, outer_ff = 9
+	[New AP Clone] _csr->csrV[12] = 29
+		[add] csrE[29] = 9, 		nextCsrE_offset => 30
+		[cut] (6, 9)
+		[fix] (9, 6) => (9, 12)
+		[add] csrE[30] = 8, 		nextCsrE_offset => 31
+		[cut] (6, 8)
+		[fix] (8, 6) => (8, 12)
+	newApCloneID 12 = {w = 7, ff = 9, type = 10, csrE_offset = 29}
+
+	outer_represent = 2, outer_ff = 2
+	[New AP Clone] _csr->csrV[13] = 31
+		[add] csrE[31] = 7, 		nextCsrE_offset => 32
+		[cut] (6, 7)
+		[fix] (7, 6) => (7, 13)
+		[add] csrE[32] = 5, 		nextCsrE_offset => 33
+		[cut] (6, 5)
+		[fix] (5, 6) => (5, 13)
+		[add] csrE[33] = 11, 		nextCsrE_offset => 34
+		[cut] (6, 11)
+		[fix] (11, 6) => (11, 13)
+	newApCloneID 13 = {w = 3, ff = 2, type = 10, csrE_offset = 31}
+
+aliveNode[0] = 1
+aliveNode[1] = 2
+aliveNode[2] = 4
+aliveNode[3] = 5
+aliveNode[4] = 7
+aliveNode[5] = 8
+aliveNode[6] = 9
+Finished.
+apCount         =        2
+compCount       =        3
+maxCompSize     =        3
+endNodeID       =       13
 ==============================
 [Check point 1]
-sourceID = 26, mappingCount = 7
-
-	####      Source 26 1st Traverse...      ####
-
-	curID = 26, dist =  0, SI = 0, relation = 0
-	curID = 23, dist =  1, SI = 1, relation = 0
-	curID = 28, dist =  1, SI = 2, relation = 0
-	curID = 25, dist =  1, SI = 4, relation = 0
-	curID = 27, dist =  1, SI = 8, relation = 0
-	curID = 22, dist =  1, SI = 10, relation = 0
-	curID = 30, dist =  1, SI = 20, relation = 0
-	curID = 29, dist =  1, SI = 40, relation = 0
-	curID = 67, dist =  2, SI = 30, relation = 0
-
-	####      Source 26 2nd Traverse...      ####
-
-	relation[23] = 10
-	relation[28] = 40
-	relation[25] =  8
-	relation[27] = 44
-	relation[22] =  1
-	relation[30] = 40
-	relation[29] = 2a
-	relation[67] =  1
-	relation[67] = 41
-
-nextBFS = 23, bit_SI = 1, nodeCompID = 1
-	[2]neighbor_dist_ans[22] =  2, SI[22] = 10
-		[3]neighbor_dist_ans[22] =  1, SI[22] = 10
-	[1]neighbor_dist_ans[23] =  0, SI[23] = 1
-	[2]neighbor_dist_ans[67] =  3, SI[67] = 30
-		[3]neighbor_dist_ans[67] =  2, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[2]neighbor_dist_ans[30] =  2, SI[30] = 20
-	[2]neighbor_dist_ans[28] =  2, SI[28] = 2
-	[2]neighbor_dist_ans[25] =  2, SI[25] = 4
-	[2]neighbor_dist_ans[27] =  2, SI[27] = 8
-	[2]neighbor_dist_ans[29] =  2, SI[29] = 40
-CC[23] = 446
-
-nextBFS = 28, bit_SI = 2, nodeCompID = 1
-	[2]neighbor_dist_ans[22] =  2, SI[22] = 10
-	[2]neighbor_dist_ans[23] =  2, SI[23] = 1
-	[2]neighbor_dist_ans[67] =  3, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[2]neighbor_dist_ans[30] =  2, SI[30] = 20
-	[1]neighbor_dist_ans[28] =  0, SI[28] = 2
-	[2]neighbor_dist_ans[25] =  2, SI[25] = 4
-	[2]neighbor_dist_ans[27] =  2, SI[27] = 8
-	[2]neighbor_dist_ans[29] =  2, SI[29] = 40
-		[3]neighbor_dist_ans[29] =  1, SI[29] = 40
-CC[28] = 497
-
-nextBFS = 25, bit_SI = 4, nodeCompID = 1
-	[2]neighbor_dist_ans[22] =  2, SI[22] = 10
-	[2]neighbor_dist_ans[23] =  2, SI[23] = 1
-	[2]neighbor_dist_ans[67] =  3, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[2]neighbor_dist_ans[30] =  2, SI[30] = 20
-	[2]neighbor_dist_ans[28] =  2, SI[28] = 2
-	[1]neighbor_dist_ans[25] =  0, SI[25] = 4
-	[2]neighbor_dist_ans[27] =  2, SI[27] = 8
-		[3]neighbor_dist_ans[27] =  1, SI[27] = 8
-	[2]neighbor_dist_ans[29] =  2, SI[29] = 40
-CC[25] = 496
-
-nextBFS = 27, bit_SI = 8, nodeCompID = 1
-	[2]neighbor_dist_ans[22] =  2, SI[22] = 10
-	[2]neighbor_dist_ans[23] =  2, SI[23] = 1
-	[2]neighbor_dist_ans[67] =  3, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[2]neighbor_dist_ans[30] =  2, SI[30] = 20
-	[2]neighbor_dist_ans[28] =  2, SI[28] = 2
-	[2]neighbor_dist_ans[25] =  2, SI[25] = 4
-		[3]neighbor_dist_ans[25] =  1, SI[25] = 4
-	[1]neighbor_dist_ans[27] =  0, SI[27] = 8
-	[2]neighbor_dist_ans[29] =  2, SI[29] = 40
-		[3]neighbor_dist_ans[29] =  1, SI[29] = 40
-CC[27] = 495
-
-nextBFS = 22, bit_SI = 10, nodeCompID = 1
-	[1]neighbor_dist_ans[22] =  0, SI[22] = 10
-	[2]neighbor_dist_ans[23] =  2, SI[23] = 1
-		[3]neighbor_dist_ans[23] =  1, SI[23] = 1
-	[1]neighbor_dist_ans[67] =  1, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[2]neighbor_dist_ans[30] =  2, SI[30] = 20
-	[2]neighbor_dist_ans[28] =  2, SI[28] = 2
-	[2]neighbor_dist_ans[25] =  2, SI[25] = 4
-	[2]neighbor_dist_ans[27] =  2, SI[27] = 8
-	[2]neighbor_dist_ans[29] =  2, SI[29] = 40
-CC[22] = 394
-
-nextBFS = 30, bit_SI = 20, nodeCompID = 1
-	[2]neighbor_dist_ans[22] =  2, SI[22] = 10
-	[2]neighbor_dist_ans[23] =  2, SI[23] = 1
-	[1]neighbor_dist_ans[67] =  1, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[1]neighbor_dist_ans[30] =  0, SI[30] = 20
-	[2]neighbor_dist_ans[28] =  2, SI[28] = 2
-	[2]neighbor_dist_ans[25] =  2, SI[25] = 4
-	[2]neighbor_dist_ans[27] =  2, SI[27] = 8
-	[2]neighbor_dist_ans[29] =  2, SI[29] = 40
-		[3]neighbor_dist_ans[29] =  1, SI[29] = 40
-CC[30] = 393
-
-nextBFS = 29, bit_SI = 40, nodeCompID = 1
-	[2]neighbor_dist_ans[22] =  2, SI[22] = 10
-	[2]neighbor_dist_ans[23] =  2, SI[23] = 1
-	[2]neighbor_dist_ans[67] =  3, SI[67] = 30
-		[3]neighbor_dist_ans[67] =  2, SI[67] = 30
-	[2]neighbor_dist_ans[26] =  1, SI[26] = 0
-	[2]neighbor_dist_ans[30] =  2, SI[30] = 20
-		[3]neighbor_dist_ans[30] =  1, SI[30] = 20
-	[2]neighbor_dist_ans[28] =  2, SI[28] = 2
-		[3]neighbor_dist_ans[28] =  1, SI[28] = 2
-	[2]neighbor_dist_ans[25] =  2, SI[25] = 4
-	[2]neighbor_dist_ans[27] =  2, SI[27] = 8
-		[3]neighbor_dist_ans[27] =  1, SI[27] = 8
-	[1]neighbor_dist_ans[29] =  0, SI[29] = 40
-CC[29] = 442
-sourceID = 12, mappingCount = 4
-
-	####      Source 12 1st Traverse...      ####
-
-	curID = 12, dist =  0, SI = 0, relation = 0
-	curID = 19, dist =  1, SI = 1, relation = 0
-	curID = 13, dist =  1, SI = 2, relation = 0
-	curID = 16, dist =  1, SI = 4, relation = 0
-	curID =  8, dist =  1, SI = 8, relation = 0
-	curID = 65, dist =  1, SI = 0, relation = 0
-	curID = 18, dist =  2, SI = 2, relation = 0
-	curID = 15, dist =  2, SI = 2, relation = 0
-	curID = 14, dist =  2, SI = 4, relation = 0
-	curID = 10, dist =  2, SI = 8, relation = 0
-	curID =  4, dist =  2, SI = 8, relation = 0
-	curID = 21, dist =  2, SI = 0, relation = 0
-	curID =  9, dist =  3, SI = a, relation = 0
-	curID = 11, dist =  3, SI = c, relation = 0
-	curID =  0, dist =  3, SI = 8, relation = 0
-	curID =  1, dist =  3, SI = 8, relation = 0
-	curID =  2, dist =  3, SI = 8, relation = 0
-	curID =  6, dist =  4, SI = a, relation = 0
-	curID =  3, dist =  4, SI = 8, relation = 0
-	curID =  5, dist =  4, SI = 8, relation = 0
-	curID = 66, dist =  4, SI = 8, relation = 0
-
-	####      Source 12 2nd Traverse...      ####
-
-	relation[19] =  8
-	relation[13] =  0
-	relation[16] =  0
-	relation[ 8] =  1
-	relation[65] =  4
-	relation[18] =  4
-	relation[15] =  4
-	relation[14] =  2
-	relation[10] =  1
-	relation[ 4] =  1
-	relation[21] =  4
-	relation[18] =  4
-	relation[ 9] =  4
-	relation[11] =  2
-	relation[11] =  3
-	relation[ 9] =  5
-	relation[ 0] =  1
-	relation[ 1] =  1
-	relation[ 2] =  1
-	relation[ 9] =  5
-	relation[ 6] =  5
-	relation[ 3] =  1
-	relation[ 5] =  1
-	relation[ 5] =  1
-	relation[66] =  3
-	relation[ 6] =  5
-	relation[ 5] =  1
-
-nextBFS = 19, bit_SI = 1, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  4, SI[ 0] = 8
-		[3]neighbor_dist_ans[ 0] =  3, SI[ 0] = 8
-	[2]neighbor_dist_ans[ 3] =  5, SI[ 3] = 8
-		[3]neighbor_dist_ans[ 3] =  4, SI[ 3] = 8
-	[2]neighbor_dist_ans[ 5] =  5, SI[ 5] = 8
-		[3]neighbor_dist_ans[ 5] =  4, SI[ 5] = 8
-	[2]neighbor_dist_ans[ 4] =  3, SI[ 4] = 8
-		[3]neighbor_dist_ans[ 4] =  2, SI[ 4] = 8
-	[2]neighbor_dist_ans[ 2] =  4, SI[ 2] = 8
-		[3]neighbor_dist_ans[ 2] =  3, SI[ 2] = 8
-	[2]neighbor_dist_ans[66] =  5, SI[66] = 8
-		[3]neighbor_dist_ans[66] =  4, SI[66] = 8
-	[2]neighbor_dist_ans[ 1] =  4, SI[ 1] = 8
-		[3]neighbor_dist_ans[ 1] =  3, SI[ 1] = 8
-	[2]neighbor_dist_ans[ 8] =  2, SI[ 8] = 8
-		[3]neighbor_dist_ans[ 8] =  1, SI[ 8] = 8
-	[2]neighbor_dist_ans[ 6] =  5, SI[ 6] = a
-		[3]neighbor_dist_ans[ 6] =  4, SI[ 6] = a
-	[1]neighbor_dist_ans[19] =  0, SI[19] = 1
-	[2]neighbor_dist_ans[10] =  3, SI[10] = 8
-		[3]neighbor_dist_ans[10] =  2, SI[10] = 8
-	[2]neighbor_dist_ans[12] =  1, SI[12] = 0
-	[2]neighbor_dist_ans[ 9] =  4, SI[ 9] = a
-		[3]neighbor_dist_ans[ 9] =  3, SI[ 9] = a
-	[2]neighbor_dist_ans[11] =  4, SI[11] = c
-		[3]neighbor_dist_ans[11] =  3, SI[11] = c
-	[2]neighbor_dist_ans[13] =  2, SI[13] = 2
-	[2]neighbor_dist_ans[16] =  2, SI[16] = 4
-	[2]neighbor_dist_ans[65] =  2, SI[65] = 0
-	[2]neighbor_dist_ans[21] =  3, SI[21] = 0
-	[2]neighbor_dist_ans[15] =  3, SI[15] = 2
-	[2]neighbor_dist_ans[14] =  3, SI[14] = 4
-	[2]neighbor_dist_ans[18] =  3, SI[18] = 2
-CC[19] = 322
-
-nextBFS = 13, bit_SI = 2, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  4, SI[ 0] = 8
-	[2]neighbor_dist_ans[ 3] =  5, SI[ 3] = 8
-	[2]neighbor_dist_ans[ 5] =  5, SI[ 5] = 8
-	[2]neighbor_dist_ans[ 4] =  3, SI[ 4] = 8
-	[2]neighbor_dist_ans[ 2] =  4, SI[ 2] = 8
-	[2]neighbor_dist_ans[66] =  5, SI[66] = 8
-		[3]neighbor_dist_ans[66] =  4, SI[66] = 8
-	[2]neighbor_dist_ans[ 1] =  4, SI[ 1] = 8
-	[2]neighbor_dist_ans[ 8] =  2, SI[ 8] = 8
-	[1]neighbor_dist_ans[ 6] =  3, SI[ 6] = a
-	[2]neighbor_dist_ans[19] =  2, SI[19] = 1
-	[2]neighbor_dist_ans[10] =  3, SI[10] = 8
-	[2]neighbor_dist_ans[12] =  1, SI[12] = 0
-	[1]neighbor_dist_ans[ 9] =  2, SI[ 9] = a
-	[2]neighbor_dist_ans[11] =  4, SI[11] = c
-		[3]neighbor_dist_ans[11] =  3, SI[11] = c
-	[1]neighbor_dist_ans[13] =  0, SI[13] = 2
-	[2]neighbor_dist_ans[16] =  2, SI[16] = 4
-	[2]neighbor_dist_ans[65] =  2, SI[65] = 0
-	[2]neighbor_dist_ans[21] =  3, SI[21] = 0
-	[1]neighbor_dist_ans[15] =  1, SI[15] = 2
-	[2]neighbor_dist_ans[14] =  3, SI[14] = 4
-		[3]neighbor_dist_ans[14] =  2, SI[14] = 4
-	[1]neighbor_dist_ans[18] =  1, SI[18] = 2
-CC[13] = 325
-
-nextBFS = 16, bit_SI = 4, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  4, SI[ 0] = 8
-	[2]neighbor_dist_ans[ 3] =  5, SI[ 3] = 8
-	[2]neighbor_dist_ans[ 5] =  5, SI[ 5] = 8
-	[2]neighbor_dist_ans[ 4] =  3, SI[ 4] = 8
-	[2]neighbor_dist_ans[ 2] =  4, SI[ 2] = 8
-	[2]neighbor_dist_ans[66] =  5, SI[66] = 8
-	[2]neighbor_dist_ans[ 1] =  4, SI[ 1] = 8
-	[2]neighbor_dist_ans[ 8] =  2, SI[ 8] = 8
-	[2]neighbor_dist_ans[ 6] =  5, SI[ 6] = a
-		[3]neighbor_dist_ans[ 6] =  4, SI[ 6] = a
-	[2]neighbor_dist_ans[19] =  2, SI[19] = 1
-	[2]neighbor_dist_ans[10] =  3, SI[10] = 8
-	[2]neighbor_dist_ans[12] =  1, SI[12] = 0
-	[2]neighbor_dist_ans[ 9] =  4, SI[ 9] = a
-		[3]neighbor_dist_ans[ 9] =  3, SI[ 9] = a
-	[1]neighbor_dist_ans[11] =  2, SI[11] = c
-	[2]neighbor_dist_ans[13] =  2, SI[13] = 2
-	[1]neighbor_dist_ans[16] =  0, SI[16] = 4
-	[2]neighbor_dist_ans[65] =  2, SI[65] = 0
-		[3]neighbor_dist_ans[65] =  1, SI[65] = 0
-	[2]neighbor_dist_ans[21] =  3, SI[21] = 0
-		[3]neighbor_dist_ans[21] =  2, SI[21] = 0
-	[2]neighbor_dist_ans[15] =  3, SI[15] = 2
-		[3]neighbor_dist_ans[15] =  2, SI[15] = 2
-	[1]neighbor_dist_ans[14] =  1, SI[14] = 4
-	[2]neighbor_dist_ans[18] =  3, SI[18] = 2
-		[3]neighbor_dist_ans[18] =  2, SI[18] = 2
-CC[16] = 306
-
-nextBFS =  8, bit_SI = 8, nodeCompID = 0
-	[1]neighbor_dist_ans[ 0] =  2, SI[ 0] = 8
-	[1]neighbor_dist_ans[ 3] =  3, SI[ 3] = 8
-	[1]neighbor_dist_ans[ 5] =  3, SI[ 5] = 8
-	[1]neighbor_dist_ans[ 4] =  1, SI[ 4] = 8
-	[1]neighbor_dist_ans[ 2] =  2, SI[ 2] = 8
-	[1]neighbor_dist_ans[66] =  3, SI[66] = 8
-	[1]neighbor_dist_ans[ 1] =  2, SI[ 1] = 8
-	[1]neighbor_dist_ans[ 8] =  0, SI[ 8] = 8
-	[1]neighbor_dist_ans[ 6] =  3, SI[ 6] = a
-	[2]neighbor_dist_ans[19] =  2, SI[19] = 1
-		[3]neighbor_dist_ans[19] =  1, SI[19] = 1
-	[1]neighbor_dist_ans[10] =  1, SI[10] = 8
-	[2]neighbor_dist_ans[12] =  1, SI[12] = 0
-	[1]neighbor_dist_ans[ 9] =  2, SI[ 9] = a
-	[1]neighbor_dist_ans[11] =  2, SI[11] = c
-	[2]neighbor_dist_ans[13] =  2, SI[13] = 2
-	[2]neighbor_dist_ans[16] =  2, SI[16] = 4
-	[2]neighbor_dist_ans[65] =  2, SI[65] = 0
-	[2]neighbor_dist_ans[21] =  3, SI[21] = 0
-	[2]neighbor_dist_ans[15] =  3, SI[15] = 2
-	[2]neighbor_dist_ans[14] =  3, SI[14] = 4
-	[2]neighbor_dist_ans[18] =  3, SI[18] = 2
-CC[8] = 302
-sourceID = 34, mappingCount = 4
-
-	####      Source 34 1st Traverse...      ####
-
-	curID = 34, dist =  0, SI = 0, relation = 0
-	curID = 37, dist =  1, SI = 1, relation = 0
-	curID = 43, dist =  1, SI = 2, relation = 0
-	curID = 47, dist =  1, SI = 4, relation = 0
-	curID = 33, dist =  1, SI = 8, relation = 0
-	curID = 38, dist =  1, SI = 0, relation = 0
-	curID = 45, dist =  2, SI = 2, relation = 0
-	curID = 36, dist =  2, SI = 2, relation = 0
-	curID = 42, dist =  2, SI = 4, relation = 0
-	curID = 32, dist =  2, SI = 8, relation = 0
-	curID = 46, dist =  2, SI = 0, relation = 0
-	curID = 35, dist =  3, SI = 2, relation = 0
-	curID = 44, dist =  3, SI = 6, relation = 0
-	curID = 64, dist =  3, SI = 8, relation = 0
-	curID = 41, dist =  4, SI = e, relation = 0
-	curID = 40, dist =  4, SI = 8, relation = 0
-
-	####      Source 34 2nd Traverse...      ####
-
-	relation[37] =  8
-	relation[43] =  0
-	relation[47] =  8
-	relation[33] =  5
-	relation[38] =  5
-	relation[45] =  0
-	relation[36] =  0
-	relation[42] =  8
-	relation[32] =  5
-	relation[46] =  7
-	relation[35] =  0
-	relation[35] =  0
-	relation[44] =  0
-	relation[44] =  8
-	relation[64] =  5
-	relation[35] =  7
-	relation[41] =  8
-	relation[40] =  7
-	relation[41] =  d
-
-nextBFS = 37, bit_SI = 1, nodeCompID = 2
-	[2]neighbor_dist_ans[32] =  3, SI[32] = 8
-		[3]neighbor_dist_ans[32] =  2, SI[32] = 8
-	[2]neighbor_dist_ans[42] =  3, SI[42] = 4
-	[2]neighbor_dist_ans[33] =  2, SI[33] = 8
-		[3]neighbor_dist_ans[33] =  1, SI[33] = 8
-	[2]neighbor_dist_ans[64] =  4, SI[64] = 8
-		[3]neighbor_dist_ans[64] =  3, SI[64] = 8
-	[2]neighbor_dist_ans[44] =  4, SI[44] = 6
-	[2]neighbor_dist_ans[47] =  2, SI[47] = 4
-	[1]neighbor_dist_ans[37] =  0, SI[37] = 1
-	[2]neighbor_dist_ans[34] =  1, SI[34] = 0
-	[2]neighbor_dist_ans[40] =  5, SI[40] = 8
-		[3]neighbor_dist_ans[40] =  4, SI[40] = 8
-	[2]neighbor_dist_ans[41] =  5, SI[41] = e
-		[3]neighbor_dist_ans[41] =  4, SI[41] = e
-	[2]neighbor_dist_ans[36] =  3, SI[36] = 2
-	[2]neighbor_dist_ans[38] =  2, SI[38] = 0
-		[3]neighbor_dist_ans[38] =  1, SI[38] = 0
-	[2]neighbor_dist_ans[43] =  2, SI[43] = 2
-	[2]neighbor_dist_ans[35] =  4, SI[35] = 2
-		[3]neighbor_dist_ans[35] =  3, SI[35] = 2
-	[2]neighbor_dist_ans[45] =  3, SI[45] = 2
-	[2]neighbor_dist_ans[46] =  3, SI[46] = 0
-		[3]neighbor_dist_ans[46] =  2, SI[46] = 0
-CC[37] = 308
-
-nextBFS = 43, bit_SI = 2, nodeCompID = 2
-	[2]neighbor_dist_ans[32] =  3, SI[32] = 8
-	[2]neighbor_dist_ans[42] =  3, SI[42] = 4
-	[2]neighbor_dist_ans[33] =  2, SI[33] = 8
-	[2]neighbor_dist_ans[64] =  4, SI[64] = 8
-	[1]neighbor_dist_ans[44] =  2, SI[44] = 6
-	[2]neighbor_dist_ans[47] =  2, SI[47] = 4
-	[2]neighbor_dist_ans[37] =  2, SI[37] = 1
-	[2]neighbor_dist_ans[34] =  1, SI[34] = 0
-	[2]neighbor_dist_ans[40] =  5, SI[40] = 8
-		[3]neighbor_dist_ans[40] =  4, SI[40] = 8
-	[1]neighbor_dist_ans[41] =  3, SI[41] = e
-	[1]neighbor_dist_ans[36] =  1, SI[36] = 2
-	[2]neighbor_dist_ans[38] =  2, SI[38] = 0
-	[1]neighbor_dist_ans[43] =  0, SI[43] = 2
-	[1]neighbor_dist_ans[35] =  2, SI[35] = 2
-	[1]neighbor_dist_ans[45] =  1, SI[45] = 2
-	[2]neighbor_dist_ans[46] =  3, SI[46] = 0
-		[3]neighbor_dist_ans[46] =  2, SI[46] = 0
-CC[43] = 350
-
-nextBFS = 47, bit_SI = 4, nodeCompID = 2
-	[2]neighbor_dist_ans[32] =  3, SI[32] = 8
-		[3]neighbor_dist_ans[32] =  2, SI[32] = 8
-	[1]neighbor_dist_ans[42] =  1, SI[42] = 4
-	[2]neighbor_dist_ans[33] =  2, SI[33] = 8
-		[3]neighbor_dist_ans[33] =  1, SI[33] = 8
-	[2]neighbor_dist_ans[64] =  4, SI[64] = 8
-		[3]neighbor_dist_ans[64] =  3, SI[64] = 8
-	[1]neighbor_dist_ans[44] =  2, SI[44] = 6
-	[1]neighbor_dist_ans[47] =  0, SI[47] = 4
-	[2]neighbor_dist_ans[37] =  2, SI[37] = 1
-	[2]neighbor_dist_ans[34] =  1, SI[34] = 0
-	[2]neighbor_dist_ans[40] =  5, SI[40] = 8
-		[3]neighbor_dist_ans[40] =  4, SI[40] = 8
-	[1]neighbor_dist_ans[41] =  3, SI[41] = e
-	[2]neighbor_dist_ans[36] =  3, SI[36] = 2
-	[2]neighbor_dist_ans[38] =  2, SI[38] = 0
-		[3]neighbor_dist_ans[38] =  1, SI[38] = 0
-	[2]neighbor_dist_ans[43] =  2, SI[43] = 2
-	[2]neighbor_dist_ans[35] =  4, SI[35] = 2
-		[3]neighbor_dist_ans[35] =  3, SI[35] = 2
-	[2]neighbor_dist_ans[45] =  3, SI[45] = 2
-	[2]neighbor_dist_ans[46] =  3, SI[46] = 0
-		[3]neighbor_dist_ans[46] =  2, SI[46] = 0
-CC[47] = 303
-
-nextBFS = 33, bit_SI = 8, nodeCompID = 2
-	[1]neighbor_dist_ans[32] =  1, SI[32] = 8
-	[2]neighbor_dist_ans[42] =  3, SI[42] = 4
-		[3]neighbor_dist_ans[42] =  2, SI[42] = 4
-	[1]neighbor_dist_ans[33] =  0, SI[33] = 8
-	[1]neighbor_dist_ans[64] =  2, SI[64] = 8
-	[2]neighbor_dist_ans[44] =  4, SI[44] = 6
-		[3]neighbor_dist_ans[44] =  3, SI[44] = 6
-	[2]neighbor_dist_ans[47] =  2, SI[47] = 4
-		[3]neighbor_dist_ans[47] =  1, SI[47] = 4
-	[2]neighbor_dist_ans[37] =  2, SI[37] = 1
-		[3]neighbor_dist_ans[37] =  1, SI[37] = 1
-	[2]neighbor_dist_ans[34] =  1, SI[34] = 0
-	[1]neighbor_dist_ans[40] =  3, SI[40] = 8
-	[1]neighbor_dist_ans[41] =  3, SI[41] = e
-	[2]neighbor_dist_ans[36] =  3, SI[36] = 2
-	[2]neighbor_dist_ans[38] =  2, SI[38] = 0
-	[2]neighbor_dist_ans[43] =  2, SI[43] = 2
-	[2]neighbor_dist_ans[35] =  4, SI[35] = 2
-	[2]neighbor_dist_ans[45] =  3, SI[45] = 2
-	[2]neighbor_dist_ans[46] =  3, SI[46] = 0
-CC[33] = 288
-sourceID = 2, mappingCount = 5
-
-	####      Source  2 1st Traverse...      ####
-
-	curID =  2, dist =  0, SI = 8, relation = 1
-	curID =  6, dist =  1, SI = 9, relation = 5
-	curID =  4, dist =  1, SI = a, relation = 1
-	curID =  5, dist =  1, SI = c, relation = 1
-	curID =  1, dist =  1, SI = 8, relation = 1
-	curID =  0, dist =  1, SI = 18, relation = 1
-	curID =  9, dist =  2, SI = b, relation = 5
-	curID = 66, dist =  2, SI = d, relation = 3
-	curID =  8, dist =  2, SI = a, relation = 1
-	curID =  3, dist =  2, SI = 18, relation = 1
-	curID = 21, dist =  3, SI = b, relation = 4
-	curID = 10, dist =  3, SI = b, relation = 1
-	curID = 15, dist =  3, SI = b, relation = 4
-	curID = 19, dist =  3, SI = b, relation = 8
-	curID = 12, dist =  3, SI = a, relation = 0
-	curID = 65, dist =  4, SI = b, relation = 4
-	curID = 11, dist =  4, SI = f, relation = 3
-	curID = 13, dist =  4, SI = b, relation = 0
-	curID = 14, dist =  4, SI = f, relation = 2
-	curID = 18, dist =  4, SI = b, relation = 4
-	curID = 16, dist =  4, SI = e, relation = 0
-
-	####      Source  2 2nd Traverse...      ####
-
-	relation[ 6] =  5
-	relation[ 4] = 11
-	relation[ 5] = 11
-	relation[ 1] =  7
-	relation[ 0] =  7
-	relation[ 9] =  5
-	relation[66] = 17
-	relation[ 8] = 11
-	relation[66] = 17
-	relation[66] = 17
-	relation[ 3] =  7
-	relation[21] =  5
-	relation[10] =  5
-	relation[15] =  5
-	relation[19] = 19
-	relation[10] = 15
-	relation[12] = 11
-	relation[65] =  5
-	relation[11] = 17
-	relation[13] =  5
-	relation[14] =  7
-	relation[18] =  5
-	relation[13] = 15
-	relation[16] = 11
-	relation[65] = 15
-
-nextBFS =  6, bit_SI = 1, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  2, SI[ 0] = 18
-		[3]neighbor_dist_ans[ 0] =  1, SI[ 0] = 18
-	[2]neighbor_dist_ans[ 3] =  3, SI[ 3] = 18
-		[3]neighbor_dist_ans[ 3] =  2, SI[ 3] = 18
-	[2]neighbor_dist_ans[ 5] =  2, SI[ 5] = c
-		[3]neighbor_dist_ans[ 5] =  1, SI[ 5] = c
-	[2]neighbor_dist_ans[ 4] =  2, SI[ 4] = a
-		[3]neighbor_dist_ans[ 4] =  1, SI[ 4] = a
-	[2]neighbor_dist_ans[ 2] =  1, SI[ 2] = 8
-		[3]neighbor_dist_ans[ 2] =  0, SI[ 2] = 8
-	[1]neighbor_dist_ans[66] =  1, SI[66] = d
-	[2]neighbor_dist_ans[ 1] =  2, SI[ 1] = 8
-		[3]neighbor_dist_ans[ 1] =  1, SI[ 1] = 8
-	[2]neighbor_dist_ans[ 8] =  3, SI[ 8] = a
-		[3]neighbor_dist_ans[ 8] =  2, SI[ 8] = a
-	[1]neighbor_dist_ans[ 6] =  0, SI[ 6] = 9
-	[1]neighbor_dist_ans[19] =  2, SI[19] = b
-	[1]neighbor_dist_ans[10] =  2, SI[10] = b
-	[2]neighbor_dist_ans[12] =  4, SI[12] = a
-		[3]neighbor_dist_ans[12] =  3, SI[12] = a
-	[1]neighbor_dist_ans[ 9] =  1, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  3, SI[11] = f
-	[1]neighbor_dist_ans[13] =  3, SI[13] = b
-	[2]neighbor_dist_ans[16] =  5, SI[16] = e
-		[3]neighbor_dist_ans[16] =  4, SI[16] = e
-	[1]neighbor_dist_ans[65] =  3, SI[65] = b
-	[1]neighbor_dist_ans[21] =  2, SI[21] = b
-	[1]neighbor_dist_ans[15] =  2, SI[15] = b
-	[1]neighbor_dist_ans[14] =  3, SI[14] = f
-	[1]neighbor_dist_ans[18] =  3, SI[18] = b
-CC[6] = 309
-
-nextBFS =  4, bit_SI = 2, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  2, SI[ 0] = 18
-		[3]neighbor_dist_ans[ 0] =  1, SI[ 0] = 18
-	[2]neighbor_dist_ans[ 3] =  3, SI[ 3] = 18
-		[3]neighbor_dist_ans[ 3] =  2, SI[ 3] = 18
-	[2]neighbor_dist_ans[ 5] =  2, SI[ 5] = c
-	[1]neighbor_dist_ans[ 4] =  0, SI[ 4] = a
-	[2]neighbor_dist_ans[ 2] =  1, SI[ 2] = 8
-	[2]neighbor_dist_ans[66] =  3, SI[66] = d
-		[3]neighbor_dist_ans[66] =  2, SI[66] = d
-	[2]neighbor_dist_ans[ 1] =  2, SI[ 1] = 8
-		[3]neighbor_dist_ans[ 1] =  1, SI[ 1] = 8
-	[1]neighbor_dist_ans[ 8] =  1, SI[ 8] = a
-	[2]neighbor_dist_ans[ 6] =  2, SI[ 6] = 9
-	[1]neighbor_dist_ans[19] =  2, SI[19] = b
-	[1]neighbor_dist_ans[10] =  2, SI[10] = b
-	[1]neighbor_dist_ans[12] =  2, SI[12] = a
-	[1]neighbor_dist_ans[ 9] =  1, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  3, SI[11] = f
-	[1]neighbor_dist_ans[13] =  3, SI[13] = b
-	[1]neighbor_dist_ans[16] =  3, SI[16] = e
-	[1]neighbor_dist_ans[65] =  3, SI[65] = b
-	[1]neighbor_dist_ans[21] =  2, SI[21] = b
-	[1]neighbor_dist_ans[15] =  2, SI[15] = b
-	[1]neighbor_dist_ans[14] =  3, SI[14] = f
-	[1]neighbor_dist_ans[18] =  3, SI[18] = b
-CC[4] = 320
-
-nextBFS =  5, bit_SI = 4, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  2, SI[ 0] = 18
-		[3]neighbor_dist_ans[ 0] =  1, SI[ 0] = 18
-	[2]neighbor_dist_ans[ 3] =  3, SI[ 3] = 18
-		[3]neighbor_dist_ans[ 3] =  2, SI[ 3] = 18
-	[1]neighbor_dist_ans[ 5] =  0, SI[ 5] = c
-	[2]neighbor_dist_ans[ 4] =  2, SI[ 4] = a
-	[2]neighbor_dist_ans[ 2] =  1, SI[ 2] = 8
-	[1]neighbor_dist_ans[66] =  1, SI[66] = d
-	[2]neighbor_dist_ans[ 1] =  2, SI[ 1] = 8
-		[3]neighbor_dist_ans[ 1] =  1, SI[ 1] = 8
-	[2]neighbor_dist_ans[ 8] =  3, SI[ 8] = a
-	[2]neighbor_dist_ans[ 6] =  2, SI[ 6] = 9
-		[3]neighbor_dist_ans[ 6] =  1, SI[ 6] = 9
-	[2]neighbor_dist_ans[19] =  4, SI[19] = b
-	[2]neighbor_dist_ans[10] =  4, SI[10] = b
-		[3]neighbor_dist_ans[10] =  3, SI[10] = b
-	[2]neighbor_dist_ans[12] =  4, SI[12] = a
-	[2]neighbor_dist_ans[ 9] =  3, SI[ 9] = b
-		[3]neighbor_dist_ans[ 9] =  2, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  3, SI[11] = f
-	[2]neighbor_dist_ans[13] =  5, SI[13] = b
-		[3]neighbor_dist_ans[13] =  4, SI[13] = b
-	[1]neighbor_dist_ans[16] =  3, SI[16] = e
-	[2]neighbor_dist_ans[65] =  5, SI[65] = b
-		[3]neighbor_dist_ans[65] =  4, SI[65] = b
-	[2]neighbor_dist_ans[21] =  4, SI[21] = b
-		[3]neighbor_dist_ans[21] =  3, SI[21] = b
-	[2]neighbor_dist_ans[15] =  4, SI[15] = b
-		[3]neighbor_dist_ans[15] =  3, SI[15] = b
-	[1]neighbor_dist_ans[14] =  3, SI[14] = f
-	[2]neighbor_dist_ans[18] =  5, SI[18] = b
-		[3]neighbor_dist_ans[18] =  4, SI[18] = b
-CC[5] = 353
-
-nextBFS =  1, bit_SI = 8, nodeCompID = 0
-	[1]neighbor_dist_ans[ 0] =  0, SI[ 0] = 18
-	[1]neighbor_dist_ans[ 3] =  1, SI[ 3] = 18
-	[1]neighbor_dist_ans[ 5] =  0, SI[ 5] = c
-	[1]neighbor_dist_ans[ 4] =  0, SI[ 4] = a
-	[1]neighbor_dist_ans[ 2] = -1, SI[ 2] = 8
-	[1]neighbor_dist_ans[66] =  1, SI[66] = d
-	[1]neighbor_dist_ans[ 1] =  0, SI[ 1] = 8
-	[1]neighbor_dist_ans[ 8] =  1, SI[ 8] = a
-	[1]neighbor_dist_ans[ 6] =  0, SI[ 6] = 9
-	[1]neighbor_dist_ans[19] =  2, SI[19] = b
-	[1]neighbor_dist_ans[10] =  2, SI[10] = b
-	[1]neighbor_dist_ans[12] =  2, SI[12] = a
-	[1]neighbor_dist_ans[ 9] =  1, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  3, SI[11] = f
-	[1]neighbor_dist_ans[13] =  3, SI[13] = b
-	[1]neighbor_dist_ans[16] =  3, SI[16] = e
-	[1]neighbor_dist_ans[65] =  3, SI[65] = b
-	[1]neighbor_dist_ans[21] =  2, SI[21] = b
-	[1]neighbor_dist_ans[15] =  2, SI[15] = b
-	[1]neighbor_dist_ans[14] =  3, SI[14] = f
-	[1]neighbor_dist_ans[18] =  3, SI[18] = b
-CC[1] = 300
-
-nextBFS =  0, bit_SI = 10, nodeCompID = 0
-	[1]neighbor_dist_ans[ 0] =  0, SI[ 0] = 18
-	[1]neighbor_dist_ans[ 3] =  1, SI[ 3] = 18
-	[2]neighbor_dist_ans[ 5] =  2, SI[ 5] = c
-		[3]neighbor_dist_ans[ 5] =  1, SI[ 5] = c
-	[2]neighbor_dist_ans[ 4] =  2, SI[ 4] = a
-		[3]neighbor_dist_ans[ 4] =  1, SI[ 4] = a
-	[2]neighbor_dist_ans[ 2] =  1, SI[ 2] = 8
-	[2]neighbor_dist_ans[66] =  3, SI[66] = d
-		[3]neighbor_dist_ans[66] =  2, SI[66] = d
-	[2]neighbor_dist_ans[ 1] =  2, SI[ 1] = 8
-	[2]neighbor_dist_ans[ 8] =  3, SI[ 8] = a
-		[3]neighbor_dist_ans[ 8] =  2, SI[ 8] = a
-	[2]neighbor_dist_ans[ 6] =  2, SI[ 6] = 9
-	[2]neighbor_dist_ans[19] =  4, SI[19] = b
-		[3]neighbor_dist_ans[19] =  3, SI[19] = b
-	[2]neighbor_dist_ans[10] =  4, SI[10] = b
-		[3]neighbor_dist_ans[10] =  3, SI[10] = b
-	[2]neighbor_dist_ans[12] =  4, SI[12] = a
-		[3]neighbor_dist_ans[12] =  3, SI[12] = a
-	[2]neighbor_dist_ans[ 9] =  3, SI[ 9] = b
-	[2]neighbor_dist_ans[11] =  5, SI[11] = f
-		[3]neighbor_dist_ans[11] =  4, SI[11] = f
-	[2]neighbor_dist_ans[13] =  5, SI[13] = b
-		[3]neighbor_dist_ans[13] =  4, SI[13] = b
-	[2]neighbor_dist_ans[16] =  5, SI[16] = e
-		[3]neighbor_dist_ans[16] =  4, SI[16] = e
-	[2]neighbor_dist_ans[65] =  5, SI[65] = b
-		[3]neighbor_dist_ans[65] =  4, SI[65] = b
-	[2]neighbor_dist_ans[21] =  4, SI[21] = b
-	[2]neighbor_dist_ans[15] =  4, SI[15] = b
-	[2]neighbor_dist_ans[14] =  5, SI[14] = f
-	[2]neighbor_dist_ans[18] =  5, SI[18] = b
-CC[0] = 368
-sourceID = 36, mappingCount = 4
-
-	####      Source 36 1st Traverse...      ####
-
-	curID = 36, dist =  0, SI = 2, relation = 0
-	curID = 35, dist =  1, SI = 3, relation = 7
-	curID = 43, dist =  1, SI = 2, relation = 0
-	curID = 44, dist =  1, SI = 2, relation = 8
-	curID = 45, dist =  1, SI = 6, relation = 0
-	curID = 46, dist =  1, SI = a, relation = 7
-	curID = 34, dist =  2, SI = 2, relation = 0
-	curID = 42, dist =  2, SI = 6, relation = 8
-	curID = 41, dist =  2, SI = e, relation = d
-	curID = 38, dist =  2, SI = a, relation = 5
-	curID = 37, dist =  3, SI = b, relation = 8
-	curID = 47, dist =  3, SI = e, relation = 8
-	curID = 33, dist =  3, SI = a, relation = 5
-	curID = 32, dist =  3, SI = e, relation = 5
-	curID = 40, dist =  3, SI = e, relation = 7
-	curID = 64, dist =  3, SI = e, relation = 5
-
-	####      Source 36 2nd Traverse...      ####
-
-	relation[35] =  f
-	relation[43] =  4
-	relation[44] =  8
-	relation[45] =  9
-	relation[46] =  7
-	relation[34] =  c
-	relation[42] =  8
-	relation[41] =  d
-	relation[38] =  7
-	relation[37] =  c
-	relation[47] =  c
-	relation[33] =  d
-	relation[32] =  d
-	relation[47] =  c
-	relation[40] =  f
-	relation[64] =  d
-	relation[47] =  f
-	relation[37] =  f
-
-nextBFS = 35, bit_SI = 1, nodeCompID = 2
-	[2]neighbor_dist_ans[32] =  4, SI[32] = e
-		[3]neighbor_dist_ans[32] =  3, SI[32] = e
-	[2]neighbor_dist_ans[42] =  3, SI[42] = 6
-	[2]neighbor_dist_ans[33] =  4, SI[33] = a
-		[3]neighbor_dist_ans[33] =  3, SI[33] = a
-	[2]neighbor_dist_ans[64] =  4, SI[64] = e
-		[3]neighbor_dist_ans[64] =  3, SI[64] = e
-	[2]neighbor_dist_ans[44] =  2, SI[44] = 2
-	[2]neighbor_dist_ans[47] =  4, SI[47] = e
-		[3]neighbor_dist_ans[47] =  3, SI[47] = e
-	[1]neighbor_dist_ans[37] =  2, SI[37] = b
-	[2]neighbor_dist_ans[34] =  3, SI[34] = 2
-	[2]neighbor_dist_ans[40] =  4, SI[40] = e
-		[3]neighbor_dist_ans[40] =  3, SI[40] = e
-	[2]neighbor_dist_ans[41] =  3, SI[41] = e
-		[3]neighbor_dist_ans[41] =  2, SI[41] = e
-	[2]neighbor_dist_ans[36] =  1, SI[36] = 2
-	[2]neighbor_dist_ans[38] =  3, SI[38] = a
-		[3]neighbor_dist_ans[38] =  2, SI[38] = a
-	[2]neighbor_dist_ans[43] =  2, SI[43] = 2
-	[1]neighbor_dist_ans[35] =  0, SI[35] = 3
-	[2]neighbor_dist_ans[45] =  2, SI[45] = 6
-		[3]neighbor_dist_ans[45] =  1, SI[45] = 6
-	[2]neighbor_dist_ans[46] =  2, SI[46] = a
-		[3]neighbor_dist_ans[46] =  1, SI[46] = a
-CC[35] = 319
-
-nextBFS = 44, bit_SI = 2, nodeCompID = 2
-	[1]neighbor_dist_ans[32] =  2, SI[32] = e
-	[1]neighbor_dist_ans[42] =  1, SI[42] = 6
-	[1]neighbor_dist_ans[33] =  2, SI[33] = a
-	[1]neighbor_dist_ans[64] =  2, SI[64] = e
-	[1]neighbor_dist_ans[44] =  0, SI[44] = 2
-	[1]neighbor_dist_ans[47] =  2, SI[47] = e
-	[1]neighbor_dist_ans[37] =  2, SI[37] = b
-	[1]neighbor_dist_ans[34] =  1, SI[34] = 2
-	[1]neighbor_dist_ans[40] =  2, SI[40] = e
-	[1]neighbor_dist_ans[41] =  1, SI[41] = e
-	[1]neighbor_dist_ans[36] = -1, SI[36] = 2
-	[1]neighbor_dist_ans[38] =  1, SI[38] = a
-	[1]neighbor_dist_ans[43] =  0, SI[43] = 2
-	[1]neighbor_dist_ans[35] =  0, SI[35] = 3
-	[1]neighbor_dist_ans[45] =  0, SI[45] = 6
-	[1]neighbor_dist_ans[46] =  0, SI[46] = a
-CC[44] = 254
-
-nextBFS = 45, bit_SI = 4, nodeCompID = 2
-	[1]neighbor_dist_ans[32] =  2, SI[32] = e
-	[1]neighbor_dist_ans[42] =  1, SI[42] = 6
-	[2]neighbor_dist_ans[33] =  4, SI[33] = a
-		[3]neighbor_dist_ans[33] =  3, SI[33] = a
-	[1]neighbor_dist_ans[64] =  2, SI[64] = e
-	[2]neighbor_dist_ans[44] =  2, SI[44] = 2
-	[1]neighbor_dist_ans[47] =  2, SI[47] = e
-	[2]neighbor_dist_ans[37] =  4, SI[37] = b
-		[3]neighbor_dist_ans[37] =  3, SI[37] = b
-	[2]neighbor_dist_ans[34] =  3, SI[34] = 2
-		[3]neighbor_dist_ans[34] =  2, SI[34] = 2
-	[1]neighbor_dist_ans[40] =  2, SI[40] = e
-	[1]neighbor_dist_ans[41] =  1, SI[41] = e
-	[2]neighbor_dist_ans[36] =  1, SI[36] = 2
-	[2]neighbor_dist_ans[38] =  3, SI[38] = a
-		[3]neighbor_dist_ans[38] =  2, SI[38] = a
-	[2]neighbor_dist_ans[43] =  2, SI[43] = 2
-		[3]neighbor_dist_ans[43] =  1, SI[43] = 2
-	[2]neighbor_dist_ans[35] =  2, SI[35] = 3
-		[3]neighbor_dist_ans[35] =  1, SI[35] = 3
-	[1]neighbor_dist_ans[45] =  0, SI[45] = 6
-	[2]neighbor_dist_ans[46] =  2, SI[46] = a
-		[3]neighbor_dist_ans[46] =  1, SI[46] = a
-CC[45] = 280
-
-nextBFS = 46, bit_SI = 8, nodeCompID = 2
-	[1]neighbor_dist_ans[32] =  2, SI[32] = e
-	[2]neighbor_dist_ans[42] =  3, SI[42] = 6
-		[3]neighbor_dist_ans[42] =  2, SI[42] = 6
-	[1]neighbor_dist_ans[33] =  2, SI[33] = a
-	[1]neighbor_dist_ans[64] =  2, SI[64] = e
-	[2]neighbor_dist_ans[44] =  2, SI[44] = 2
-		[3]neighbor_dist_ans[44] =  1, SI[44] = 2
-	[1]neighbor_dist_ans[47] =  2, SI[47] = e
-	[1]neighbor_dist_ans[37] =  2, SI[37] = b
-	[2]neighbor_dist_ans[34] =  3, SI[34] = 2
-		[3]neighbor_dist_ans[34] =  2, SI[34] = 2
-	[1]neighbor_dist_ans[40] =  2, SI[40] = e
-	[1]neighbor_dist_ans[41] =  1, SI[41] = e
-	[2]neighbor_dist_ans[36] =  1, SI[36] = 2
-	[1]neighbor_dist_ans[38] =  1, SI[38] = a
-	[2]neighbor_dist_ans[43] =  2, SI[43] = 2
-	[2]neighbor_dist_ans[35] =  2, SI[35] = 3
-		[3]neighbor_dist_ans[35] =  1, SI[35] = 3
-	[2]neighbor_dist_ans[45] =  2, SI[45] = 6
-		[3]neighbor_dist_ans[45] =  1, SI[45] = 6
-	[1]neighbor_dist_ans[46] =  0, SI[46] = a
-CC[46] = 263
-sourceID = 4, sourceID = 5, sourceID = 33, sourceID = 47, sourceID = 46, sourceID = 45, sourceID = 0, sourceID = 18, mappingCount = 2
-sourceID = 29, sourceID = 9, mappingCount = 3
-
-	####      Source  9 1st Traverse...      ####
-
-	curID =  9, dist =  0, SI = b, relation = 5
-	curID = 21, dist =  1, SI = b, relation = 5
-	curID =  6, dist =  1, SI = b, relation = 5
-	curID = 10, dist =  1, SI = b, relation = 15
-	curID = 15, dist =  1, SI = f, relation = 5
-	curID = 65, dist =  2, SI = b, relation = 15
-	curID =  2, dist =  2, SI = b, relation = 1
-	curID = 66, dist =  2, SI = f, relation = 17
-	curID = 11, dist =  2, SI = f, relation = 17
-	curID =  8, dist =  2, SI = b, relation = 11
-	curID = 13, dist =  2, SI = f, relation = 15
-	curID = 14, dist =  2, SI = f, relation = 7
-	curID = 18, dist =  2, SI = f, relation = 5
-	curID = 16, dist =  3, SI = f, relation = 11
-	curID = 12, dist =  3, SI = f, relation = 11
-	curID =  4, dist =  3, SI = b, relation = 11
-	curID =  5, dist =  3, SI = f, relation = 11
-	curID =  1, dist =  3, SI = f, relation = 7
-	curID =  0, dist =  3, SI = 1b, relation = 7
-	curID =  3, dist =  3, SI = 1f, relation = 7
-	curID = 19, dist =  3, SI = b, relation = 19
-
-	####      Source  9 2nd Traverse...      ####
-
-	relation[21] =  5
-	relation[ 6] =  5
-	relation[10] = 15
-	relation[15] =  5
-	relation[65] = 15
-	relation[ 2] =  5
-	relation[66] = 17
-	relation[11] = 17
-	relation[ 8] = 15
-	relation[13] = 15
-	relation[14] =  7
-	relation[18] =  5
-	relation[16] = 15
-	relation[12] = 15
-	relation[ 4] = 15
-	relation[ 5] = 15
-	relation[ 1] =  7
-	relation[ 0] =  7
-	relation[ 3] = 17
-	relation[ 5] = 17
-	relation[ 1] = 17
-	relation[19] = 1d
-	relation[ 4] = 15
-	relation[12] = 15
-	relation[12] = 15
-	relation[16] = 17
-
-nextBFS = 21, bit_SI = 1, nodeCompID = 0
-	[1]neighbor_dist_ans[ 0] =  2, SI[ 0] = 1b
-	[1]neighbor_dist_ans[ 3] =  2, SI[ 3] = 1f
-	[1]neighbor_dist_ans[ 5] =  2, SI[ 5] = f
-	[1]neighbor_dist_ans[ 4] =  2, SI[ 4] = b
-	[1]neighbor_dist_ans[ 2] =  1, SI[ 2] = b
-	[1]neighbor_dist_ans[66] =  1, SI[66] = f
-	[1]neighbor_dist_ans[ 1] =  2, SI[ 1] = f
-	[1]neighbor_dist_ans[ 8] =  1, SI[ 8] = b
-	[1]neighbor_dist_ans[ 6] =  0, SI[ 6] = b
-	[1]neighbor_dist_ans[19] =  2, SI[19] = b
-	[1]neighbor_dist_ans[10] =  0, SI[10] = b
-	[1]neighbor_dist_ans[12] =  2, SI[12] = f
-	[1]neighbor_dist_ans[ 9] = -1, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  1, SI[11] = f
-	[1]neighbor_dist_ans[13] =  1, SI[13] = f
-	[1]neighbor_dist_ans[16] =  2, SI[16] = f
-	[1]neighbor_dist_ans[65] =  1, SI[65] = b
-	[1]neighbor_dist_ans[21] =  0, SI[21] = b
-	[1]neighbor_dist_ans[15] =  0, SI[15] = f
-	[1]neighbor_dist_ans[14] =  1, SI[14] = f
-	[1]neighbor_dist_ans[18] =  1, SI[18] = f
-CC[21] = 232
-
-nextBFS = 10, bit_SI = 2, nodeCompID = 0
-	[1]neighbor_dist_ans[ 0] =  2, SI[ 0] = 1b
-	[1]neighbor_dist_ans[ 3] =  2, SI[ 3] = 1f
-	[1]neighbor_dist_ans[ 5] =  2, SI[ 5] = f
-	[1]neighbor_dist_ans[ 4] =  2, SI[ 4] = b
-	[1]neighbor_dist_ans[ 2] =  1, SI[ 2] = b
-	[1]neighbor_dist_ans[66] =  1, SI[66] = f
-	[1]neighbor_dist_ans[ 1] =  2, SI[ 1] = f
-	[1]neighbor_dist_ans[ 8] =  1, SI[ 8] = b
-	[1]neighbor_dist_ans[ 6] =  0, SI[ 6] = b
-	[1]neighbor_dist_ans[19] =  2, SI[19] = b
-	[1]neighbor_dist_ans[10] =  0, SI[10] = b
-	[1]neighbor_dist_ans[12] =  2, SI[12] = f
-	[1]neighbor_dist_ans[ 9] = -1, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  1, SI[11] = f
-	[1]neighbor_dist_ans[13] =  1, SI[13] = f
-	[1]neighbor_dist_ans[16] =  2, SI[16] = f
-	[1]neighbor_dist_ans[65] =  1, SI[65] = b
-	[1]neighbor_dist_ans[21] =  0, SI[21] = b
-	[1]neighbor_dist_ans[15] =  0, SI[15] = f
-	[1]neighbor_dist_ans[14] =  1, SI[14] = f
-	[1]neighbor_dist_ans[18] =  1, SI[18] = f
-CC[10] = 232
-
-nextBFS = 15, bit_SI = 4, nodeCompID = 0
-	[2]neighbor_dist_ans[ 0] =  4, SI[ 0] = 1b
-		[3]neighbor_dist_ans[ 0] =  3, SI[ 0] = 1b
-	[1]neighbor_dist_ans[ 3] =  2, SI[ 3] = 1f
-	[1]neighbor_dist_ans[ 5] =  2, SI[ 5] = f
-	[2]neighbor_dist_ans[ 4] =  4, SI[ 4] = b
-		[3]neighbor_dist_ans[ 4] =  3, SI[ 4] = b
-	[2]neighbor_dist_ans[ 2] =  3, SI[ 2] = b
-		[3]neighbor_dist_ans[ 2] =  2, SI[ 2] = b
-	[1]neighbor_dist_ans[66] =  1, SI[66] = f
-	[1]neighbor_dist_ans[ 1] =  2, SI[ 1] = f
-	[2]neighbor_dist_ans[ 8] =  3, SI[ 8] = b
-		[3]neighbor_dist_ans[ 8] =  2, SI[ 8] = b
-	[2]neighbor_dist_ans[ 6] =  2, SI[ 6] = b
-		[3]neighbor_dist_ans[ 6] =  1, SI[ 6] = b
-	[2]neighbor_dist_ans[19] =  4, SI[19] = b
-		[3]neighbor_dist_ans[19] =  3, SI[19] = b
-	[2]neighbor_dist_ans[10] =  2, SI[10] = b
-		[3]neighbor_dist_ans[10] =  1, SI[10] = b
-	[1]neighbor_dist_ans[12] =  2, SI[12] = f
-	[2]neighbor_dist_ans[ 9] =  1, SI[ 9] = b
-		[3]neighbor_dist_ans[ 9] =  0, SI[ 9] = b
-	[1]neighbor_dist_ans[11] =  1, SI[11] = f
-	[1]neighbor_dist_ans[13] =  1, SI[13] = f
-	[1]neighbor_dist_ans[16] =  2, SI[16] = f
-	[2]neighbor_dist_ans[65] =  3, SI[65] = b
-		[3]neighbor_dist_ans[65] =  2, SI[65] = b
-	[2]neighbor_dist_ans[21] =  2, SI[21] = b
-		[3]neighbor_dist_ans[21] =  1, SI[21] = b
-	[1]neighbor_dist_ans[15] =  0, SI[15] = f
-	[1]neighbor_dist_ans[14] =  1, SI[14] = f
-	[1]neighbor_dist_ans[18] =  1, SI[18] = f
-CC[15] = 273
-sourceID = 8, sourceID = 15, sourceID = 1, sourceID = 14, mappingCount = 1
-sourceID = 57, mappingCount = 2
-sourceID = 6, sourceID = 44, sourceID = 43, sourceID = 42, mappingCount = 1
-sourceID = 41, mappingCount = 1
-sourceID = 37, sourceID = 58, mappingCount = 1
-sourceID = 35, sourceID = 32, mappingCount = 0
-sourceID = 30, sourceID = 27, sourceID = 10, sourceID = 22, sourceID = 13, sourceID = 16, sourceID = 19, sourceID = 21, sourceID = 11, mappingCount = 0
-sourceID = 23, sourceID = 25, sourceID = 28, sourceID = 40, mappingCount = 0
-sourceID = 55, mappingCount = 1
-sourceID = 56, mappingCount = 0
-sourceID = 3, mappingCount = 0
-sourceID = 59, mappingCount = 0
-sourceID = 60, mappingCount = 1
-sourceID = 61, mappingCount = 0
+sourceID = 9, mappingCount = 1
+sourceID = 8, mappingCount = 0
+sourceID = 7, mappingCount = 0
+sourceID = 5, mappingCount = 1
+sourceID = 4, mappingCount = 0
+sourceID = 2, mappingCount = 1
+sourceID = 1, mappingCount = 0
 [Check point 2]
+
+D1_AP_CC_shareBasedTime = 0.000012
+_csr->endNodeID = 13, _csr->apCloneCount = 4, oriEndNodeID = 9
