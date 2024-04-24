@@ -1608,9 +1608,10 @@ void compute_D1_CC_sharedBased_DegreeOrder_64bit(struct CSR* _csr, int* _CCs){
 
 
 void compute_D1_AP_CC(struct CSR* _csr, int* _CCs){
-    int* dist_arr = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
-    struct qQueue* Q = InitqQueue();
-    qInitResize(Q, _csr->csrVSize * 2);
+    int* dist_arr   = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
+    int* nodeQ      = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
+    int Q_front     = 0;
+    int Q_rear      = -1;
 
     //D1 Folding
     D1Folding(_csr);
@@ -1618,42 +1619,48 @@ void compute_D1_AP_CC(struct CSR* _csr, int* _CCs){
     //AP Process
     AP_detection(_csr);
     AP_Copy_And_Split(_csr);
+    struct newID_info* newID_infos = rebuildGraph(_csr);
 
-    int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount;
-    printf("oriEndNodeID = %d\n", oriEndNodeID);
+    //Traverse
+    for(int sourceNewID = 0 ; sourceNewID <= _csr->newEndID ; sourceNewID ++){
+        int oldID = _csr->mapNodeID_New_to_Old[sourceNewID];
+        int sourceType = _csr->nodesType[oldID];
 
-    for(int sourceID = _csr->startNodeID ; sourceID <= oriEndNodeID ; sourceID ++){
-        if(_csr->nodesType[sourceID] & D1 || _csr->nodesType[sourceID] & OriginAP){
+        if(sourceType & ClonedAP){
+            // printf("newID %d, oldID %d, type %x\n", sourceNewID, oldID, sourceType);
             continue;
         }
-
+        
         //reset Q
-        Q->front = 0;
-        Q->rear = -1;
+        Q_front = 0;
+        Q_rear = -1;
         memset(dist_arr, -1, sizeof(int) * _csr->csrVSize * 2);
 
         //Init
-        dist_arr[sourceID] = 0;
-        qPushBack(Q, sourceID);
-        
+        dist_arr[sourceNewID] = 0;
+        nodeQ[++Q_rear] = sourceNewID;
+        // qPushBack(Q, sourceNewID);
+        register int allDist    = 0;
         //traverse
-        register int curID  = -1;
-        register int nid    = -1;
-        register int nidx   = -1;
-        while(!qIsEmpty(Q)){
-            curID = qPopFront(Q);
-            for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
-                nid = _csr->csrE[nidx];
+        register int curNewID   = -1;
+        register int new_nid    = -1;
+        register int new_nidx   = -1;
+        while(!(Q_front > Q_rear)){
+            curNewID = nodeQ[Q_front++];
+            
+            for(new_nidx = _csr->orderedCsrV[curNewID] ; new_nidx < _csr->orderedCsrV[curNewID + 1] ; new_nidx ++){
+                new_nid = _csr->orderedCsrE[new_nidx];
 
-                if(dist_arr[nid] == -1){
-                    qPushBack(Q, nid);
-                    dist_arr[nid] = dist_arr[curID] + 1;
-                    
-                    _CCs[sourceID] += _csr->ff[nid] + dist_arr[nid] * _csr->representNode[nid];
+                if(dist_arr[new_nid] == -1){
+                    dist_arr[new_nid] = dist_arr[curNewID] + 1;
+                    nodeQ[++Q_rear] = new_nid;
+
+                    allDist += newID_infos[new_nid].ff + dist_arr[new_nid] * newID_infos[new_nid].w;
                 }
             }
         }
-        _CCs[sourceID] += _csr->ff[sourceID];
+        _csr->CCs[oldID] = allDist + _csr->ff[oldID];
+        // printf("CC[%d] = %d\n", oldID, _csr->CCs[oldID]);
     }
 
     #pragma region d1Node_Dist_And_CC_Recovery
@@ -1668,17 +1675,49 @@ void compute_D1_AP_CC(struct CSR* _csr, int* _CCs){
     }
     #pragma endregion //d1Node_Dist_And_CC_Recovery
 
+    // int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount;
+    // printf("oriEndNodeID = %d\n", oriEndNodeID);
     // for(int ID = _csr->startNodeID ; ID <= oriEndNodeID ; ID ++){
     //     printf("CC[%d] = %d\n", ID, _CCs[ID]);
     // }
 }
 
+void sortEachComp_NewID_with_degree(struct CSR* _csr, int* _newNodesID_arr, int* _newNodesDegree_arr){
+    /**
+     * 1. assign newID to _newNodesID_arr
+     * 2. assign degree according to oldID of newID to _newNodesDegree_arr
+    */
+    for(int newID = 0 ; newID <= _csr->newEndID ; newID ++){
+        _newNodesID_arr[newID]       = newID;
+        _newNodesDegree_arr[newID]   = _csr->orderedCsrV[newID + 1] - _csr->orderedCsrV[newID];
+        // printf("newID %d, oldID %d, degree %d\n", _newNodesID_arr[newID], _csr->mapNodeID_New_to_Old[newID], _newNodesDegree_arr[newID]);
+    }
+
+    /**
+     * 在每個 component內 依照degree進行排序
+    */
+    for(int compID = 0 ; compID <= _csr->compEndID ; compID ++){
+        int compSize = _csr->comp_newCsrOffset[compID + 1] - _csr->comp_newCsrOffset[compID];
+        // printf("compID %d, compSize %d\n", compID, compSize);
+        quicksort_nodeID_with_degree(_newNodesID_arr, _newNodesDegree_arr, _csr->comp_newCsrOffset[compID], _csr->comp_newCsrOffset[compID + 1] - 1);
+    }
+
+    // for(int newID_idx = 0 ; newID_idx <= _csr->newEndID ; newID_idx ++){
+    //     int newID = _newNodesID_arr[newID_idx];
+    //     int degree = _csr->orderedCsrV[newID + 1] - _csr->orderedCsrV[newID];
+    //     printf("newID %d, degree %d, compID %d\n", newID, degree, _csr->newNodesCompID[newID]);
+    // }
+}
+
 // #define compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
 void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
+    
     int* dist_arr = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
     int* neighbor_dist_ans = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
-    struct qQueue* Q = InitqQueue();
-    qInitResize(Q, (_csr->csrVSize) * 2);
+    int* nodeQ = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    int Q_front = 0;
+    int Q_rear = -1;
+    
 
     //record that nodes which havn't been source yet
     int* nodeDone = (int*)calloc(sizeof(int*), (_csr->csrVSize) * 2);
@@ -1694,228 +1733,204 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     //AP Process
     AP_detection(_csr);
     AP_Copy_And_Split(_csr);
-    compactNodesByComp(_csr);
+    struct newID_info* newID_infos = rebuildGraph(_csr);
+
+    const int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount; //原本graph的endNodeID
+    
     //Sort aliveNodeID with degree
-    quicksort_nodeID_with_degree(_csr->aliveNode, _csr->csrNodesDegree, 0, _csr->aliveNodeCount - 1);
+    int* newNodesID_arr     = (int*)malloc(sizeof(int) * (_csr->newEndID + 1));
+    int* newNodesDegree_arr = (int*)malloc(sizeof(int) * (_csr->newEndID + 1));
+    sortEachComp_NewID_with_degree(_csr, newNodesID_arr, newNodesDegree_arr);
 
     printf("[Check point 1]\n");
 
-    for(int aliveNodeIndex = _csr->aliveNodeCount - 1 ; aliveNodeIndex >= 0 ; aliveNodeIndex --){
-        int sourceID = _csr->aliveNode[aliveNodeIndex];
-
-        #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-        printf("sourceID = %d, ", sourceID);
-        #endif
-        
-        if(nodeDone[sourceID] == 1){
-            continue;
-        }
-        
-        nodeDone[sourceID] = 1;
-
-        //reset Q, dist_arr
-        memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
-        resetQueue(Q);
-
-        //Init Q, dist_arr
-        dist_arr[sourceID] = 0;
-        qPushBack(Q, sourceID);
-
-        register int curID  = -1;
-        register int nID    = -1;
-        register int nidx   = -1;
-
-        int mappingCount = 0;
-        for(nidx = _csr->csrV[sourceID] ; nidx < _csr->oriCsrV[sourceID + 1] ; nidx ++){
-            nID = _csr->csrE[nidx];
-            if((nodeDone[nID] == 0) && (!(_csr->nodesType[nID] & ClonedAP)) && (!(_csr->nodesType[nID] & OriginAP))){
-                mappingCount ++;
-            }
-        }
-        
-        #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-        printf("mappingCount = %d\n", mappingCount);
-        #endif
-
-        //decide to use the sharing strategy or not
-        if(mappingCount < 3){ //perform ordinary traverse
-            while(!qIsEmpty(Q)){
-                curID = qPopFront(Q);
-                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
-                    nID = _csr->csrE[nidx];
-
-                    if(dist_arr[nID] == -1){
-                        qPushBack(Q, nID);
-                        dist_arr[nID] = dist_arr[curID] + 1;
-
-                        _CCs[sourceID] += _csr->ff[nID] + dist_arr[nID] * _csr->representNode[nID];
-                    }
-                }
-            }
-            _CCs[sourceID] += _csr->ff[sourceID];
-        }
-        else{ //perform traversal with sharing strategy
-            #pragma region mappingNeighbor
-            mappingCount = 0;
-            //each neighbor of sourceID mapping to SBI, if it haven't been sourceID and not ClonedAP
-            for(nidx = _csr->csrV[sourceID] ; nidx < _csr->oriCsrV[sourceID + 1] ; nidx ++){
-                nID = _csr->csrE[nidx];
-
-                if(nodeDone[nID] == 0 && (!(_csr->nodesType[nID] & ClonedAP)) && (!(_csr->nodesType[nID] & OriginAP))){
-                    sharedBitIndex[nID] = 1 << mappingCount;
-                    mapping_SI[mappingCount] = nID;
-
-                    #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                    printf("\tshared nID %d\n", nID);
-                    #endif
-
-                    mappingCount ++;
-
-                    //Record to 32 bit only
-                    if(mappingCount == 32){
-                        break;
-                    }
-                }
-            }
-            #pragma endregion mappingNeighbor
-
-            #pragma region SourceTraverse
+    for(int compID = 0 ; compID <= _csr->compEndID ; compID ++){
+        for(int newID_idx = _csr->comp_newCsrOffset[compID + 1] - 1 ; newID_idx >= _csr->comp_newCsrOffset[compID] ; newID_idx --){
+            int sourceNewID = newNodesID_arr[newID_idx];
+            int sourceOldID = _csr->mapNodeID_New_to_Old[sourceNewID];
             /**
-             * Main source traverse for getting some information:
-             * 
-             * ##        First Traverse        ##
-             * 1. dist              : distance from source to each node in the component
-             * 2. sharedBitIndex    : record each node that can be found first by which neighbor of source
-             * ##################################
-             * 
-             * ##        Second Traverse        ##
-             * 3. relation          : record each node that should remain the distance when source are some specific nodes
-             * ###################################
-             * 
-             * @todo 
-             * 1. consider another way to replace "the 3 if statement", the way of branchless technique may be a good choice
-             * 2. A way : when currentNodeID find unvisited node v, then just push v into Q, and don't update its dist,
-             *          until v becomes currentNodeID, then assign the distance for v.
+             * 不做：
+             * 1. 已經 nodeDone = 1 的 node
+             * 2. CloneAP (sourceNewID > oriEndNodeID 就是 CloneAP)
             */
+            if(nodeDone[sourceNewID] == 1 || (sourceNewID > oriEndNodeID)){
+                continue;
+            }
+
+            printf("sourceNewID = %d, sourceOldID %d, ", sourceNewID, sourceOldID);
+
+            nodeDone[sourceNewID] = 1;
+
+            //reset Q, dist_arr
+            memset(dist_arr, -1, sizeof(int) * (_csr->csrVSize) * 2);
+            Q_front = 0;
+            Q_rear  = -1;
+
+            //Init Q, dist_arr
+            dist_arr[sourceNewID] = 0;
+            nodeQ[++Q_rear] = sourceNewID;
+
+            register int new_CurID  = -1;
+            register int new_nID    = -1;
+            register int new_nidx   = -1;
+            register int allDist    = 0;
+
+            int mappingCount = 0;
             
-            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-            printf("\n\t####      Source %2d 1st Traverse...      ####\n\n", sourceID);
-            #endif
-
-            while(!qIsEmpty(Q)){
-                curID = qPopFront(Q);
-
-                #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                printf("\tcurID = %2d, dist = %2d, SI = %x, relation = %x\n", curID, dist_arr[curID], sharedBitIndex[curID], relation[curID]);
-                #endif
-
-                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
-                    nID = _csr->csrE[nidx];
-
-                    if(dist_arr[nID] == -1){
-                        qPushBack(Q, nID);
-                        dist_arr[nID] = dist_arr[curID] + 1;
-                        sharedBitIndex[nID] |= sharedBitIndex[curID];
-
-                        _CCs[sourceID] += _csr->ff[nID] + dist_arr[nID] * _csr->representNode[nID];
-                    }
-                    else if(dist_arr[nID] == dist_arr[curID] + 1){
-                        sharedBitIndex[nID] |= sharedBitIndex[curID];
-                    }
-                    else if(dist_arr[nID] == dist_arr[curID]){
-                        relation[curID] |= sharedBitIndex[nID] & (~sharedBitIndex[curID]);
-                    }
+            for(new_nidx = _csr->orderedCsrV[sourceNewID] ; new_nidx < _csr->orderedCsrV[sourceNewID + 1] ; new_nidx ++){
+                new_nID = _csr->orderedCsrE[new_nidx];
+                int old_nID = _csr->mapNodeID_New_to_Old[new_nID];
+                if((nodeDone[new_nID] == 0) && (old_nID <= oriEndNodeID)){
+                    mappingCount ++;
                 }
             }
-            _CCs[sourceID] += _csr->ff[sourceID];
+            printf("mappCount = %d\n", mappingCount);
 
-            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-            printf("\n\t####      Source %2d 2nd Traverse...      ####\n\n", sourceID);
-            #endif
-
-            Q->front = 0;
-            while(!qIsEmpty(Q)){
-                curID = qPopFront(Q);
-
-                for(nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
-                    nID = _csr->csrE[nidx];
-
-                    if(dist_arr[nID] == dist_arr[curID] + 1){
-                        relation[nID] |= relation[curID];
-
-                        #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                        printf("\trelation[%2d] = %2x\n", nID, relation[nID]);
-                        #endif
-
-                    }
-                }
-            }
-            #pragma endregion SourceTraverse
-        
-            /**
-             * @todo 
-             * 把相同 component 的 nodeID 排在一起，用類似 csrV，csrE的方式記錄 component 的 nodeID，
-             * 所以在這邊把 distance 復原的時候 只要復原一部分就可以了
-            */
-            #pragma region neighborOfSource_GetDist_and_AccumulationCC
-            //recover the distance from source to neighbor of source
-            for(int sourceNeighborIndex = 0 ; sourceNeighborIndex < mappingCount ; sourceNeighborIndex ++){
-                // memset(neighbor_dist_ans, -1, sizeof(int) * _csr->csrVSize );
-                int sourceNeighborID = mapping_SI[sourceNeighborIndex];
-                unsigned int bit_SI = 1 << sourceNeighborIndex;
-                
-                
-                nodeDone[sourceNeighborID] = 1;
-                
-                int nodeCompID = _csr->nodesCompID[sourceNeighborID];
-
-                #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                printf("\nnextBFS = %2d, bit_SI = %x, nodeCompID = %d\n", sourceNeighborID, bit_SI, nodeCompID);
-                #endif
-
-                for(int compOffsetIter = _csr->comp_CsrOffset[nodeCompID] ; compOffsetIter < _csr->comp_CsrOffset[nodeCompID + 1] ; compOffsetIter ++){
-                    int sameCompAliveNodeID = _csr->comp_NodesID_CsrData[compOffsetIter];
-                    
-                    if((sharedBitIndex[sameCompAliveNodeID] & bit_SI) > 0){
-                        neighbor_dist_ans[sameCompAliveNodeID] = dist_arr[sameCompAliveNodeID] - 1;
-
-                        #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                        printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameCompAliveNodeID, neighbor_dist_ans[sameCompAliveNodeID], sameCompAliveNodeID, sharedBitIndex[sameCompAliveNodeID]);
-                        #endif
-
-                    }
-                    else{
-                        neighbor_dist_ans[sameCompAliveNodeID] = dist_arr[sameCompAliveNodeID] + 1;
-
-                        #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                        printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameCompAliveNodeID, neighbor_dist_ans[sameCompAliveNodeID], sameCompAliveNodeID, sharedBitIndex[sameCompAliveNodeID]);
-                        #endif
-
-                        if((relation[sameCompAliveNodeID] & bit_SI) > 0){
-                            neighbor_dist_ans[sameCompAliveNodeID] --;
-
-                            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                            printf("\t\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameCompAliveNodeID, neighbor_dist_ans[sameCompAliveNodeID], sameCompAliveNodeID, sharedBitIndex[sameCompAliveNodeID]);
-                            #endif
+            //decide to use the sharing strategy or not
+            if(mappingCount < 3){ //perform ordinary traversal
+                while(!(Q_front > Q_rear)){
+                    new_CurID = nodeQ[Q_front++];
+                    for(new_nidx = _csr->orderedCsrV[new_CurID] ; new_nidx < _csr->orderedCsrV[new_CurID + 1] ; new_nidx ++){
+                        new_nID = _csr->orderedCsrE[new_nidx];
+                        
+                        if(dist_arr[new_nID] == -1){
+                            nodeQ[++Q_rear] = new_nID;
+                            dist_arr[new_nID] = dist_arr[new_CurID] + 1;
+                            
+                            allDist += newID_infos[new_nID].ff + dist_arr[new_nID] * newID_infos[new_nID].w;
                         }
                     }
+                }
+                _CCs[sourceOldID] = allDist + newID_infos[sourceNewID].ff;
+            }
+            else{ //perform traversal with sharing strategy
+                #pragma region mappingNeighbor
+                mappingCount = 0;
 
-                    _CCs[sourceNeighborID] += _csr->ff[sameCompAliveNodeID] + neighbor_dist_ans[sameCompAliveNodeID] * _csr->representNode[sameCompAliveNodeID];
+                //each neighbor of sourceID mapping to SBI, if it haven't been sourceNewID and not CloneAP
+                for(new_nidx = _csr->orderedCsrV[sourceNewID] ; new_nidx < _csr->orderedCsrV[sourceNewID + 1] ; new_nidx ++){
+                    new_nID = _csr->orderedCsrE[new_nidx];
+                    int old_nID = _csr->mapNodeID_New_to_Old[new_nID];
+                    if(nodeDone[new_nID] == 0 && (old_nID <= oriEndNodeID)){
+                        sharedBitIndex[new_nID] = 1 << mappingCount;
+                        mapping_SI[mappingCount] = new_nID;
+
+                        printf("\tshared new_nID %d, old_nID %d\n", new_nID, old_nID);
+
+                        mappingCount ++;
+
+                        if(mappingCount == 32){
+                            break;
+                        }
+                    }
+                }
+                #pragma endregion mappingNeighbor
+
+                #pragma region SourceTraverse
+                /**
+                 * Main source traverse for getting some information:
+                 * 
+                 * ##        First Traverse        ##
+                 * 1. dist              : distance from source to each node in the component
+                 * 2. sharedBitIndex    : record each node that can be found first by which neighbor of source
+                 * ##################################
+                 * 
+                 * ##        Second Traverse        ##
+                 * 3. relation          : record each node that should remain the distance when source are some specific nodes
+                 * ###################################
+                 * 
+                 * @todo 
+                 * 1. consider another way to replace "the 3 if statement", the way of branchless technique may be a good choice
+                 * 2. A way : when currentNodeID find unvisited node v, then just push v into Q, and don't update its dist,
+                 *          until v becomes currentNodeID, then assign the distance for v.
+                */
+
+                printf("\n\t####        Source newID %d, oldID %d : [1st Traverse]...      ####\n\n", sourceNewID, sourceOldID);
+                while(!(Q_front > Q_rear)){
+                    new_CurID = nodeQ[Q_front++];
+                    printf("\tnewCurID = %2d, dist = %2d, SI = %x, relation = %x\n", new_CurID, dist_arr[new_CurID], sharedBitIndex[new_CurID], relation[new_CurID]);
                     
+                    for(new_nidx = _csr->orderedCsrV[new_CurID] ; new_nidx < _csr->orderedCsrV[new_CurID + 1] ; new_nidx ++){
+                        new_nID = _csr->orderedCsrE[new_nidx];
+
+                        if(dist_arr[new_nID] == -1){
+                            nodeQ[++Q_rear] = new_nID;
+                            dist_arr[new_nID] = dist_arr[new_CurID] + 1;
+                            sharedBitIndex[new_nID] |= sharedBitIndex[new_CurID];
+
+                            allDist += newID_infos[new_nID].ff + dist_arr[new_nID] * newID_infos[new_nID].w;
+                        }
+                        else if(dist_arr[new_nID] == dist_arr[new_CurID] + 1){
+                            sharedBitIndex[new_nID] |= sharedBitIndex[new_CurID];
+                        }
+                        else if(dist_arr[new_nID] == dist_arr[new_CurID]){
+                            relation[new_CurID] |= sharedBitIndex[new_nID] & (~sharedBitIndex[new_CurID]);
+                        }
+                    }
+                }
+                _CCs[sourceOldID] = allDist + newID_infos[sourceNewID].ff;
+
+                printf("\n\t####        Source newID %d, oldID %d : [2ns Traverse]...  ####\n\n", sourceNewID, sourceOldID);
+                Q_front = 0;
+                while(!(Q_front > Q_rear)){
+                    new_CurID = nodeQ[Q_front++];
+                    for(new_nidx = _csr->orderedCsrV[new_CurID] ; new_nidx < _csr->orderedCsrV[new_CurID + 1] ; new_nidx ++){
+                        new_nID = _csr->orderedCsrE[new_nidx];
+
+                        if(dist_arr[new_nID] == dist_arr[new_CurID] + 1){
+                            relation[new_nID] |= relation[new_CurID];
+
+                            printf("\trelation[%2d] = %2x\n", new_nID, relation[new_nID]);
+                        }
+                    }
+                }
+                #pragma endregion SourceTraverse
+
+                #pragma region neighborOfSource_GetDist_and_AccumulationCC
+                //recover the distance from sourceNewID to neighbor of sourceNewID
+                for(int sourceNeighborIndex = 0 ; sourceNeighborIndex < mappingCount ; sourceNeighborIndex ++){
+                    int sourceNeighborNewID = mapping_SI[sourceNeighborIndex];
+                    int sourceNeighborOldID = _csr->mapNodeID_New_to_Old[sourceNeighborNewID];
+                    allDist = 0;
+
+                    unsigned int bit_SI = 1 << sourceNeighborIndex;
+
+                    nodeDone[sourceNeighborNewID] = 1;
+
+                    int nodeCompID = _csr->newNodesCompID[sourceNeighborNewID];
+                    printf("\nnextBFS = %2d, bit_SI = %x, nodeCompID = %d\n", sourceNeighborNewID, bit_SI, nodeCompID);
+
+                    for(int sameComp_newNodeID = _csr->comp_newCsrOffset[nodeCompID] ; sameComp_newNodeID < _csr->comp_newCsrOffset[nodeCompID + 1] ; sameComp_newNodeID++){
+                        if((sharedBitIndex[sameComp_newNodeID] & bit_SI) > 0){
+                            neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] - 1;
+                            
+                            printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameComp_newNodeID, neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                        }
+                        else{
+                            neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] + 1;
+                            
+                            printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameComp_newNodeID, neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+
+                            if((relation[sameComp_newNodeID] & bit_SI) > 0){
+                                neighbor_dist_ans[sameComp_newNodeID] --;
+
+                                printf("\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", sameComp_newNodeID, neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                            }
+                        }
+                        allDist += newID_infos[sameComp_newNodeID].ff + neighbor_dist_ans[sameComp_newNodeID] * newID_infos[sameComp_newNodeID].w;
+                    }
+                    
+                    _CCs[sourceNeighborOldID] = allDist + newID_infos[sourceNeighborNewID].ff;
                 }
 
-                #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                printf("CC[%d] = %d\n", sourceNeighborID, _CCs[sourceNeighborID]);
-                #endif
+                memset(sharedBitIndex, 0, sizeof(unsigned int) * _csr->csrVSize * 2);
+                memset(relation, 0, sizeof(unsigned int) * _csr->csrVSize * 2);
+
+                #pragma endregion neighborOfSource_GetDist_and_AccumulationCC
             }
-            memset(sharedBitIndex, 0, sizeof(unsigned int) * _csr->csrVSize * 2);
-            memset(relation, 0, sizeof(unsigned int) * _csr->csrVSize * 2);
-            #pragma endregion neighborOfSource_GetDist_and_AccumulationCC
-
         }
-
     }
-    printf("[Check point 2]\n");
+    printf("[Check Point 2]\n");
 
     #pragma region d1GetCC_FromParent
     int d1NodeID        = -1;
@@ -1942,6 +1957,7 @@ void CC_CheckAns(struct CSR* _csr, int* TrueCC_Ans, int* newCC_Ans){
             exit(1);
         }
     }
+    printf("[Ans Correct] !!!\n");
 }
 
 void CC_CheckDistAns(struct CSR* _csr, int* _CCs, int _tempSourceID, int* dist){
@@ -2211,18 +2227,21 @@ int main(int argc, char* argv[]){
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
-    // computeCC(csr, TrueCC_Ans);
-    // for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
-    //     printf("CC[%d] = %d\n", nodeID, TrueCC_Ans[nodeID]);
-    // }
+    computeCC(csr, TrueCC_Ans);
+    for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
+        printf("CC[%d] = %d\n", nodeID, TrueCC_Ans[nodeID]);
+    }
 
+    time1 = seconds();
+    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
+    time2 = seconds();
+    D1_AP_CC_shareBasedTime = time2 - time1;
+    printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
     
 
-    // CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
+    CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
     #pragma endregion //Dev
-
-
-
+    
     #pragma region Release
     /************************************************************
      *                      D1Folding                           *
@@ -2307,11 +2326,7 @@ int main(int argc, char* argv[]){
     /************************************************************
      *         compute_D1_AP_CC_shareBased_DegreeOrder          *
     ************************************************************/
-    time1 = seconds();
-    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
-    time2 = seconds();
-    D1_AP_CC_shareBasedTime = time2 - time1;
-    printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+    
     #pragma endregion //Release
 
 }

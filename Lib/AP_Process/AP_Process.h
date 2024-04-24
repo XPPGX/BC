@@ -33,6 +33,10 @@ struct part_info{
     int ff;
 };
 
+struct newID_info{
+    int ff;
+    int w;
+};
 /**
  * @brief
  * Find all APs existed in current graph, record them into _csr->AP_List
@@ -73,6 +77,13 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 */
 void AP_Copy_And_Split(struct CSR* _csr);
 
+//把相同component的nodeID 放在一起(只包含aliveNode)
 void compactNodesByComp(struct CSR* _csr);
+
+/**
+ * 把相同component的 csrV, csrE放在一起(不包含 "D1", "已被切光edge的originAP")
+ * assign oldID.ff, oldID.w to newID_infos for each newID
+*/
+struct newID_info* rebuildGraph(struct CSR* _csr);
 
 #endif

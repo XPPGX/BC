@@ -74,11 +74,22 @@ struct CSR{
 
     int* aliveNode;         //紀錄 "非D1", "非 ori AP", "非 AP clone" 的nodes
     int aliveNodeCount;     //紀錄有幾個aliveNode
+    int* aliveNodeFlags;    //紀錄每個node是否還需要當source，如果需要，則flag = 1
 
     int* comp_NodesID_CsrData;  //把aliveNode中，相同comp的nodes放在一起
     int* comp_CsrOffset;        //csr offset for nodeID with same component
     int* nodesCompID;           //nodesCompID 把每個 aliveNodes 都 assign compID
 
+    int* mapNodeID_New_to_Old; //每個nodeID對應到的新nodeID，index是newID，value是oldID
+    int* mapNodeID_Old_to_new; //每個nodeID對應到的舊nodeID，index是oldID，value是newID
+    int* orderedCsrV; //O(2 * |V|)
+    int* orderedCsrE; //O(4 * |V|)
+    int newEndID;
+    int* comp_newNodesID_CsrData;  //把aliveNode中，相同comp的nodes放在一起
+    int* comp_newCsrOffset;        //csr offset for nodeID with same component
+    int* newNodesCompID;           //nodesCompID 把每個 aliveNodes 都 assign compID (aliveNode 代表 還存在在graph中的點，(degree > 0的點))
+    int compEndID;              //紀錄最後一個compID
+    
     float* BCs;
     int* CCs;
 };

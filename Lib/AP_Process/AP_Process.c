@@ -1008,13 +1008,15 @@ void AP_Copy_And_Split(struct CSR* _csr){
     }
 
     int count = 0;
-    _csr->aliveNode = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    _csr->aliveNode         = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    _csr->aliveNodeFlags    = (int*)calloc(sizeof(int), _csr->csrVSize);
     for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
         if(_csr->nodesType[nodeID] & D1 || ((_csr->nodesType[nodeID] & OriginAP) && (_csr->CCs[nodeID] != 0))){
             continue;
         }
         // printf("aliveNode[%d] = %d\n", count, nodeID);
-        _csr->aliveNode[count] = nodeID;
+        _csr->aliveNode[count]          = nodeID;
+        _csr->aliveNodeFlags[nodeID]    = 1;
         count ++;
     }
     _csr->aliveNodeCount = count;
@@ -1118,4 +1120,182 @@ void compactNodesByComp(struct CSR* _csr){
     free(checked);
     free(Q->dataArr);
     free(Q);
+}
+
+// #define rebuildGraph_DEBUG
+struct newID_info* rebuildGraph(struct CSR* _csr){
+
+    #ifdef rebuildGraph_DEBUG
+    printf("\n\nrebuild Graph...\n\n");
+    #endif
+
+    int newID_Iter = 0;
+    int newCsrE_Offset_count = 0;
+    _csr->mapNodeID_New_to_Old = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    _csr->mapNodeID_Old_to_new = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    _csr->orderedCsrV = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
+    _csr->orderedCsrE = (int*)malloc(sizeof(int) * (_csr->csrESize) * 4);
+
+    int comp_Iter = 0;
+    _csr->comp_newCsrOffset = (int*)malloc(sizeof(int) * _csr->aliveNodeCount);
+    _csr->newNodesCompID = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
+    memset(_csr->newNodesCompID, -1, sizeof(int) * _csr->csrVSize * 2);
+
+
+    int* nodeQ = (int*)malloc(sizeof(int) * _csr->csrVSize * 2);
+    int Q_front = 0;
+    int Q_rear = -1;
+
+    int* checked_oldNodes = (int*)calloc(sizeof(int), _csr->csrVSize * 2);
+    
+    //把相同component的node 的 csrE 都放在連續的記憶體
+    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+        // if(checked_oldNodes[nodeID] == 1 || _csr->csrNodesDegree[nodeID] == 0 || (_csr->nodesType[nodeID] & D1)){
+        //     // printf("nodesDegree[%d] = %d\n", nodeID, _csr->csrNodesDegree[nodeID]);
+            
+        //     continue;
+        // }
+        if(checked_oldNodes[nodeID] == 1){
+            #ifdef rebuildGraph_DEBUG
+            printf("[Pass %d] checked\n", nodeID);
+            #endif
+
+            continue;
+        }
+        else if(_csr->csrNodesDegree[nodeID] == 0){
+            #ifdef rebuildGraph_DEBUG
+            printf("[Pass %d] degree = 0\n", nodeID);
+            #endif
+
+            continue;
+        }
+        else if(_csr->nodesType[nodeID] & D1){
+            #ifdef rebuildGraph_DEBUG
+            printf("[Pass %d] D1\n", nodeID);
+            #endif
+
+            continue;
+        }
+
+        _csr->comp_newCsrOffset[comp_Iter] = newID_Iter;
+        _csr->newNodesCompID[newID_Iter] = comp_Iter;
+
+        #ifdef rebuildGraph_DEBUG
+        printf("comp_offset[%d] = %d, compID[%d] = %d\n", comp_Iter, newID_Iter, newID_Iter, _csr->newNodesCompID[newID_Iter]);
+        #endif
+
+        _csr->mapNodeID_New_to_Old[newID_Iter] = nodeID;
+        _csr->mapNodeID_Old_to_new[nodeID] = newID_Iter;
+        _csr->orderedCsrV[newID_Iter] = newCsrE_Offset_count;
+        int remainDegree = _csr->oriCsrV[nodeID + 1] - _csr->csrV[nodeID];
+        memcpy(_csr->orderedCsrE + _csr->orderedCsrV[newID_Iter], _csr->csrE + _csr->csrV[nodeID], sizeof(int) * remainDegree);
+        
+        #ifdef rebuildGraph_DEBUG
+        printf("\tnewID %d, oldID %d, compID %d: \n", newID_Iter, nodeID, _csr->newNodesCompID[newID_Iter]);
+        for(int nidx = _csr->orderedCsrV[newID_Iter] ; nidx < _csr->orderedCsrV[newID_Iter] + remainDegree; nidx ++){
+            printf("\t\t_csr->orderedCsrE[%d] = %d\n", nidx, _csr->orderedCsrE[nidx]);
+        }
+        #endif
+
+        newCsrE_Offset_count += remainDegree;
+        
+        #ifdef rebuildGraph_DEBUG
+        printf("\t\tnewCsrE_Offset_count = %d\n", newCsrE_Offset_count);
+        #endif
+
+
+        newID_Iter ++;
+
+        checked_oldNodes[nodeID] = 1;
+
+        nodeQ[++Q_rear] = nodeID;
+
+        register int old_curID  = -1;
+        register int old_nidx   = -1;
+        register int old_nID    = -1;
+
+        // break;
+
+        while(!(Q_front > Q_rear)){
+            old_curID = nodeQ[Q_front++];
+            
+            for(old_nidx = _csr->csrV[old_curID] ; old_nidx < _csr->oriCsrV[old_curID + 1] ; old_nidx ++){
+                old_nID = _csr->csrE[old_nidx];
+
+                if(checked_oldNodes[old_nID] == 0){
+                    _csr->newNodesCompID[newID_Iter] = comp_Iter;
+
+                    _csr->mapNodeID_New_to_Old[newID_Iter]  = old_nID;
+                    _csr->mapNodeID_Old_to_new[old_nID]     = newID_Iter;
+                    _csr->orderedCsrV[newID_Iter]           = newCsrE_Offset_count;
+                    int remainDegree_oldnID = _csr->oriCsrV[old_nID + 1] - _csr->csrV[old_nID];
+                    memcpy(_csr->orderedCsrE + _csr->orderedCsrV[newID_Iter], _csr->csrE + _csr->csrV[old_nID], sizeof(int) * remainDegree_oldnID);
+
+                    newCsrE_Offset_count += remainDegree_oldnID;
+
+                    #ifdef rebuildGraph_DEBUG
+                    printf("\tnewID %d, oldID %d, compID %d: \tnewCsrE_Offset_count = %d\n", newID_Iter, old_nID, _csr->newNodesCompID[newID_Iter], newCsrE_Offset_count);
+                    for(int nidx = _csr->orderedCsrV[newID_Iter] ; nidx < newCsrE_Offset_count ; nidx ++){
+                        printf("\t\t_csr->orderedCsrE[%d] = %d\n", nidx, _csr->orderedCsrE[nidx]);
+                    }
+                    #endif
+
+                    newID_Iter ++;
+
+                    checked_oldNodes[old_nID] = 1;
+
+                    //Enqueue
+                    nodeQ[++Q_rear] = old_nID;
+
+
+                }
+            }
+        }
+        
+        comp_Iter ++;
+    }
+    
+
+    //orderedCsrV 的 結尾offset
+    _csr->newEndID = newID_Iter - 1;
+    _csr->orderedCsrV[_csr->newEndID + 1] = newCsrE_Offset_count;
+
+    #ifdef rebuildGraph_DEBUG
+    printf("\nTail orderedCsrV[%d] = %d\n", newID_Iter, _csr->orderedCsrV[newID_Iter]);
+    #endif
+
+    //comp_newCsrOffset 的 結尾offset
+    _csr->comp_newCsrOffset[comp_Iter] = newID_Iter;
+    _csr->compEndID = comp_Iter - 1;
+
+    #ifdef rebuildGraph_DEBUG
+    printf("\nTail comp_newCsrOffset[%d] = %d\n", comp_Iter, _csr->comp_newCsrOffset[comp_Iter]);
+    #endif
+
+    //用 mapNodeID_Old_to_new 對 _csr->orderedCsrE 重新編號
+    for(int csrE_Iter = 0 ; csrE_Iter < newCsrE_Offset_count ; csrE_Iter ++){
+        int oldID = _csr->orderedCsrE[csrE_Iter];
+        int newID = _csr->mapNodeID_Old_to_new[oldID];
+        _csr->orderedCsrE[csrE_Iter] = newID;
+
+        #ifdef rebuildGraph_DEBUG
+        printf("csrE_Iter = %d, oldID %d => newID %d\n", csrE_Iter, oldID, _csr->orderedCsrE[csrE_Iter]);
+        #endif
+
+    }
+
+
+    //assign ff, w to newID_infos
+    struct newID_info* newID_infos = (struct newID_info*)malloc(sizeof(struct newID_info) * (_csr->newEndID + 1));
+    for(int newID = 0 ; newID <= _csr->newEndID ; newID ++){
+        int oldID = _csr->mapNodeID_New_to_Old[newID];
+        newID_infos[newID].ff   = _csr->ff[oldID];
+        newID_infos[newID].w    = _csr->representNode[oldID];
+
+        #ifdef rebuildGraph_DEBUG
+        printf("newID = %d, oldID = %d, ff = %d, w = %d, type = %x\n", newID, oldID, newID_infos[newID].ff, newID_infos[newID].w, _csr->nodesType[oldID]);
+        #endif
+    }
+    
+    return newID_infos;
 }
