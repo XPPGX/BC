@@ -1733,7 +1733,7 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     //AP Process
     AP_detection(_csr);
     AP_Copy_And_Split(_csr);
-    struct newID_info* newID_infos = rebuildGraph(_csr);
+    struct newID_info* newID_infos = rebuildGraph(_csr); //rebuild for better memory access speed
 
     const int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount; //原本graph的endNodeID
     
@@ -2004,6 +2004,8 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     }
     printf("\n");
     #pragma endregion d1GetCC_FromParent
+
+    
 }
 
 #pragma endregion //Function_computing

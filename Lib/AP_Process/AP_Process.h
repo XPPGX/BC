@@ -83,6 +83,8 @@ void compactNodesByComp(struct CSR* _csr);
 /**
  * 把相同component的 csrV, csrE放在一起(不包含 "D1", "已被切光edge的originAP")
  * assign oldID.ff, oldID.w to newID_infos for each newID
+ * 
+ * rebuild graph for better memory access
 */
 struct newID_info* rebuildGraph(struct CSR* _csr);
 
