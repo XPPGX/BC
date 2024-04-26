@@ -41,6 +41,44 @@ int checkCC_Ans(struct CSR* _csr, int checkNodeID){
     return CC_ans;
 }
 
+void CC(struct CSR* _csr, int* _trueAns){
+    int* nodeQ = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    int Q_front = 0;
+    int Q_rear = -1;
+    
+    int* dist_arr = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    
+    for(int sourceID = _csr->startNodeID ; sourceID <= _csr->endNodeID ; sourceID ++){
+        Q_front = 0;
+        Q_rear = -1;
+        memset(dist_arr, -1, sizeof(int) * _csr->csrVSize);
+
+        dist_arr[sourceID] = 0;
+        nodeQ[++Q_rear] = sourceID;
+
+        register int curID      = -1;
+        register int nID        = -1;
+        register int nidx       = -1;
+        register int allDist    = 0;
+        while(!(Q_front > Q_rear)){
+            curID = nodeQ[Q_front++];
+            
+            for(nidx = _csr->csrV[curID] ; nidx < _csr->csrV[curID + 1] ; nidx ++){
+                nID = _csr->csrE[nidx];
+
+                if(dist_arr[nID] == -1){
+                    nodeQ[++Q_rear] = nID;
+                    dist_arr[nID] = dist_arr[curID] + 1;
+
+                    allDist += dist_arr[nID];
+                }
+            }
+        }
+        _trueAns[sourceID] = allDist;
+        // printf("trueAns[%d] = %d\n", sourceID, _trueAns[sourceID]);
+    }
+}
+
 int main(int argc, char* argv[]){
     char* datasetPath = argv[1];
     printf("datasetPath = %s\n", datasetPath);
@@ -52,9 +90,11 @@ int main(int argc, char* argv[]){
     double AP_detectionTime;
     double AP_Copy_And_Split_Time;
 
-    int checkNodeID = 38;
-    int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
-    printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
+    int* trueAns = (int*)malloc(sizeof(int) * csr->csrVSize);
+    CC(csr, trueAns);
+    // int checkNodeID = 55738;
+    // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
+    // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
     
 
     time1 = seconds();
@@ -74,10 +114,6 @@ int main(int argc, char* argv[]){
     time2 = seconds();
     AP_Copy_And_Split_Time = time2 - time1;
     printf("[Execution Time] AP_Copy_And_Split  = %f\n", AP_Copy_And_Split_Time);
-    printf("apCount     = %8d\n", csr->ap_count);
-    printf("compCount   = %8d\n", csr->compNum);
-    printf("maxCompSize = %8d\n", csr->maxCompSize_afterSplit);
-    printf("endNodeID   = %8d\n", csr->endNodeID);
     
     struct newID_info* newID_infos = rebuildGraph(csr);
 
@@ -88,9 +124,9 @@ int main(int argc, char* argv[]){
     for(int sourceNewID = 0 ; sourceNewID <= csr->newEndID ; sourceNewID ++){
         int oldID = csr->mapNodeID_New_to_Old[sourceNewID];
         int sourceType = csr->nodesType[oldID];
-
+        // printf("sourceOldID = %d\n", oldID);
         if(sourceType & ClonedAP){
-            printf("newID %d, oldID %d, type %x\n", sourceNewID, oldID, sourceType);
+            // printf("newID %d, oldID %d, type %x\n", sourceNewID, oldID, sourceType);
             continue;
         }
 
@@ -116,6 +152,28 @@ int main(int argc, char* argv[]){
             }
         }
         csr->CCs[oldID] = allDist + csr->ff[oldID];
-        printf("CC[%d] = %d\n", oldID, csr->CCs[oldID]);
     }
+    
+    #pragma region d1GetCC_FromParent
+    int d1NodeID        = -1;
+    int d1NodeParentID  = -1;
+    for(int d1NodeIndex = csr->degreeOneNodesQ->rear ; d1NodeIndex >= 0 ; d1NodeIndex --){
+        d1NodeID        = csr->degreeOneNodesQ->dataArr[d1NodeIndex];
+        d1NodeParentID  = csr->D1Parent[d1NodeID];
+        csr->CCs[d1NodeID]  = csr->CCs[d1NodeParentID] + csr->totalNodeNumber - 2 * csr->representNode[d1NodeID];
+    }
+    printf("\n");
+    #pragma endregion d1GetCC_FromParent
+
+
+    for(int nodeID = csr->startNodeID ; nodeID <= (csr->endNodeID - csr->apCloneCount) ; nodeID ++){
+        if(csr->CCs[nodeID] != trueAns[nodeID]){
+            printf("[ERROR] CC[%d] = %d, trueAns[%d] = %d\n", nodeID, csr->CCs[nodeID], nodeID, trueAns[nodeID]);
+            if(csr->nodesType[nodeID] & D1){
+                printf("\tnodeID %d is D1\n", nodeID);
+            }
+            // exit(1);
+        }
+    }
+    printf("[Success]\n");
 }

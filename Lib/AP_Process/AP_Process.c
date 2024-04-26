@@ -464,8 +464,8 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 
 // #define assignComponentID_DEBUG
 // #define sortAP_By_apNum_DEBUG
-// #define GetPartInfo_DEBUG
-// #define Split_DEBUG
+#define GetPartInfo_DEBUG
+#define Split_DEBUG
 void AP_Copy_And_Split(struct CSR* _csr){
     printf("==============================\n");
     printf("AP Copy and Split... ");
@@ -716,13 +716,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
         memset(partsID, -1, sizeof(int) * (_csr->csrVSize) * 2);
         //取得 partID of each node for apNodeID
         int partNum = assignPartId_for_AP(_csr, partsID, apNodeID, Q);
-        if(partNum == 1){
-            #ifdef GetPartInfo_DEBUG
-            printf("\n[Pass this AP] ap %d : only 1 part, w = %d, ff = %d   !!!!!!!!!!!!!!!!!!!\n\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
-            #endif
-
-            continue;
-        }
+        
 
 
 
@@ -743,6 +737,21 @@ void AP_Copy_And_Split(struct CSR* _csr){
         int total_represent = 0;
         int total_ff = 0;
         partNum = getPartsInfo(_csr, partsID, apNodeID, Q, parts, maxBranch, partFlag, dist_arr, &total_represent, &total_ff);
+        
+        //先算好 apNodeID 的 CC，之後traverse的時候不會再算
+        _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
+
+        #ifdef Split_DEBUG
+        printf("CC[%d] = %d\n", apNodeID, _csr->CCs[apNodeID]);
+        #endif
+
+        if(partNum == 1){
+            #ifdef GetPartInfo_DEBUG
+            printf("\n[Pass this AP] ap %d : only 1 part, w = %d, ff = %d   !!!!!!!!!!!!!!!!!!!\n\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);
+            #endif
+
+            continue;
+        }
 
         #pragma endregion GetPartInfo
 
@@ -787,12 +796,12 @@ void AP_Copy_And_Split(struct CSR* _csr){
          *      2.2 如果 apCloneFlag == 0，代表 "捨棄 AP本尊，創建 AP分身"
         */
 
-        //先算好 apNodeID 的 CC，之後traverse的時候不會再算
-        _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
+        // //先算好 apNodeID 的 CC，之後traverse的時候不會再算
+        // _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
 
-        #ifdef Split_DEBUG
-        printf("CC[%d] = %d\n", apNodeID, _csr->CCs[apNodeID]);
-        #endif
+        // #ifdef Split_DEBUG
+        // printf("CC[%d] = %d\n", apNodeID, _csr->CCs[apNodeID]);
+        // #endif
 
         int apNodeID_ori_represent  = _csr->representNode[apNodeID];
         int apNodeID_ori_ff         = _csr->ff[apNodeID];
@@ -1283,7 +1292,6 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
         #endif
 
     }
-
 
     //assign ff, w to newID_infos
     struct newID_info* newID_infos = (struct newID_info*)malloc(sizeof(struct newID_info) * (_csr->newEndID + 1));

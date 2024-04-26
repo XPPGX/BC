@@ -2291,13 +2291,18 @@ int main(int argc, char* argv[]){
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
-    // computeCC(csr, TrueCC_Ans);
-    // for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
-    //     printf("CC[%d] = %d\n", nodeID, TrueCC_Ans[nodeID]);
-    // }
+    computeCC(csr, TrueCC_Ans);
+    for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
+        printf("CC[%d] = %d\n", nodeID, TrueCC_Ans[nodeID]);
+    }
 
+    time1 = seconds();
+    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
+    time2 = seconds();
+    D1_AP_CC_shareBasedTime = time2 - time1;
+    printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
     
-    // CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
+    CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
     #pragma endregion //Dev
     
     #pragma region Release
@@ -2384,11 +2389,7 @@ int main(int argc, char* argv[]){
     /************************************************************
      *         compute_D1_AP_CC_shareBased_DegreeOrder          *
     ************************************************************/
-    time1 = seconds();
-    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
-    time2 = seconds();
-    D1_AP_CC_shareBasedTime = time2 - time1;
-    printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+    
     #pragma endregion //Release
 
 }
