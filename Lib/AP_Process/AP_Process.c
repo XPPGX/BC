@@ -380,7 +380,7 @@ void findInterfaceAPs(struct CSR* _csr, int* _partID, int* _eachPartNeighborNum,
     }
 }
 
-// #define getPartsInfo_DEBUG
+#define getPartsInfo_DEBUG
 int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _Q, struct part_info* _parts,
                      int _maxBranch, int* _partFlag, int* _dist_arr, int* _total_represent, int* _total_ff)
 {
@@ -390,7 +390,7 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
     *_total_represent       = 0;
 
     #ifdef getPartsInfo_DEBUG
-    printf("AP %d : \n", _apNodeID);
+    printf("\nAP %d : \n", _apNodeID);
     #endif
 
     for(int nidx = _csr->csrV[_apNodeID] ; nidx < _csr->oriCsrV[_apNodeID + 1] ; nidx ++){
@@ -464,7 +464,7 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 
 // #define assignComponentID_DEBUG
 // #define sortAP_By_apNum_DEBUG
-// #define GetPartInfo_DEBUG
+#define GetPartInfo_DEBUG
 // #define Split_DEBUG
 void AP_Copy_And_Split(struct CSR* _csr){
     printf("==============================\n");
@@ -741,10 +741,17 @@ void AP_Copy_And_Split(struct CSR* _csr){
         //先算好 apNodeID 的 CC，之後traverse的時候不會再算
         _csr->CCs[apNodeID] = total_ff + _csr->ff[apNodeID];
 
+        // printf("CC[%d] = %d\n", apNodeID, _csr->CCs[apNodeID]);
+
         #ifdef Split_DEBUG
         printf("CC[%d] = %d\n", apNodeID, _csr->CCs[apNodeID]);
         #endif
 
+        /**
+         * @todo
+         * 可以把這個跳過的機制放在前面 partNum 的下方，
+         * 然後如果在 [cut]時，被動切割者，可以檢查 if(degree == 0)，如果 true，則 順便把 degree == 0的 AP 點的 CC先算掉
+        */
         if(partNum == 1){
             #ifdef GetPartInfo_DEBUG
             printf("\n[Pass this AP] ap %d : only 1 part, w = %d, ff = %d   !!!!!!!!!!!!!!!!!!!\n\n", apNodeID, _csr->representNode[apNodeID], _csr->ff[apNodeID]);

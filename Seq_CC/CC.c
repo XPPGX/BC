@@ -14,7 +14,7 @@
 #pragma endregion //DefineLabel
 
 #pragma region globalVar
-int tempSourceID        = 0;
+int tempSourceID        = 1;
 int CheckedNodeCount    = 0;
 int* TrueCC_Ans;
 #pragma endregion //globalVar
@@ -39,8 +39,10 @@ int* computeCC(struct CSR* _csr, int* _CCs){
 
     #ifdef CheckDistAns
     sourceID = tempSourceID;
+    int CC_ans = 0;
     #else
     sourceID = _csr->startNodeID;
+    // sourceID = 1;
     #endif
 
     for(; sourceID <= _csr->endNodeID ; sourceID ++){
@@ -65,7 +67,7 @@ int* computeCC(struct CSR* _csr, int* _CCs){
             printf("%2d ===\n", currentNodeID);
             #endif
 
-            for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->csrV[currentNodeID + 1] ; neighborIndex ++){
+            for(int neighborIndex = _csr->csrV[currentNodeID] ; neighborIndex < _csr->oriCsrV[currentNodeID + 1] ; neighborIndex ++){
                 neighborNodeID = _csr->csrE[neighborIndex];
 
                 #ifdef DEBUG
@@ -79,20 +81,23 @@ int* computeCC(struct CSR* _csr, int* _CCs){
                     #ifdef DEBUG
                     printf("\tpush %2d to Q, dist_arr[%2d] = %2d\n", neighborNodeID, neighborNodeID, dist_arr[neighborNodeID]);
                     #endif
+                    
+                    #ifdef CheckDistAns
+                    CC_ans += dist_arr[neighborNodeID];
+                    #else
+                    _CCs[sourceID] += dist_arr[neighborNodeID];
+                    #endif
+
                 }
             }
         }
-
-        for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
-            _CCs[nodeID] = _CCs[nodeID] + dist_arr[nodeID];
-
-            #ifdef DEBUG
-            printf("CC[%2d] = %2d\n", nodeID, _CCs[nodeID]);
-            #endif
-        }
+        
+        // break;
         #ifdef CheckDistAns
+        printf("CC[%d] = %d\n", tempSourceID, CC_ans);
         break;
         #endif
+        
     }
 
     free(Q->dataArr);
@@ -1711,7 +1716,7 @@ void sortEachComp_NewID_with_degree(struct CSR* _csr, int* _newNodesID_arr, int*
 
 // #define compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
 void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
-    
+
     int* dist_arr = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
     int* neighbor_dist_ans = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
     int* nodeQ = (int*)malloc(sizeof(int) * (_csr->csrVSize) * 2);
@@ -1733,7 +1738,10 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     //AP Process
     AP_detection(_csr);
     AP_Copy_And_Split(_csr);
+    printf("[AP_Copy_And_Split OK]\n");
+
     struct newID_info* newID_infos = rebuildGraph(_csr); //rebuild for better memory access speed
+    printf("[rebuildGraph OK]\n");
 
     const int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount; //原本graph的endNodeID
     
@@ -1741,12 +1749,11 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     int* newNodesID_arr     = (int*)malloc(sizeof(int) * (_csr->newEndID + 1));
     int* newNodesDegree_arr = (int*)malloc(sizeof(int) * (_csr->newEndID + 1));
     sortEachComp_NewID_with_degree(_csr, newNodesID_arr, newNodesDegree_arr);
-
-    #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+    
     printf("[Check point 1]\n");
-    #endif
 
     for(int compID = 0 ; compID <= _csr->compEndID ; compID ++){
+        printf("compID = %d\n", compID);
         for(int newID_idx = _csr->comp_newCsrOffset[compID + 1] - 1 ; newID_idx >= _csr->comp_newCsrOffset[compID] ; newID_idx --){
             int sourceNewID = newNodesID_arr[newID_idx];
             int sourceOldID = _csr->mapNodeID_New_to_Old[sourceNewID];
@@ -1990,9 +1997,8 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
         }
     }
 
-    #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
     printf("[Check Point 2]\n");
-    #endif
+
 
     #pragma region d1GetCC_FromParent
     int d1NodeID        = -1;
@@ -2012,12 +2018,13 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
 
 
 #pragma region Function_CheckingAns
-
 void CC_CheckAns(struct CSR* _csr, int* TrueCC_Ans, int* newCC_Ans){
     printf("_csr->endNodeID = %d, _csr->apCloneCount = %d, oriEndNodeID = %d\n", _csr->endNodeID, _csr->apCloneCount, _csr->endNodeID - _csr->apCloneCount);
     for(int nodeID = _csr->startNodeID ; nodeID <= (_csr->endNodeID - _csr->apCloneCount) ; nodeID ++){
+        int newNodeID = _csr->mapNodeID_Old_to_new[nodeID];
+        int compID = _csr->newNodesCompID[newNodeID];
         if(TrueCC_Ans[nodeID] != newCC_Ans[nodeID]){
-            printf("[ERROR] CC ans : TrueCC_Ans[%2d] = %2d, newCC_Ans[%2d] = %2d\n", nodeID, TrueCC_Ans[nodeID], nodeID, newCC_Ans[nodeID]);
+            printf("[ERROR] CC ans : TrueCC_Ans[%2d] = %2d, newCC_Ans[%2d] = %2d, nodeType = %x, compID = %d\n", nodeID, TrueCC_Ans[nodeID], nodeID, newCC_Ans[nodeID], _csr->nodesType[nodeID], compID);
             // exit(1);
         }
     }
@@ -2265,6 +2272,70 @@ void dynamic_D1_CC_trace_D1_Ans(struct CSR* _csr, int* _newCC_Ans, int _d1NodeID
     return;
 }
 
+void readTrueAns(char* _datasetPath, struct CSR* _csr, int* _TrueAns, int* _newAns){
+
+    #pragma region getTrueAnsPath
+
+    char filename[1000];
+    char filename2[1000];
+    char* lastSlash = strrchr(_datasetPath, '/');
+    if(lastSlash != NULL){
+        strcpy(filename, lastSlash + 1);
+    }
+    else{
+        strcpy(filename, _datasetPath);
+    }
+    printf("%s\n", filename);
+
+    char* subName = ".txt";
+    char* appendName = "_ans.txt";
+    char* ptr = strstr(filename, subName);
+    if(ptr != NULL){
+        strncpy(filename2, filename, ptr - filename);
+        filename2[ptr - filename] = '\0';
+
+        strcat(filename2, appendName);
+    }
+    else{
+        printf("[ERROR] readTrueAns[1] !!\n");
+        exit(1);
+    }
+
+    char datasetAnsPath[1000];
+    ptr = strstr(_datasetPath, filename);
+    if(ptr != NULL){
+        strcpy(ptr, filename2);
+    }
+    else{
+        printf("[ERROR] readTrueAns[2] !!\n");
+        exit(1);
+    }
+
+    printf("%s\n", _datasetPath); //這個_datasetPath變成 "../dataset/{}_ans.txt"
+
+    #pragma endregion getTrueAnsPath
+
+    #pragma region openFile_getAns
+    FILE* fptr = fopen(_datasetPath, "r");
+    if(fptr == NULL){
+        printf("[ERROR] readTrueAns[3] !!\n");
+        exit(1);
+    }
+    char row[2000];
+    int val1, val2 = 0;
+    int nodeNum = _csr->totalNodeNumber;
+    printf("nodeNum = %d\n", nodeNum);
+    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID - _csr->apCloneCount ; nodeID ++ ){
+        fgets(row, 2000, fptr);
+        getRowData(row, &val1, &val2);
+        _TrueAns[val1] = val2;
+    }
+    #pragma endregion openFile_getAns
+
+    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID - _csr->apCloneCount ; nodeID ++){
+        printf("CC[%d] = %d\n", nodeID, _TrueAns[nodeID]);
+    }
+}
 #pragma endregion //Functio_CheckingAns
 
 int main(int argc, char* argv[]){
@@ -2291,10 +2362,14 @@ int main(int argc, char* argv[]){
     TrueCC_Ans      = (int*)calloc(sizeof(int), csr->csrVSize);
     
     #pragma region Dev
-    computeCC(csr, TrueCC_Ans);
-    for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
-        // printf("CC[%d] = %d\n", nodeID, TrueCC_Ans[nodeID]);
-    }
+
+    
+
+    // computeCC(csr, TrueCC_Ans);
+    // printf("CC[%d] = %d\n", 1, TrueCC_Ans[1]);
+    // for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
+    //     printf("%d %d\n", nodeID, TrueCC_Ans[nodeID]);
+    // }
 
     time1 = seconds();
     compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
@@ -2302,7 +2377,10 @@ int main(int argc, char* argv[]){
     D1_AP_CC_shareBasedTime = time2 - time1;
     printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
 
+    readTrueAns(datasetPath, csr, TrueCC_Ans, csr->CCs);
+    printf("[ReadTrueAns OK]\n");
     CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
+    printf("[CC_CheckAns OK]\n");
     #pragma endregion //Dev
     
     #pragma region Release

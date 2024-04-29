@@ -6,7 +6,7 @@ int main(int argc, char* argv[]){
     struct Graph* adjList = buildGraph(datasetPath);
     struct CSR* csr = createCSR(adjList);
     // showCSR(csr);
-    degreeOneFolding(csr);
+    // degreeOneFolding(csr);
     // showCSR(csr);
 
     // int nodeID = 0;

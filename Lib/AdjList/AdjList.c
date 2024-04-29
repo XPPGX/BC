@@ -69,6 +69,11 @@ struct Graph* buildGraph(char* _datasetPath){
     for(int i = 1 ; i < graph->edgeNum ; i ++){
         fgets(row, rowSize, fptr);
         getRowData(row, &val1, &val2);
+        
+        if(val1 == 0 || val2 == 0){
+            graph->startAtZero = 1;
+        }
+        
         vAppend(graph->vertices[val1].neighbors, val2);
         graph->nodeDegrees[val1] ++;
         vAppend(graph->vertices[val2].neighbors, val1);
