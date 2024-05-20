@@ -17,7 +17,7 @@ int checkCC_Ans(struct CSR* _csr, int checkNodeID){
 
     while(!qIsEmpty(Q)){
         int curID = qPopFront(Q);
-        // printf("curID = %d\n", curID);
+        printf("curID = %d\n", curID);
 
         for(int nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
             int nid = _csr->csrE[nidx];
@@ -81,6 +81,56 @@ void CC(struct CSR* _csr, int* _trueAns){
     }
 }
 
+// #define CheckOriCompNum_DEBUG
+void CheckOriCompNum(struct CSR* _csr){
+    int compNum = 0;
+    int* visited = (int*)calloc(sizeof(int), _csr->csrVSize);
+    int* nodeQ = (int*)malloc(sizeof(int) * _csr->csrVSize);
+    int Q_front = 0;
+    int Q_rear = -1;
+    for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+        if(visited[nodeID] == 1){continue;}
+        
+        #ifdef CheckOriCompNum_DEBUG
+        printf("nodeID %d : \n", nodeID);
+        #endif
+
+        compNum ++;
+        visited[nodeID] = 1;
+        
+        Q_front = 0;
+        Q_rear = -1;
+        nodeQ[++Q_rear] = nodeID;
+        
+        while(!(Q_front > Q_rear)){
+            int curID = nodeQ[Q_front ++];
+
+            #ifdef CheckOriCompNum_DEBUG
+            printf("\tcurID = %d\n", curID);
+            #endif
+
+            for(int nidx = _csr->csrV[curID] ; nidx < _csr->oriCsrV[curID + 1] ; nidx ++){
+                int nid = _csr->csrE[nidx];
+                
+                if(visited[nid] == 0){
+                    visited[nid] = 1;
+                    nodeQ[++Q_rear] = nid;
+
+                    #ifdef CheckOriCompNum_DEBUG
+                    printf("\t\tnid %d\n", nid);
+                    #endif
+                }
+
+
+            }
+        }
+        break;
+    }
+    printf("compNum = %d\n", compNum);
+}
+
+
+
 int main(int argc, char* argv[]){
     char* datasetPath = argv[1];
     printf("datasetPath = %s\n", datasetPath);
@@ -93,11 +143,11 @@ int main(int argc, char* argv[]){
     double AP_Copy_And_Split_Time;
 
     int* trueAns = (int*)malloc(sizeof(int) * csr->csrVSize);
+    CheckOriCompNum(csr);
     // CC(csr, trueAns);
-    int checkNodeID = 168114;
-    int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
-    printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
-    
+    // int checkNodeID = 293;
+    // int checkNode_CC_ans = checkCC_Ans(csr, checkNodeID);
+    // printf("CCs[%d] = %d\n", checkNodeID, checkNode_CC_ans);
 
     time1 = seconds();
     D1Folding(csr);
@@ -117,18 +167,22 @@ int main(int argc, char* argv[]){
     AP_Copy_And_Split_Time = time2 - time1;
     printf("[Execution Time] AP_Copy_And_Split  = %f\n", AP_Copy_And_Split_Time);
     
-    struct newID_info* newID_infos = rebuildGraph(csr);
+    // printf("type[%d] = %x\n", 293, csr->nodesType[293]);
+    // struct newID_info* newID_infos = rebuildGraph(csr);
+    // printf("[Check point][5]\n");
 
     // int* dist_arr   = (int*)malloc(sizeof(int) * csr->csrVSize * 2);
     // int* nodeQ      = (int*)malloc(sizeof(int) * csr->csrVSize * 2);
     // int Q_front     = 0;
     // int Q_rear      = -1;
-    // for(int sourceNewID = 0 ; sourceNewID <= csr->newEndID ; sourceNewID ++){
+    // int oldID = 293;
+    // printf("csr->old_to_new[%d] = %d, new_to_old[%d] = %d\n", oldID, csr->mapNodeID_Old_to_new[oldID], csr->mapNodeID_Old_to_new[oldID], csr->mapNodeID_New_to_Old[csr->mapNodeID_Old_to_new[oldID]]);
+    // for(int sourceNewID = csr->mapNodeID_Old_to_new[oldID] ; sourceNewID <= csr->newEndID ; sourceNewID ++){
     //     int oldID = csr->mapNodeID_New_to_Old[sourceNewID];
     //     int sourceType = csr->nodesType[oldID];
-    //     // printf("sourceOldID = %d\n", oldID);
+    //     printf("sourceOldID = %d\n", oldID);
     //     if(sourceType & ClonedAP){
-    //         // printf("newID %d, oldID %d, type %x\n", sourceNewID, oldID, sourceType);
+    //         printf("newID %d, oldID %d, type %x\n", sourceNewID, oldID, sourceType);
     //         continue;
     //     }
 
@@ -147,6 +201,7 @@ int main(int argc, char* argv[]){
                 
     //             if(dist_arr[new_nid] == -1){
     //                 dist_arr[new_nid] = dist_arr[newCurID] + 1;
+    //                 printf("dist_arr[%d] = %d\n", new_nid, dist_arr[new_nid]);
     //                 nodeQ[++Q_rear] = new_nid;
 
     //                 allDist += newID_infos[new_nid].ff + dist_arr[new_nid] * newID_infos[new_nid].w;
@@ -154,6 +209,8 @@ int main(int argc, char* argv[]){
     //         }
     //     }
     //     csr->CCs[oldID] = allDist + csr->ff[oldID];
+    //     printf("csr->CCs[%d] = %d\n", oldID, csr->CCs[oldID]);
+    //     break;
     // }
     
     // #pragma region d1GetCC_FromParent

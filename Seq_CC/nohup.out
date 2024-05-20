@@ -5043,3 +5043,239 @@ compID = 2593
 [Check Point 2]
 
 D1_AP_CC_shareBasedTime = 0.818812
+Files in the folder:
+web-BerkStan-OK
+Slashdot0811-OK
+testdata2
+web-wikipedia2009
+wikiTalk
+web-Stanford
+testdata1
+web-Google-Ok2
+loc-Gowalla
+soc-flickr
+testdata
+youtube
+soc-youtube
+tech-RL-caida
+road-roadNet-CA
+web-NotreDame-OK
+rm -f *.o a
+gcc -O3 -c ../Lib/vVector/vVector.c -o vVector.o
+gcc -O3 -c ../Lib/qQueue/qQueue.c -o qQueue.o
+gcc -O3 -c ../Lib/tTime/tTime.c -o tTime.o
+gcc -O3 -c ../Lib/FileReader/FileReader.c -o FileReader.o
+gcc -O3 -c ../Lib/AdjList/AdjList.c -o AdjList.o
+../Lib/AdjList/AdjList.c: In function ‘buildGraph’:
+../Lib/AdjList/AdjList.c:22:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   22 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:34:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   34 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:70:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   70 |         fgets(row, rowSize, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+gcc -O3 -c ../Lib/CSR/CSR.c -o CSR.o
+gcc -O3 -c ../Lib/D1Process/D1Process.c -o D1Process.o
+gcc -O3 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
+gcc -O3 CC.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+In file included from headers.h:9,
+                 from CC.c:8:
+../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
+   16 | inline double seconds();
+      |               ^~~~~~~
+CC.c: In function ‘readTrueAns’:
+CC.c:2329:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+ 2329 |         fgets(row, 2000, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+Running experiment with web-BerkStan-OK.mtx
+Experiment with web-BerkStan-OK.mtx completed.
+Running experiment with Slashdot0811-OK.mtx
+Experiment with Slashdot0811-OK.mtx completed.
+Running experiment with testdata2.txt
+Experiment with testdata2.txt completed.
+Running experiment with web-wikipedia2009.mtx
+Experiment with web-wikipedia2009.mtx completed.
+Running experiment with wikiTalk.mtx
+Experiment with wikiTalk.mtx completed.
+Running experiment with web-Stanford.mtx
+Experiment with web-Stanford.mtx completed.
+Running experiment with testdata1.txt
+Experiment with testdata1.txt completed.
+Running experiment with web-Google-Ok2.mtx
+Experiment with web-Google-Ok2.mtx completed.
+Running experiment with loc-Gowalla.mtx
+Experiment with loc-Gowalla.mtx completed.
+Running experiment with soc-flickr.mtx
+Experiment with soc-flickr.mtx completed.
+Running experiment with testdata.txt
+Experiment with testdata.txt completed.
+Running experiment with youtube.txt
+Experiment with youtube.txt completed.
+Running experiment with soc-youtube.mtx
+Experiment with soc-youtube.mtx completed.
+Running experiment with tech-RL-caida.mtx
+Experiment with tech-RL-caida.mtx completed.
+Running experiment with road-roadNet-CA.mtx
+Experiment with road-roadNet-CA.mtx completed.
+Running experiment with web-NotreDame-OK.mtx
+Experiment with web-NotreDame-OK.mtx completed.
+rm -f *.o a
+gcc -O3 -c ../Lib/vVector/vVector.c -o vVector.o
+gcc -O3 -c ../Lib/qQueue/qQueue.c -o qQueue.o
+gcc -O3 -c ../Lib/tTime/tTime.c -o tTime.o
+gcc -O3 -c ../Lib/FileReader/FileReader.c -o FileReader.o
+gcc -O3 -c ../Lib/AdjList/AdjList.c -o AdjList.o
+../Lib/AdjList/AdjList.c: In function ‘buildGraph’:
+../Lib/AdjList/AdjList.c:22:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   22 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:34:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   34 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:70:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   70 |         fgets(row, rowSize, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+gcc -O3 -c ../Lib/CSR/CSR.c -o CSR.o
+gcc -O3 -c ../Lib/D1Process/D1Process.c -o D1Process.o
+gcc -O3 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
+gcc -O3 CC.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+In file included from headers.h:9,
+                 from CC.c:8:
+../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
+   16 | inline double seconds();
+      |               ^~~~~~~
+CC.c: In function ‘readTrueAns’:
+CC.c:2329:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+ 2329 |         fgets(row, 2000, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+Running experiment with soc-flickr.mtx
+Experiment with soc-flickr.mtx completed.
+Running experiment with loc-Gowalla.mtx
+Experiment with loc-Gowalla.mtx completed.
+Running experiment with tech-RL-caida.mtx
+Experiment with tech-RL-caida.mtx completed.
+Running experiment with soc-youtube.mtx
+Experiment with soc-youtube.mtx completed.
+Running experiment with web-NotreDame-OK.mtx
+Experiment with web-NotreDame-OK.mtx completed.
+Running experiment with youtube.txt
+Experiment with youtube.txt completed.
+Files in the folder:
+amazon
+Slashdot0811-OK
+testdata2
+web-wikipedia2009
+wikiTalk
+karate
+testdata1
+web-Google-Ok2
+loc-Gowalla
+soc-flickr
+testdata
+dblp
+web-sk-2005
+youtube
+soc-youtube
+tech-RL-caida
+road-roadNet-CA
+web-NotreDame-OK
+rm -f *.o a
+gcc -O2 -c ../Lib/vVector/vVector.c -o vVector.o
+gcc -O2 -c ../Lib/qQueue/qQueue.c -o qQueue.o
+gcc -O2 -c ../Lib/tTime/tTime.c -o tTime.o
+gcc -O2 -c ../Lib/FileReader/FileReader.c -o FileReader.o
+gcc -O2 -c ../Lib/AdjList/AdjList.c -o AdjList.o
+../Lib/AdjList/AdjList.c: In function ‘buildGraph’:
+../Lib/AdjList/AdjList.c:22:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   22 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:34:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   34 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:70:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   70 |         fgets(row, rowSize, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+gcc -O2 -c ../Lib/CSR/CSR.c -o CSR.o
+gcc -O2 -c ../Lib/D1Process/D1Process.c -o D1Process.o
+gcc -O2 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
+gcc -O2 CC.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+In file included from headers.h:9,
+                 from CC.c:8:
+../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
+   16 | inline double seconds();
+      |               ^~~~~~~
+CC.c: In function ‘readTrueAns’:
+CC.c:2329:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+ 2329 |         fgets(row, 2000, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+Running experiment with amazon.txt
+Experiment with amazon.txt completed.
+Running experiment with Slashdot0811-OK.mtx
+Experiment with Slashdot0811-OK.mtx completed.
+Running experiment with testdata2.txt
+Experiment with testdata2.txt completed.
+Running experiment with web-wikipedia2009.mtx
+Experiment with web-wikipedia2009.mtx completed.
+Running experiment with wikiTalk.mtx
+Experiment with wikiTalk.mtx completed.
+Running experiment with karate.txt
+Experiment with karate.txt completed.
+Running experiment with testdata1.txt
+Experiment with testdata1.txt completed.
+Running experiment with web-Google-Ok2.mtx
+Experiment with web-Google-Ok2.mtx completed.
+Running experiment with loc-Gowalla.mtx
+Experiment with loc-Gowalla.mtx completed.
+Running experiment with soc-flickr.mtx
+Experiment with soc-flickr.mtx completed.
+Running experiment with testdata.txt
+Experiment with testdata.txt completed.
+Running experiment with dblp.txt
+Experiment with dblp.txt completed.
+Running experiment with web-sk-2005.mtx
+Experiment with web-sk-2005.mtx completed.
+Running experiment with youtube.txt
+Experiment with youtube.txt completed.
+Running experiment with soc-youtube.mtx
+Experiment with soc-youtube.mtx completed.
+Running experiment with tech-RL-caida.mtx
+Experiment with tech-RL-caida.mtx completed.
+Running experiment with road-roadNet-CA.mtx
+Experiment with road-roadNet-CA.mtx completed.
+Running experiment with web-NotreDame-OK.mtx
+Experiment with web-NotreDame-OK.mtx completed.
+rm -f *.o a
+gcc -O2 -c ../Lib/vVector/vVector.c -o vVector.o
+gcc -O2 -c ../Lib/qQueue/qQueue.c -o qQueue.o
+gcc -O2 -c ../Lib/tTime/tTime.c -o tTime.o
+gcc -O2 -c ../Lib/FileReader/FileReader.c -o FileReader.o
+gcc -O2 -c ../Lib/AdjList/AdjList.c -o AdjList.o
+../Lib/AdjList/AdjList.c: In function ‘buildGraph’:
+../Lib/AdjList/AdjList.c:22:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   22 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:34:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   34 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:70:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   70 |         fgets(row, rowSize, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+gcc -O2 -c ../Lib/CSR/CSR.c -o CSR.o
+gcc -O2 -c ../Lib/D1Process/D1Process.c -o D1Process.o
+gcc -O2 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
+gcc -O2 CC.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+In file included from headers.h:9,
+                 from CC.c:8:
+../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
+   16 | inline double seconds();
+      |               ^~~~~~~
+CC.c: In function ‘readTrueAns’:
+CC.c:2329:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+ 2329 |         fgets(row, 2000, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+Running experiment with wikiTalk.mtx
+Experiment with wikiTalk.mtx completed.
+Running experiment with web-wikipedia2009.mtx
+Experiment with web-wikipedia2009.mtx completed.

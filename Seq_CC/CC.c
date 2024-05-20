@@ -1738,10 +1738,10 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     //AP Process
     AP_detection(_csr);
     AP_Copy_And_Split(_csr);
-    printf("[AP_Copy_And_Split OK]\n");
+    // printf("[AP_Copy_And_Split OK]\n");
 
     struct newID_info* newID_infos = rebuildGraph(_csr); //rebuild for better memory access speed
-    printf("[rebuildGraph OK]\n");
+    // printf("[rebuildGraph OK]\n");
 
     const int oriEndNodeID = _csr->endNodeID - _csr->apCloneCount; //原本graph的endNodeID
     
@@ -1750,19 +1750,19 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
     int* newNodesDegree_arr = (int*)malloc(sizeof(int) * (_csr->newEndID + 1));
     sortEachComp_NewID_with_degree(_csr, newNodesID_arr, newNodesDegree_arr);
     
-    printf("[Check point 1]\n");
+    // printf("[Check point 1]\n");
 
     for(int compID = 0 ; compID <= _csr->compEndID ; compID ++){
-        printf("compID = %d\n", compID);
+        // printf("compID = %d\n", compID);
         for(int newID_idx = _csr->comp_newCsrOffset[compID + 1] - 1 ; newID_idx >= _csr->comp_newCsrOffset[compID] ; newID_idx --){
             int sourceNewID = newNodesID_arr[newID_idx];
             int sourceOldID = _csr->mapNodeID_New_to_Old[sourceNewID];
             /**
              * 不做：
              * 1. 已經 nodeDone = 1 的 node
-             * 2. CloneAP (sourceNewID > oriEndNodeID 就是 CloneAP)
+             * 2. CloneAP (sourceNewID > oriEndNodeID 就是 CloneAP) ? 
             */
-            if(nodeDone[sourceNewID] == 1 || (sourceNewID > oriEndNodeID)){
+            if(nodeDone[sourceNewID] == 1 || (sourceOldID > oriEndNodeID)){
                 continue;
             }
             
@@ -1997,7 +1997,7 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
         }
     }
 
-    printf("[Check Point 2]\n");
+    // printf("[Check Point 2]\n");
 
 
     #pragma region d1GetCC_FromParent
@@ -2287,7 +2287,7 @@ void readTrueAns(char* _datasetPath, struct CSR* _csr, int* _TrueAns, int* _newA
     }
     printf("%s\n", filename);
 
-    char* subName = ".txt";
+    char* subName = ".mtx";
     char* appendName = "_ans.txt";
     char* ptr = strstr(filename, subName);
     if(ptr != NULL){
@@ -2363,24 +2363,28 @@ int main(int argc, char* argv[]){
     
     #pragma region Dev
 
-    
-
     // computeCC(csr, TrueCC_Ans);
     // printf("CC[%d] = %d\n", 1, TrueCC_Ans[1]);
     // for(int nodeID = csr->startNodeID ; nodeID <= csr->endNodeID ; nodeID ++){
     //     printf("%d %d\n", nodeID, TrueCC_Ans[nodeID]);
     // }
 
-    time1 = seconds();
-    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
-    time2 = seconds();
-    D1_AP_CC_shareBasedTime = time2 - time1;
-    printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+    // time1 = seconds();
+    // compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
+    // time2 = seconds();
+    // D1_AP_CC_shareBasedTime = time2 - time1;
+    // printf("D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+    
+    // time1 = seconds();
+    // compute_D1_AP_CC(csr, csr->CCs);
+    // time2 = seconds();
+    // D1_AP_CC_ori = time2 - time1;
+    // printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
 
-    readTrueAns(datasetPath, csr, TrueCC_Ans, csr->CCs);
-    printf("[ReadTrueAns OK]\n");
-    CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
-    printf("[CC_CheckAns OK]\n");
+    // readTrueAns(datasetPath, csr, TrueCC_Ans, csr->CCs);
+    // printf("[ReadTrueAns OK]\n");
+    // CC_CheckAns(csr, TrueCC_Ans, csr->CCs);
+    // printf("[CC_CheckAns OK]\n");
     #pragma endregion //Dev
     
     #pragma region Release
@@ -2457,17 +2461,21 @@ int main(int argc, char* argv[]){
     /************************************************************
      *                      compute_D1_AP_CC                    *
     ************************************************************/
-    // time1 = seconds();
-    // compute_D1_AP_CC(csr, csr->CCs);
-    // time2 = seconds();
-    // D1_AP_CC_ori = time2 - time1;
-    // printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
+    time1 = seconds();
+    compute_D1_AP_CC(csr, csr->CCs);
+    time2 = seconds();
+    D1_AP_CC_ori = time2 - time1;
+    printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
 
 
     /************************************************************
      *         compute_D1_AP_CC_shareBased_DegreeOrder          *
     ************************************************************/
-    
+    // time1 = seconds();
+    // compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
+    // time2 = seconds();
+    // D1_AP_CC_shareBasedTime = time2 - time1;
+    // printf("[Execution Time] D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
     #pragma endregion //Release
 
 }

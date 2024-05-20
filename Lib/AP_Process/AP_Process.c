@@ -157,7 +157,7 @@ void AP_detection(struct CSR* _csr){
             if(_csr->nodesType[nodeID] & OriginAP){
 
                 #ifdef AP_detection_DEBUG
-                printf("is AP, childNum %d\n", childCompsNum[nodeID]);
+                // printf("is AP, childNum %d\n", childCompsNum[nodeID]);
                 #endif
 
                 continue;
@@ -380,7 +380,7 @@ void findInterfaceAPs(struct CSR* _csr, int* _partID, int* _eachPartNeighborNum,
     }
 }
 
-#define getPartsInfo_DEBUG
+// #define getPartsInfo_DEBUG
 int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _Q, struct part_info* _parts,
                      int _maxBranch, int* _partFlag, int* _dist_arr, int* _total_represent, int* _total_ff)
 {
@@ -464,7 +464,7 @@ int getPartsInfo(struct CSR* _csr, int* _partID, int _apNodeID, struct qQueue* _
 
 // #define assignComponentID_DEBUG
 // #define sortAP_By_apNum_DEBUG
-#define GetPartInfo_DEBUG
+// #define GetPartInfo_DEBUG
 // #define Split_DEBUG
 void AP_Copy_And_Split(struct CSR* _csr){
     printf("==============================\n");
@@ -1166,6 +1166,7 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
     
     //把相同component的node 的 csrE 都放在連續的記憶體
     for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
+        // printf("nodeID = %d\n", nodeID);
         // if(checked_oldNodes[nodeID] == 1 || _csr->csrNodesDegree[nodeID] == 0 || (_csr->nodesType[nodeID] & D1)){
         //     // printf("nodesDegree[%d] = %d\n", nodeID, _csr->csrNodesDegree[nodeID]);
             
@@ -1199,9 +1200,11 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
         #ifdef rebuildGraph_DEBUG
         printf("comp_offset[%d] = %d, compID[%d] = %d\n", comp_Iter, newID_Iter, newID_Iter, _csr->newNodesCompID[newID_Iter]);
         #endif
-
+        
         _csr->mapNodeID_New_to_Old[newID_Iter] = nodeID;
         _csr->mapNodeID_Old_to_new[nodeID] = newID_Iter;
+        
+        
         _csr->orderedCsrV[newID_Iter] = newCsrE_Offset_count;
         int remainDegree = _csr->oriCsrV[nodeID + 1] - _csr->csrV[nodeID];
         memcpy(_csr->orderedCsrE + _csr->orderedCsrV[newID_Iter], _csr->csrE + _csr->csrV[nodeID], sizeof(int) * remainDegree);
@@ -1243,6 +1246,7 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
 
                     _csr->mapNodeID_New_to_Old[newID_Iter]  = old_nID;
                     _csr->mapNodeID_Old_to_new[old_nID]     = newID_Iter;
+
                     _csr->orderedCsrV[newID_Iter]           = newCsrE_Offset_count;
                     int remainDegree_oldnID = _csr->oriCsrV[old_nID + 1] - _csr->csrV[old_nID];
                     memcpy(_csr->orderedCsrE + _csr->orderedCsrV[newID_Iter], _csr->csrE + _csr->csrV[old_nID], sizeof(int) * remainDegree_oldnID);
@@ -1271,6 +1275,7 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
         comp_Iter ++;
     }
     
+    // printf("[Check point][1]\n");
 
     //orderedCsrV 的 結尾offset
     _csr->newEndID = newID_Iter - 1;
@@ -1288,6 +1293,7 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
     printf("\nTail comp_newCsrOffset[%d] = %d\n", comp_Iter, _csr->comp_newCsrOffset[comp_Iter]);
     #endif
 
+    // printf("[Check point][2]\n");
     //用 mapNodeID_Old_to_new 對 _csr->orderedCsrE 重新編號
     for(int csrE_Iter = 0 ; csrE_Iter < newCsrE_Offset_count ; csrE_Iter ++){
         int oldID = _csr->orderedCsrE[csrE_Iter];
@@ -1299,7 +1305,7 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
         #endif
 
     }
-
+    // printf("[Check point][3]\n");
     //assign ff, w to newID_infos
     struct newID_info* newID_infos = (struct newID_info*)malloc(sizeof(struct newID_info) * (_csr->newEndID + 1));
     for(int newID = 0 ; newID <= _csr->newEndID ; newID ++){
@@ -1311,6 +1317,6 @@ struct newID_info* rebuildGraph(struct CSR* _csr){
         printf("newID = %d, oldID = %d, ff = %d, w = %d, type = %x\n", newID, oldID, newID_infos[newID].ff, newID_infos[newID].w, _csr->nodesType[oldID]);
         #endif
     }
-    
+    // printf("[Check point][4]\n");
     return newID_infos;
 }
