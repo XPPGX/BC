@@ -12,6 +12,7 @@
 
 struct Graph* buildGraph(char* _datasetPath){
     struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+
     FILE* fptr = fopen(_datasetPath, "r");
     if(fptr == NULL){
         printf("Error: Open file\n");
@@ -29,7 +30,9 @@ struct Graph* buildGraph(char* _datasetPath){
 
     graph->nodeNum = val1;
     graph->edgeNum = val2;
-    
+
+    graph->edges = (struct Edge*)malloc(sizeof(struct Edge) * graph->edgeNum);
+    int edgeIndex = 0;
     //read first edge to check 0 or 1 is start index.
     fgets(row, rowSize, fptr);
     getRowData(row, &val1, &val2);
@@ -65,11 +68,19 @@ struct Graph* buildGraph(char* _datasetPath){
     graph->nodeDegrees[val1] ++;
     vAppend(graph->vertices[val2].neighbors, val1);
     graph->nodeDegrees[val2] ++;
+
+    graph->edges[edgeIndex].node1 = val1;
+    graph->edges[edgeIndex].node2 = val2;
+    edgeIndex++;
     //run over all remain edges
     for(int i = 1 ; i < graph->edgeNum ; i ++){
         fgets(row, rowSize, fptr);
         getRowData(row, &val1, &val2);
         
+        graph->edges[edgeIndex].node1 = val1;
+        graph->edges[edgeIndex].node2 = val2;
+        edgeIndex++;
+
         if(val1 == 0 || val2 == 0){
             graph->startAtZero = 1;
         }

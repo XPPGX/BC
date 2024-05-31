@@ -1734,9 +1734,10 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
 
     //D1 Folding
     D1Folding(_csr);
-
+    
     //AP Process
     AP_detection(_csr);
+    
     AP_Copy_And_Split(_csr);
     // printf("[AP_Copy_And_Split OK]\n");
 
@@ -2461,21 +2462,21 @@ int main(int argc, char* argv[]){
     /************************************************************
      *                      compute_D1_AP_CC                    *
     ************************************************************/
-    time1 = seconds();
-    compute_D1_AP_CC(csr, csr->CCs);
-    time2 = seconds();
-    D1_AP_CC_ori = time2 - time1;
-    printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
+    // time1 = seconds();
+    // compute_D1_AP_CC(csr, csr->CCs);
+    // time2 = seconds();
+    // D1_AP_CC_ori = time2 - time1;
+    // printf("[Execution Time] D1_AP_CC_ori = %f\n", D1_AP_CC_ori);
 
 
     /************************************************************
      *         compute_D1_AP_CC_shareBased_DegreeOrder          *
     ************************************************************/
-    // time1 = seconds();
-    // compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
-    // time2 = seconds();
-    // D1_AP_CC_shareBasedTime = time2 - time1;
-    // printf("[Execution Time] D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+    time1 = seconds();
+    compute_D1_AP_CC_shareBased_DegreeOrder(csr, csr->CCs);
+    time2 = seconds();
+    D1_AP_CC_shareBasedTime = time2 - time1;
+    printf("[Execution Time] D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
     #pragma endregion //Release
 
 }

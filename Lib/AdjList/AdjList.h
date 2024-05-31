@@ -41,7 +41,14 @@ struct Graph{
     int* nodeDegrees;
     struct adjList* vertices;
     struct qQueue* degreeOneQueue;
+    struct Edge* edges;
 };
+
+struct Edge{
+    int node1;
+    int node2;
+};
+
 
 struct Graph* buildGraph(char* _datasetPath);
 void quicksort(struct vVector* _neighbors, int* _nodeDegrees, int _left, int _right);

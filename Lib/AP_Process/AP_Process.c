@@ -15,12 +15,11 @@ void AP_detection(struct CSR* _csr){
     memset(_csr->low, 0, sizeof(int) * _csr->csrVSize);
     memset(_csr->Dfs_sequence, -1, sizeof(int) * _csr->csrVSize);
 
+
     int* parent         = (int*)malloc(sizeof(int) * _csr->csrVSize);
     int* stack          = (int*)malloc(sizeof(int) * _csr->csrVSize);
     memset(parent, -1, sizeof(int) * _csr->csrVSize);
     memset(stack, 0, sizeof(int) * _csr->csrVSize);
-
-
     int ap_count = 0;
     
     for(int nodeID = _csr->startNodeID ; nodeID <= _csr->endNodeID ; nodeID ++){
@@ -617,7 +616,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     /**
      * We've got all compID of each nodes except for AP nodes so far
     */
-    #pragma region sortAP_By_apNum
+    #pragma region sortAP_By_apNeighborNum
     //record that there are how many components are around a single AP u
     int compNum;
 
@@ -677,7 +676,7 @@ void AP_Copy_And_Split(struct CSR* _csr){
     printf("\n");
     #endif
 
-    #pragma endregion sortAP_By_apNum
+    #pragma endregion sortAP_By_apNeighborNum
     // printf("2\n");
     
 

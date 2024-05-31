@@ -41,6 +41,8 @@ struct newID_info{
  * @brief
  * Find all APs existed in current graph, record them into _csr->AP_List
  * This function can be called after D1Folding or before D1Folding
+ * 
+ * It's just Tarjan' AP detection algorithm
 */
 void AP_detection(struct CSR* _csr);
 
