@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/caida.mtx
+Success : Build AdjList
+==============================
+dataset = ../dataset/caida.mtx
+nodeNum = 26475
+edgeNum = 53381
+degreeOneNum = 9937
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 26477
+csr->csrESize = 106762
+csr->degreeOneNum = 9937
+csr->startAtZero = 0
+csr->maxDegree = 2628
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =    10181
+Hub node Count      (|Hub|)             =     2041
+Ordinary node Count (|V| - |D1|)        =    16294
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =       12
+compCount       =       13
+maxCompSize     =    16163
+endNodeID       =    26497
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 1.362564

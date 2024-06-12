@@ -20,8 +20,11 @@ gcc -O2 -c ../Lib/D1Process/D1Process.c -o D1Process.o
 gcc -O2 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
 gcc -O2 APSP_Algo.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
 In file included from headers.h:9,
-                 from APSP_Algo.c:9:
+                 from APSP_Algo.c:8:
 ../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
    16 | inline double seconds();
       |               ^~~~~~~
 [Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.

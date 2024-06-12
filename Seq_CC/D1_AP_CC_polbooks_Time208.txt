@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/polbooks.txt
+Success : Build AdjList
+==============================
+dataset = ../dataset/polbooks.txt
+nodeNum = 105
+edgeNum = 441
+degreeOneNum = 0
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 106
+csr->csrESize = 882
+csr->degreeOneNum = 0
+csr->startAtZero = 1
+csr->maxDegree = 25
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =        0
+Hub node Count      (|Hub|)             =        0
+Ordinary node Count (|V| - |D1|)        =      105
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =        0
+compCount       =        0
+maxCompSize     =        0
+endNodeID       =      104
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 0.000132

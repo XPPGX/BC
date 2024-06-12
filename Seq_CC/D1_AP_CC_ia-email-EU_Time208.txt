@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/ia-email-EU.mtx
+Success : Build AdjList
+==============================
+dataset = ../dataset/ia-email-EU.mtx
+nodeNum = 32430
+edgeNum = 54397
+degreeOneNum = 25415
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 32432
+csr->csrESize = 108794
+csr->degreeOneNum = 25415
+csr->startAtZero = 0
+csr->maxDegree = 623
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =    25448
+Hub node Count      (|Hub|)             =      727
+Ordinary node Count (|V| - |D1|)        =     6982
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =        3
+compCount       =        4
+maxCompSize     =     6973
+endNodeID       =    32436
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 0.223548

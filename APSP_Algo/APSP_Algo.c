@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #endif
 
 #include "headers.h"
@@ -177,26 +176,25 @@ int main(int argc, char* argv[]){
     /*******************************************************
      *                  Floyd Warshall                     *
     ********************************************************/
-    time1 = seconds();
-    // clock_gettime(CLOCK_MONOTONIC, &d_start);
-    Floyd_Warshall(csr);
-    // clock_gettime(CLOCK_MONOTONIC, &d_end);
-    // Floyd_Warshall_Time = computeTime(d_start, d_end);
-    time2 = seconds();
-    Floyd_Warshall_Time = time2 - time1;
-    printf("[ExecutionTime] Floyd_WarShallTime = %f\n", Floyd_Warshall_Time);
-    FILE* fptr = fopen("Floyd_Warshall_Time208.txt", "a+");
-    fprintf(fptr, "%f\n", Floyd_Warshall_Time);
-    fclose(fptr);
+    // time1 = seconds();
+    // Floyd_Warshall(csr);
+    // time2 = seconds();
+    // Floyd_Warshall_Time = time2 - time1;
+    // printf("[ExecutionTime] Floyd_WarShallTime = %f\n", Floyd_Warshall_Time);
+    // FILE* fptr = fopen("Floyd_Warshall_Time208.txt", "a+");
+    // fprintf(fptr, "%f\n", Floyd_Warshall_Time);
+    // fclose(fptr);
     /*******************************************************
      *                  Bellman Ford                       *
     ********************************************************/
-    // time1 = seconds();
-    // Bellman_Ford(csr, graph);
-    // time2 = seconds();
-    // Bellman_Ford_Time = time2 - time1;
-    // printf("[ExecutionTime] Bellman_Ford_Time = %f\n", Bellman_Ford_Time);
-
+    time1 = seconds();
+    Bellman_Ford(csr, graph);
+    time2 = seconds();
+    Bellman_Ford_Time = time2 - time1;
+    printf("[ExecutionTime] Bellman_Ford_Time = %f\n", Bellman_Ford_Time);
+    FILE* fptr = fopen("Bellman_Ford_Time208.txt", "a+");
+    fprintf(fptr, "%f\n", Bellman_Ford_Time);
+    fclose(fptr);
     /*******************************************************
      *                        SPFA                         *
     ********************************************************/

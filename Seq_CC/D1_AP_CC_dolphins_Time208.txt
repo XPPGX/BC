@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/dolphins.txt
+Success : Build AdjList
+==============================
+dataset = ../dataset/dolphins.txt
+nodeNum = 62
+edgeNum = 159
+degreeOneNum = 9
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 64
+csr->csrESize = 318
+csr->degreeOneNum = 9
+csr->startAtZero = 0
+csr->maxDegree = 12
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =        9
+Hub node Count      (|Hub|)             =        7
+Ordinary node Count (|V| - |D1|)        =       53
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =        0
+compCount       =        0
+maxCompSize     =        0
+endNodeID       =       62
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 0.000044

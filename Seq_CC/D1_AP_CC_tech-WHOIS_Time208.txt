@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/tech-WHOIS.mtx
+Success : Build AdjList
+==============================
+dataset = ../dataset/tech-WHOIS.mtx
+nodeNum = 7476
+edgeNum = 56943
+degreeOneNum = 423
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 7478
+csr->csrESize = 113886
+csr->degreeOneNum = 423
+csr->startAtZero = 0
+csr->maxDegree = 1079
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =      436
+Hub node Count      (|Hub|)             =      233
+Ordinary node Count (|V| - |D1|)        =     7040
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =       11
+compCount       =       14
+maxCompSize     =     6985
+endNodeID       =     7497
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 0.356641

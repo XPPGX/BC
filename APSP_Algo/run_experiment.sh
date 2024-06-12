@@ -1,15 +1,14 @@
 #!/bin/bash
 
 folder_path="../dataset/"
-# datasets=("musae_git.txt")
-datasets=("ia-email-EU.mtx")
+datasets=("ia-email-EU.mtx" "musae_git.txt")
 # datasets=("tech-WHOIS.mtx" "ca-HepPh.mtx" "caida.mtx")
 # datasets=("karate.txt" "dolphins.txt" "football.txt" "polbooks.txt" "ia-fb-messages.mtx")
 
 make clean && make
 
-for i in {1..2}; do
-    echo -e "iteration $i\n" >> "Floyd_Warshall_Time208.txt"
+for i in {1..1}; do
+    echo -e "iteration $i\n" >> "Bellman_Ford_Time208.txt"
     # 循环执行五个不同的数据集实验
     for dataset in "${datasets[@]}"; do
         # 运行实验
@@ -21,5 +20,5 @@ for i in {1..2}; do
         echo "[Finished]\tExperiment with $dataset completed."
     done
 done
-echo -e "\n" >> "Floyd_Warshall_Time208.txt"
+echo -e "\n" >> "Bellman_Ford_Time208.txt"
 # echo "All experiments completed."

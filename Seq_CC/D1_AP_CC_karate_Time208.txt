@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/karate.txt
+Success : Build AdjList
+==============================
+dataset = ../dataset/karate.txt
+nodeNum = 34
+edgeNum = 78
+degreeOneNum = 1
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 36
+csr->csrESize = 156
+csr->degreeOneNum = 1
+csr->startAtZero = 0
+csr->maxDegree = 17
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =        1
+Hub node Count      (|Hub|)             =        1
+Ordinary node Count (|V| - |D1|)        =       33
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =        1
+compCount       =        2
+maxCompSize     =       27
+endNodeID       =       36
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 0.000020

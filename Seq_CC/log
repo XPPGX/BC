@@ -1,0 +1,269 @@
+rm -f *.o a
+gcc -O2 -c ../Lib/vVector/vVector.c -o vVector.o
+gcc -O2 -c ../Lib/qQueue/qQueue.c -o qQueue.o
+gcc -O2 -c ../Lib/tTime/tTime.c -o tTime.o
+gcc -O2 -c ../Lib/FileReader/FileReader.c -o FileReader.o
+gcc -O2 -c ../Lib/AdjList/AdjList.c -o AdjList.o
+../Lib/AdjList/AdjList.c: In function ‘buildGraph’:
+../Lib/AdjList/AdjList.c:23:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   23 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:37:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   37 |     fgets(row, rowSize, fptr);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+../Lib/AdjList/AdjList.c:77:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   77 |         fgets(row, rowSize, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+gcc -O2 -c ../Lib/CSR/CSR.c -o CSR.o
+gcc -O2 -c ../Lib/D1Process/D1Process.c -o D1Process.o
+gcc -O2 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
+gcc -O2 CC.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+In file included from headers.h:9,
+                 from CC.c:8:
+../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
+   16 | inline double seconds();
+      |               ^~~~~~~
+CC.c: In function ‘readTrueAns’:
+CC.c:2330:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+ 2330 |         fgets(row, 2000, fptr);
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.
+[Running]\texperiment with karate.txt
+[Finished]\tExperiment with karate.txt completed.
+[Running]\texperiment with dolphins.txt
+[Finished]\tExperiment with dolphins.txt completed.
+[Running]\texperiment with football.txt
+[Finished]\tExperiment with football.txt completed.
+[Running]\texperiment with polbooks.txt
+[Finished]\tExperiment with polbooks.txt completed.
+[Running]\texperiment with ia-fb-messages.mtx
+[Finished]\tExperiment with ia-fb-messages.mtx completed.
+[Running]\texperiment with tech-WHOIS.mtx
+[Finished]\tExperiment with tech-WHOIS.mtx completed.
+[Running]\texperiment with ca-HepPh.mtx
+[Finished]\tExperiment with ca-HepPh.mtx completed.
+[Running]\texperiment with caida.mtx
+[Finished]\tExperiment with caida.mtx completed.
+[Running]\texperiment with ia-email-EU.mtx
+[Finished]\tExperiment with ia-email-EU.mtx completed.
+[Running]\texperiment with musae_git.txt
+[Finished]\tExperiment with musae_git.txt completed.

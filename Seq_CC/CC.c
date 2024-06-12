@@ -2477,6 +2477,9 @@ int main(int argc, char* argv[]){
     time2 = seconds();
     D1_AP_CC_shareBasedTime = time2 - time1;
     printf("[Execution Time] D1_AP_CC_shareBasedTime = %f\n", D1_AP_CC_shareBasedTime);
+    FILE* fptr = fopen("ShareBased_Time208.txt", "a+");
+    fprintf(fptr, "%f\n", D1_AP_CC_shareBasedTime);
+    fclose(fptr);
     #pragma endregion //Release
 
 }

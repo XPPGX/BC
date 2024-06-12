@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/ca-HepPh.mtx
+Success : Build AdjList
+==============================
+dataset = ../dataset/ca-HepPh.mtx
+nodeNum = 11204
+edgeNum = 117619
+degreeOneNum = 1116
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 11206
+csr->csrESize = 235238
+csr->degreeOneNum = 1116
+csr->startAtZero = 0
+csr->maxDegree = 491
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =     1153
+Hub node Count      (|Hub|)             =      823
+Ordinary node Count (|V| - |D1|)        =    10051
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =      361
+compCount       =      363
+maxCompSize     =     8710
+endNodeID       =    11862
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 1.015995

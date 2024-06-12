@@ -1,0 +1,34 @@
+exeName = ./a
+datasetPath = ../dataset/ia-fb-messages.mtx
+Success : Build AdjList
+==============================
+dataset = ../dataset/ia-fb-messages.mtx
+nodeNum = 1266
+edgeNum = 6451
+degreeOneNum = 232
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 1268
+csr->csrESize = 12902
+csr->degreeOneNum = 232
+csr->startAtZero = 0
+csr->maxDegree = 112
+[Success] CreateCSR finish
+==============================
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =      246
+Hub node Count      (|Hub|)             =      181
+Ordinary node Count (|V| - |D1|)        =     1020
+==============================
+==============================
+AP Copy and Split... Finished.
+apCount         =        0
+compCount       =        0
+maxCompSize     =        0
+endNodeID       =     1266
+==============================
+
+[Execution Time] D1_AP_CC_shareBasedTime = 0.009393
