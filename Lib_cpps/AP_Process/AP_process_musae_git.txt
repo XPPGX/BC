@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/musae_git.txt
+Success : Build AdjList
+==============================
+dataset = ../../dataset/musae_git.txt
+nodeNum = 37700
+edgeNum = 289003
+degreeOneNum = 5045
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 37701
+csr->csrESize = 578006
+csr->degreeOneNum = 5045
+csr->startAtZero = 1
+csr->maxDegree = 9458
+[Success] CreateCSR finish
+==============================
+CCs[7] = 117726
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =     5236
+Hub node Count      (|Hub|)             =     2977
+Ordinary node Count (|V| - |D1|)        =    32464
+==============================
+[Execution Time] D1Folding          = 0.000294
+[Execution Time] AP_detection       = 0.003033
+1
+2
+nextCsrE_offset = 578006
+maxBranch = 7
+3
+[Execution Time] AP_Copy_And_Split  = 0.034253
+apCount     =       26
+compCount   =       22
+maxCompSize =    32395

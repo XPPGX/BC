@@ -1695,6 +1695,7 @@ void sortEachComp_NewID_with_degree(struct CSR* _csr, int* _newNodesID_arr, int*
     for(int newID = 0 ; newID <= _csr->newEndID ; newID ++){
         _newNodesID_arr[newID]       = newID;
         _newNodesDegree_arr[newID]   = _csr->orderedCsrV[newID + 1] - _csr->orderedCsrV[newID];
+        
         // printf("newID %d, oldID %d, degree %d\n", _newNodesID_arr[newID], _csr->mapNodeID_New_to_Old[newID], _newNodesDegree_arr[newID]);
     }
 
@@ -1707,6 +1708,9 @@ void sortEachComp_NewID_with_degree(struct CSR* _csr, int* _newNodesID_arr, int*
         quicksort_nodeID_with_degree(_newNodesID_arr, _newNodesDegree_arr, _csr->comp_newCsrOffset[compID], _csr->comp_newCsrOffset[compID + 1] - 1);
     }
 
+    for(int newID = 0 ; newID <= _csr->newEndID ; newID ++){
+        quicksort_nodeID_with_degree(_csr->orderedCsrE, _newNodesDegree_arr, _csr->orderedCsrV[newID], _csr->orderedCsrV[newID + 1] -1);
+    }
     // for(int newID_idx = 0 ; newID_idx <= _csr->newEndID ; newID_idx ++){
     //     int newID = _newNodesID_arr[newID_idx];
     //     int degree = _csr->orderedCsrV[newID + 1] - _csr->orderedCsrV[newID];
@@ -1761,7 +1765,7 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
             /**
              * 不做：
              * 1. 已經 nodeDone = 1 的 node
-             * 2. CloneAP (sourceNewID > oriEndNodeID 就是 CloneAP) ? 
+             * 2. CloneAP (藉由 (sourceOldID > oriEndNodeID)判斷一個node是不是 CloneAP) 
             */
             if(nodeDone[sourceNewID] == 1 || (sourceOldID > oriEndNodeID)){
                 continue;
@@ -1947,28 +1951,36 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
 
                     //這個for迴圈會把同component內的點，所有的距離貢獻都加總到 allDist(連自己的都會加總)
                     for(int sameComp_newNodeID = _csr->comp_newCsrOffset[nodeCompID] ; sameComp_newNodeID < _csr->comp_newCsrOffset[nodeCompID + 1] ; sameComp_newNodeID++){
-                        if((sharedBitIndex[sameComp_newNodeID] & bit_SI) > 0){
-                            neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] - 1;
+                        #pragma region shareFormula_just_use_bit_operation
+                        neighbor_dist_ans[sameComp_newNodeID] = (dist_arr[sameComp_newNodeID] + 1) 
+                                                                - ((sharedBitIndex[sameComp_newNodeID] & bit_SI) >> sourceNeighborIndex) * 2 
+                                                                - ((relation[sameComp_newNodeID] & bit_SI) >> sourceNeighborIndex);
+                        #pragma endregion shareFormula_just_use_bit_operation
 
-                            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                            printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
-                            #endif
-                        }
-                        else{
-                            neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] + 1;
+                        #pragma region shareFormula
+                        // if((sharedBitIndex[sameComp_newNodeID] & bit_SI) > 0){
+                        //     neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] - 1;
+
+                        //     #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+                        //     printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                        //     #endif
+                        // }
+                        // else{
+                        //     neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] + 1; 
                             
-                            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                            printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
-                            #endif
+                        //     #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+                        //     printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                        //     #endif
 
-                            if((relation[sameComp_newNodeID] & bit_SI) > 0){
-                                neighbor_dist_ans[sameComp_newNodeID] --;
+                        //     if((relation[sameComp_newNodeID] & bit_SI) > 0){
+                        //         neighbor_dist_ans[sameComp_newNodeID] --;
 
-                                #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                                printf("\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
-                                #endif
-                            }
-                        }
+                        //         #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+                        //         printf("\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                        //         #endif
+                        //     }
+                        // }
+                        #pragma endregion shareFormula
                         allDist += newID_infos[sameComp_newNodeID].ff + neighbor_dist_ans[sameComp_newNodeID] * newID_infos[sameComp_newNodeID].w;
 
                         #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG

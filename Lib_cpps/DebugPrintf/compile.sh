@@ -1,0 +1,1 @@
+gcc -fgnu89-inline example.c DebugPrintf.c -o a

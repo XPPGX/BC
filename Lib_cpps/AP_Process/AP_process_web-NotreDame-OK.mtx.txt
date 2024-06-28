@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/web-NotreDame-OK.mtx
+Success : Build AdjList
+==============================
+dataset = ../../dataset/web-NotreDame-OK.mtx
+nodeNum = 325729
+edgeNum = 1090108
+degreeOneNum = 161832
+graph start with 1
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 325731
+csr->csrESize = 2180216
+csr->degreeOneNum = 161832
+csr->startAtZero = 0
+csr->maxDegree = 10721
+[Success] CreateCSR finish
+==============================
+CCs[7] = 1488612
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =   166046
+Hub node Count      (|Hub|)             =    17070
+Ordinary node Count (|V| - |D1|)        =   159683
+==============================
+[Execution Time] D1Folding          = 0.002937
+[Execution Time] AP_detection       = 0.010856
+1
+2
+nextCsrE_offset = 2180216
+maxBranch = 392
+3
+[Execution Time] AP_Copy_And_Split  = 3.316713
+apCount     =     1145
+compCount   =     1155
+maxCompSize =   133715

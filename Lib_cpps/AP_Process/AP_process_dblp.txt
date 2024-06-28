@@ -1,0 +1,35 @@
+datasetPath = ../../dataset/dblp.txt
+Success : Build AdjList
+==============================
+dataset = ../../dataset/dblp.txt
+nodeNum = 317080
+edgeNum = 1049866
+degreeOneNum = 43181
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 317081
+csr->csrESize = 2099732
+csr->degreeOneNum = 43181
+csr->startAtZero = 1
+csr->maxDegree = 343
+[Success] CreateCSR finish
+==============================
+CCs[1] = 1589090
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =    45434
+Hub node Count      (|Hub|)             =    25730
+Ordinary node Count (|V| - |D1|)        =   271646
+==============================
+[Execution Time] D1Folding          = 0.003100
+[Execution Time] AP_detection       = 0.027525
+==============================
+AP Copy and Split... Finished.
+apCount         =    18837
+compCount       =    21332
+maxCompSize     =   188951
+endNodeID       =   353070
+==============================
+[Execution Time] AP_Copy_And_Split  = 232.330237

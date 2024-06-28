@@ -1,0 +1,36 @@
+datasetPath = ../../dataset/Slashdot0811-OK.mtx
+Success : Build AdjList
+==============================
+dataset = ../../dataset/Slashdot0811-OK.mtx
+nodeNum = 77360
+edgeNum = 469180
+degreeOneNum = 28155
+graph start with 0
+==============================
+==============================
+CreateCSR...
+csr->csrVSize = 77361
+csr->csrESize = 938360
+csr->degreeOneNum = 28155
+csr->startAtZero = 1
+csr->maxDegree = 2539
+[Success] CreateCSR finish
+==============================
+CCs[7] = 284511
+==============================
+D1 Folding...Finished.
+D1 node count       (|D1|)              =    29600
+Hub node Count      (|Hub|)             =    12246
+Ordinary node Count (|V| - |D1|)        =    47760
+==============================
+[Execution Time] D1Folding          = 0.000793
+[Execution Time] AP_detection       = 0.005185
+1
+2
+nextCsrE_offset = 938360
+maxBranch = 39
+3
+[Execution Time] AP_Copy_And_Split  = 0.559732
+apCount     =      263
+compCount   =      224
+maxCompSize =    46976
