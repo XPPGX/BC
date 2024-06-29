@@ -1952,34 +1952,34 @@ void compute_D1_AP_CC_shareBased_DegreeOrder(struct CSR* _csr, int* _CCs){
                     //這個for迴圈會把同component內的點，所有的距離貢獻都加總到 allDist(連自己的都會加總)
                     for(int sameComp_newNodeID = _csr->comp_newCsrOffset[nodeCompID] ; sameComp_newNodeID < _csr->comp_newCsrOffset[nodeCompID + 1] ; sameComp_newNodeID++){
                         #pragma region shareFormula_just_use_bit_operation
-                        neighbor_dist_ans[sameComp_newNodeID] = (dist_arr[sameComp_newNodeID] + 1) 
-                                                                - ((sharedBitIndex[sameComp_newNodeID] & bit_SI) >> sourceNeighborIndex) * 2 
-                                                                - ((relation[sameComp_newNodeID] & bit_SI) >> sourceNeighborIndex);
+                        // neighbor_dist_ans[sameComp_newNodeID] = (dist_arr[sameComp_newNodeID] + 1) 
+                        //                                         - ((sharedBitIndex[sameComp_newNodeID] & bit_SI) >> sourceNeighborIndex) * 2 
+                        //                                         - ((relation[sameComp_newNodeID] & bit_SI) >> sourceNeighborIndex);
                         #pragma endregion shareFormula_just_use_bit_operation
 
                         #pragma region shareFormula
-                        // if((sharedBitIndex[sameComp_newNodeID] & bit_SI) > 0){
-                        //     neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] - 1;
+                        if((sharedBitIndex[sameComp_newNodeID] & bit_SI) > 0){
+                            neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] - 1;
 
-                        //     #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                        //     printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
-                        //     #endif
-                        // }
-                        // else{
-                        //     neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] + 1; 
+                            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+                            printf("\t[1]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                            #endif
+                        }
+                        else{
+                            neighbor_dist_ans[sameComp_newNodeID] = dist_arr[sameComp_newNodeID] + 1; 
                             
-                        //     #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                        //     printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
-                        //     #endif
+                            #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+                            printf("\t[2]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                            #endif
 
-                        //     if((relation[sameComp_newNodeID] & bit_SI) > 0){
-                        //         neighbor_dist_ans[sameComp_newNodeID] --;
+                            if((relation[sameComp_newNodeID] & bit_SI) > 0){
+                                neighbor_dist_ans[sameComp_newNodeID] --;
 
-                        //         #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
-                        //         printf("\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
-                        //         #endif
-                        //     }
-                        // }
+                                #ifdef compute_D1_AP_CC_shareBased_DegreeOrder_DEBUG
+                                printf("\t[3]neighbor_dist_ans[%2d] = %2d, SI[%2d] = %x\n", _csr->mapNodeID_New_to_Old[sameComp_newNodeID], neighbor_dist_ans[sameComp_newNodeID], sameComp_newNodeID, sharedBitIndex[sameComp_newNodeID]);
+                                #endif
+                            }
+                        }
                         #pragma endregion shareFormula
                         allDist += newID_infos[sameComp_newNodeID].ff + neighbor_dist_ans[sameComp_newNodeID] * newID_infos[sameComp_newNodeID].w;
 
