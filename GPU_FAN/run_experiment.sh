@@ -16,10 +16,14 @@ folder_path="../dataset/"
 #     echo "${dataset%.*}"
 # done
 
-# "web-sk-2005.mtx" "Slashdot0811-OK.mtx" "musae_git.txt" 
-datasets=("wikiTalk.mtx")
-# datasets=("web-sk-2005.mtx" "Slashdot0811-OK.mtx" "musae_git.txt" "loc-Gowalla.mtx" "tech-RL-caida.mtx" "amazon.txt" "soc-flickr.mtx" "twitch_gamers.txt" "amazon0302-OK.mtx" "soc-youtube.mtx" "youtube.txt" "web-Google-Ok2.mtx" "wikiTalk.mtx")
+# datasets=("musae_git.txt")
+# datasets=("ia-email-EU.mtx")
+# datasets=("tech-WHOIS.mtx" "ca-HepPh.mtx" "caida.mtx")
+# datasets=("karate.txt" "dolphins.txt" "football.txt" "polbooks.txt" "ia-fb-messages.mtx" "tech-WHOIS.mtx" "ca-HepPh.mtx" "caida.mtx" "ia-email-EU.mtx" "musae_git.txt")
 
+# datasets=("web-sk-2005.mtx" "Slashdot0811-OK.mtx" "musae_git.txt" "loc-Gowalla.mtx" "tech-RL-caida.mtx" "dblp.txt" "amazon.txt" "soc-flickr.mtx" "twitch_gamers.txt" "amazon0302-OK.mtx" "soc-youtube.mtx" "youtube.txt" "web-Google-Ok2.mtx" "wikiTalk.mtx" "web-wikipedia2009.mtx")
+# datasets=("web-Google-Ok2.mtx" "wikiTalk.mtx" "web-wikipedia2009.mtx")
+datasets=("road-roadNet-CA.mtx")
 make clean && make
 
 # 循环执行五个不同的数据集实验
@@ -37,17 +41,18 @@ make clean && make
 # echo "All experiments completed."
 
 # 小資料集的實驗script
+
 for i in {1..1}; do
-    echo -e "iteration $i\n" >> "ShareBased_Time208.txt"
+    echo -e "iteration $i\n" >> "gpu_fan_Time208.txt"
     # 循环执行五个不同的数据集实验
     for dataset in "${datasets[@]}"; do
         # 运行实验
 
-        nohup ./a "../dataset/$dataset" &> "D1_AP_CC_${dataset%.*}_Time208.txt" &
-        echo "[Running]\texperiment with $dataset"
+        nohup ./a "../dataset/$dataset" &> "gpu_fan_${dataset%.*}_Time208.txt" &
+        echo "$(date +"%Y-%m-%d %H:%M:%S") [Running]\texperiment with $dataset"
         # 等待当前实验完成
         wait $!
-        echo "[Finished]\tExperiment with $dataset completed."
+        echo "$(date +"%Y-%m-%d %H:%M:%S") [Finished]\tExperiment with $dataset completed."
     done
 done
-echo -e "\n" >> "ShareBased_Time208.txt"
+echo -e "\n" >> "gpu_fan_Time208.txt"

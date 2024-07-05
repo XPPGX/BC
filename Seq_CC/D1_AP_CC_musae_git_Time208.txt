@@ -31,4 +31,9 @@ maxCompSize     =    32395
 endNodeID       =    37731
 ==============================
 
-[Execution Time] D1_AP_CC_shareBasedTime = 8.840017
+[Execution Time] D1_AP_CC_shareBasedTime    = 9.023559
+[Execution Time] D1Folding_Time             = 0.000353
+[Execution Time] AP_Split_Time              = 0.038864
+[Execution Time] Rebuild_Time               = 0.001839
+[Execution Time] shareTraverse_Time         = 8.982478
+[Execution Time] D1Retrieve_Time            = 0.000016

@@ -1,0 +1,85 @@
+nohup: ignoring input
+rm -f *.o a
+g++ -O2 -c ../Lib_cpps/vVector/vVector.cpp -o vVector.o
+g++ -O2 -c ../Lib_cpps/qQueue/qQueue.cpp -o qQueue.o
+g++ -O2 -c ../Lib_cpps/tTime/tTime.cpp -o tTime.o
+g++ -O2 -c ../Lib_cpps/FileReader/FileReader.cpp -o FileReader.o
+g++ -O2 -c ../Lib_cpps/AdjList/AdjList.cpp -o AdjList.o
+../Lib_cpps/AdjList/AdjList.cpp: In function ‘Graph* buildGraph(char*)’:
+../Lib_cpps/AdjList/AdjList.cpp:23:10: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   23 |     fgets(row, rowSize, fptr);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~
+../Lib_cpps/AdjList/AdjList.cpp:37:10: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   37 |     fgets(row, rowSize, fptr);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~
+../Lib_cpps/AdjList/AdjList.cpp:77:14: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+   77 |         fgets(row, rowSize, fptr);
+      |         ~~~~~^~~~~~~~~~~~~~~~~~~~
+g++ -O2 -c ../Lib_cpps/CSR/CSR.cpp -o CSR.o
+g++ -O2 -c ../Lib_cpps/D1Process/D1Process.cpp -o D1Process.o
+g++ -O2 -c ../Lib_cpps/AP_Process/AP_Process.cpp -o AP_Process.o
+../Lib_cpps/AP_Process/AP_Process.cpp: In function ‘newID_info* rebuildGraph(CSR*)’:
+../Lib_cpps/AP_Process/AP_Process.cpp:1231:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1231 |         register int old_curID  = -1;
+      |                      ^~~~~~~~~
+../Lib_cpps/AP_Process/AP_Process.cpp:1232:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1232 |         register int old_nidx   = -1;
+      |                      ^~~~~~~~
+../Lib_cpps/AP_Process/AP_Process.cpp:1233:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1233 |         register int old_nID    = -1;
+      |                      ^~~~~~~
+nvcc -O2 -c para_CC.cu -o para_CC.o
+para_CC.cu(349): warning #177-D: variable "sourceNeighborOldID" was declared but never referenced
+                      int sourceNeighborOldID = _csr->mapNodeID_New_to_Old[sourceNeighborNewID];
+                          ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+para_CC.cu(350): warning #177-D: variable "nodeCompID" was declared but never referenced
+                      int nodeCompID = _csr->newNodesCompID[sourceNeighborNewID];
+                          ^
+
+para_CC.cu(272): warning #550-D: variable "old_nID" was set but never used
+                  register int old_nID = -1;
+                               ^
+
+para_CC.cu(405): warning #550-D: variable "smallerAgentNode" was set but never used
+      int smallerAgentNode = -1;
+          ^
+
+para_CC.cu(409): warning #550-D: variable "largerAgentNode" was set but never used
+      int largerAgentNode = -1;
+          ^
+
+para_CC.cu(477): warning #177-D: variable "compSize" was declared but never referenced
+          int compSize = _csr->comp_newCsrOffset[compID + 1] - _csr->comp_newCsrOffset[compID];
+              ^
+
+para_CC.cu(525): warning #177-D: variable "old_nID" was declared but never referenced
+          register int old_nID = _g_mapNodeID_New_to_Old[new_nID];
+                       ^
+
+para_CC.cu: In function ‘void preprocess_then_parallel_sharedBased_DegreeOrder(CSR*)’:
+para_CC.cu:271:14: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  271 |                 register int new_nID = -1;
+      |              ^  ~~~~
+para_CC.cu:272:14: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  272 |                 register int old_nID = -1;
+      |              ^  ~~~~
+para_CC.cu:370:14: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  370 |     register int d1NodeID       = -1;
+      |              ^~~~~~~~
+para_CC.cu:371:14: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  371 |     register int d1NodeParentID = -1;
+      |              ^~~~~~~~~~~~~~
+para_CC.cu: In function ‘int threadDecide(int*, int, int)’:
+para_CC.cu:809:14: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  809 |     register int min_value = __INT_MAX__;
+      |              ^~~~~~~~~
+para_CC.cu:810:14: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  810 |     register int result = 0;
+      |              ^~~~~~
+nvcc -O2 vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o para_CC.o -o a
+2024-07-05 17:15:22 [Running]\texperiment with web-sk-2005.mtx
+2024-07-05 17:15:24 [Finished]\tExperiment with web-sk-2005.mtx completed.
+2024-07-05 17:15:24 [Running]\texperiment with Slashdot0811-OK.mtx

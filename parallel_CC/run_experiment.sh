@@ -21,7 +21,7 @@ folder_path="../dataset/"
 # datasets=("tech-WHOIS.mtx" "ca-HepPh.mtx" "caida.mtx")
 # datasets=("karate.txt" "dolphins.txt" "football.txt" "polbooks.txt" "ia-fb-messages.mtx" "tech-WHOIS.mtx" "ca-HepPh.mtx" "caida.mtx" "ia-email-EU.mtx" "musae_git.txt")
 
-datasets=("web-sk-2005.mtx" "Slashdot0811-OK.mtx" "musae_git.txt" "loc-Gowalla.mtx" "tech-RL-caida.mtx" "dblp.txt" "amazon.txt" "soc-flickr.mtx" "twitch_gamers.txt" "amazon0302-OK.mtx" "soc-youtube.mtx" "youtube.txt" "web-Google-Ok2.mtx" "wikiTalk.mtx" "web-wikipedia2009.mtx" "road-roadNet-CA.mtx")
+datasets=("web-sk-2005.mtx" "Slashdot0811-OK.mtx" "musae_git.txt" "loc-Gowalla.mtx" "tech-RL-caida.mtx" "dblp.txt" "amazon.txt" "soc-flickr.mtx" "twitch_gamers.txt" "amazon0302-OK.mtx" "soc-youtube.mtx" "youtube.txt" "web-Google-Ok2.mtx" "wikiTalk.mtx" "web-wikipedia2009.mtx")
 
 make clean && make
 
@@ -41,7 +41,7 @@ make clean && make
 
 # 小資料集的實驗script
 
-for i in {1..12}; do
+for i in {1..8}; do
     echo -e "iteration $i\n" >> "parallel_ShareBased_Time208.txt"
     # 循环执行五个不同的数据集实验
     for dataset in "${datasets[@]}"; do

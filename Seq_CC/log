@@ -1,269 +1,129 @@
+nohup: ignoring input
 rm -f *.o a
-gcc -O2 -c ../Lib/vVector/vVector.c -o vVector.o
-gcc -O2 -c ../Lib/qQueue/qQueue.c -o qQueue.o
-gcc -O2 -c ../Lib/tTime/tTime.c -o tTime.o
-gcc -O2 -c ../Lib/FileReader/FileReader.c -o FileReader.o
-gcc -O2 -c ../Lib/AdjList/AdjList.c -o AdjList.o
-../Lib/AdjList/AdjList.c: In function ‘buildGraph’:
-../Lib/AdjList/AdjList.c:23:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+g++ -O2 -c ../Lib_cpps/vVector/vVector.cpp -o vVector.o
+g++ -O2 -c ../Lib_cpps/qQueue/qQueue.cpp -o qQueue.o
+g++ -O2 -c ../Lib_cpps/tTime/tTime.cpp -o tTime.o
+g++ -O2 -c ../Lib_cpps/FileReader/FileReader.cpp -o FileReader.o
+g++ -O2 -c ../Lib_cpps/AdjList/AdjList.cpp -o AdjList.o
+../Lib_cpps/AdjList/AdjList.cpp: In function ‘Graph* buildGraph(char*)’:
+../Lib_cpps/AdjList/AdjList.cpp:23:10: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
    23 |     fgets(row, rowSize, fptr);
-      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
-../Lib/AdjList/AdjList.c:37:5: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~
+../Lib_cpps/AdjList/AdjList.cpp:37:10: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
    37 |     fgets(row, rowSize, fptr);
-      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
-../Lib/AdjList/AdjList.c:77:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~
+../Lib_cpps/AdjList/AdjList.cpp:77:14: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
    77 |         fgets(row, rowSize, fptr);
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
-gcc -O2 -c ../Lib/CSR/CSR.c -o CSR.o
-gcc -O2 -c ../Lib/D1Process/D1Process.c -o D1Process.o
-gcc -O2 -c ../Lib/AP_Process/AP_Process.c -o AP_Process.o
-gcc -O2 CC.c vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+      |         ~~~~~^~~~~~~~~~~~~~~~~~~~
+g++ -O2 -c ../Lib_cpps/CSR/CSR.cpp -o CSR.o
+g++ -O2 -c ../Lib_cpps/D1Process/D1Process.cpp -o D1Process.o
+g++ -O2 -c ../Lib_cpps/AP_Process/AP_Process.cpp -o AP_Process.o
+../Lib_cpps/AP_Process/AP_Process.cpp: In function ‘newID_info* rebuildGraph(CSR*)’:
+../Lib_cpps/AP_Process/AP_Process.cpp:1231:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1231 |         register int old_curID  = -1;
+      |                      ^~~~~~~~~
+../Lib_cpps/AP_Process/AP_Process.cpp:1232:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1232 |         register int old_nidx   = -1;
+      |                      ^~~~~~~~
+../Lib_cpps/AP_Process/AP_Process.cpp:1233:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1233 |         register int old_nID    = -1;
+      |                      ^~~~~~~
+g++ -O2 CC.cpp vVector.o qQueue.o tTime.o FileReader.o AdjList.o CSR.o D1Process.o AP_Process.o -o a
+CC.cpp: In function ‘void computeCC_shareBased(CSR*, int*)’:
+CC.cpp:154:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  154 |         register int currentNodeID  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp:155:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  155 |         register int neighborNodeID = -1;
+      |                      ^~~~~~~~~~~~~~
+CC.cpp:156:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  156 |         register int neighborIndex  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp: In function ‘void compute_D1_CC_shareBased(CSR*, int*)’:
+CC.cpp:559:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  559 |         register int currentNodeID  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp:560:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  560 |         register int neighborNodeID = -1;
+      |                      ^~~~~~~~~~~~~~
+CC.cpp:561:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  561 |         register int neighborIndex  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp: In function ‘void compute_D1_CC_shareBased_DegreeOrder(CSR*, int*)’:
+CC.cpp:976:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  976 |         register int currentNodeID  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp:977:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  977 |         register int neighborNodeID = -1;
+      |                      ^~~~~~~~~~~~~~
+CC.cpp:978:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+  978 |         register int neighborIndex  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp: In function ‘void compute_D1_CC_sharedBased_DegreeOrder_64bit(CSR*, int*)’:
+CC.cpp:1332:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1332 |         register int currentNodeID  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp:1333:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1333 |         register int neighborNodeID = -1;
+      |                      ^~~~~~~~~~~~~~
+CC.cpp:1334:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1334 |         register int neighborIndex  = -1;
+      |                      ^~~~~~~~~~~~~
+CC.cpp: In function ‘void compute_D1_AP_CC(CSR*, int*)’:
+CC.cpp:1654:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1654 |         register int allDist    = 0;
+      |                      ^~~~~~~
+CC.cpp:1656:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1656 |         register int curNewID   = -1;
+      |                      ^~~~~~~~
+CC.cpp:1657:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1657 |         register int new_nid    = -1;
+      |                      ^~~~~~~
+CC.cpp:1658:22: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1658 |         register int new_nidx   = -1;
+      |                      ^~~~~~~~
+CC.cpp: In function ‘void compute_D1_AP_CC_shareBased_DegreeOrder(CSR*, int*)’:
+CC.cpp:1808:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1808 |             register int new_CurID  = -1;
+      |                          ^~~~~~~~~
+CC.cpp:1809:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1809 |             register int new_nID    = -1;
+      |                          ^~~~~~~
+CC.cpp:1810:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1810 |             register int new_nidx   = -1;
+      |                          ^~~~~~~~
+CC.cpp:1811:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 1811 |             register int allDist    = 0;
+      |                          ^~~~~~~
+CC.cpp: In function ‘void compute_D1_AP_CC_shareBased_DegreeOrder_64bit(CSR*, int*)’:
+CC.cpp:2122:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 2122 |             register int new_CurID  = -1;
+      |                          ^~~~~~~~~
+CC.cpp:2123:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 2123 |             register int new_nID    = -1;
+      |                          ^~~~~~~
+CC.cpp:2124:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 2124 |             register int new_nidx   = -1;
+      |                          ^~~~~~~~
+CC.cpp:2125:26: warning: ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
+ 2125 |             register int allDist    = 0;
+      |                          ^~~~~~~
+CC.cpp: In function ‘void readTrueAns(char*, CSR*, int*, int*)’:
+CC.cpp:2636:21: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+ 2636 |     char* subName = ".mtx";
+      |                     ^~~~~~
+CC.cpp:2637:24: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+ 2637 |     char* appendName = "_ans.txt";
+      |                        ^~~~~~~~~~
 In file included from headers.h:9,
-                 from CC.c:8:
-../Lib/tTime/tTime.h:16:15: warning: inline function ‘seconds’ declared but never defined
+                 from CC.cpp:8:
+../Lib/tTime/tTime.h: At global scope:
+../Lib/tTime/tTime.h:16:15: warning: inline function ‘double seconds()’ used but never defined
    16 | inline double seconds();
       |               ^~~~~~~
-CC.c: In function ‘readTrueAns’:
-CC.c:2330:9: warning: ignoring return value of ‘fgets’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
- 2330 |         fgets(row, 2000, fptr);
-      |         ^~~~~~~~~~~~~~~~~~~~~~
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
-[Running]\texperiment with karate.txt
-[Finished]\tExperiment with karate.txt completed.
-[Running]\texperiment with dolphins.txt
-[Finished]\tExperiment with dolphins.txt completed.
-[Running]\texperiment with football.txt
-[Finished]\tExperiment with football.txt completed.
-[Running]\texperiment with polbooks.txt
-[Finished]\tExperiment with polbooks.txt completed.
-[Running]\texperiment with ia-fb-messages.mtx
-[Finished]\tExperiment with ia-fb-messages.mtx completed.
-[Running]\texperiment with tech-WHOIS.mtx
-[Finished]\tExperiment with tech-WHOIS.mtx completed.
-[Running]\texperiment with ca-HepPh.mtx
-[Finished]\tExperiment with ca-HepPh.mtx completed.
-[Running]\texperiment with caida.mtx
-[Finished]\tExperiment with caida.mtx completed.
-[Running]\texperiment with ia-email-EU.mtx
-[Finished]\tExperiment with ia-email-EU.mtx completed.
-[Running]\texperiment with musae_git.txt
-[Finished]\tExperiment with musae_git.txt completed.
+CC.cpp: In function ‘void readTrueAns(char*, CSR*, int*, int*)’:
+CC.cpp:2675:14: warning: ignoring return value of ‘char* fgets(char*, int, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+ 2675 |         fgets(row, 2000, fptr);
+      |         ~~~~~^~~~~~~~~~~~~~~~~
+[Running]\texperiment with wikiTalk.mtx
+[Finished]\tExperiment with wikiTalk.mtx completed.
