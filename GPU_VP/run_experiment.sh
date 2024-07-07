@@ -43,7 +43,7 @@ make clean && make
 # 小資料集的實驗script
 
 for i in {1..1}; do
-    echo -e "iteration $i\n" >> "gpu_fan_Time208.txt"
+    echo -e "iteration $i\n" >> "gpu_vp_Time208.txt"
     # 循环执行五个不同的数据集实验
     for dataset in "${datasets[@]}"; do
         # 运行实验
@@ -55,5 +55,5 @@ for i in {1..1}; do
         echo "$(date +"%Y-%m-%d %H:%M:%S") [Finished]\tExperiment with $dataset completed."
     done
 done
-echo -e "\n" >> "gpu_fan_Time208.txt"
+echo -e "\n" >> "gpu_vp_Time208.txt"
 
